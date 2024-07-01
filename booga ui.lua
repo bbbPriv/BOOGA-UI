@@ -131,10 +131,14 @@ Sections.__index = Sections
 
 setmetatable(Sections, {__index = Pages})
 
-function Sections:Resize()
-	self.Instances[self.Section].Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + 45)
-
-	self.Section.Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + 45)
+function Sections:Resize(Num)
+	if not Num then
+		self.Instances[self.Section].Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + 45)
+		self.Section.Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + 45)
+	else
+		self.Instances[self.Section].Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + Num)
+		self.Section.Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + Num)
+	end
 end
 
 function Sections:AddButton(Name, Callback)
@@ -1424,7 +1428,7 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		Parent = Dialog,
 		Name = "Text",
 		Text = Text,
-		TextSize = 18,
+		TextSize = 16,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		Font = Enum.Font.GothamSemibold,
 		BackgroundTransparency = 1,
