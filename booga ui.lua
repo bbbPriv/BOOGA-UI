@@ -619,7 +619,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, Callback)	
-	self:Resize(60)
+	self:Resize(65)
 	
 	self:ResizePage()
 	
