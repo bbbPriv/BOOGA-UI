@@ -1237,7 +1237,7 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 	local Holder = Utility.Create("Frame", {
 		Parent = self.MainLabel.Parent,
 		Size = UDim2.fromOffset(309, 113),
-		Position = Position,
+		Position = Position or UDim2.fromScale(1, 0.890),
 		BackgroundTransparency = 0.5,
 		ZIndex = 5
 	})
@@ -1317,7 +1317,7 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 		ZIndex = 5
 	})
 	
-	TS:Create(Holder, TweenInfo.new(0.5), {Position = Direction}):Play()
+	TS:Create(Holder, TweenInfo.new(0.5), {Position = Direction or UDim2.fromScale(0.835, 0.890)}):Play()
 	
 	Accept.MouseEnter:Connect(function()
 		TS:Create(Accept, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.102, 0.250)}):Play()
