@@ -883,7 +883,7 @@ function BoogaUI.New(Name : string)
 	BoogaUI.Pages = {}
 		
 	local SG = Utility.Create("ScreenGui", {
-		["Parent"] = Player.PlayerGui,
+		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
 		["Name"] = Name,
 	})
 	
