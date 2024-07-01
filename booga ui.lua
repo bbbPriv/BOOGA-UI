@@ -1424,7 +1424,7 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		Parent = Dialog,
 		Name = "Text",
 		Text = Text,
-		TextSize = 16,
+		TextSize = 18,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		Font = Enum.Font.GothamSemibold,
 		BackgroundTransparency = 1,
