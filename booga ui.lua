@@ -1383,7 +1383,7 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 	
 	task.wait(0.5)
 	
-	HandleOptions(Accept, Decline, Holder, Position)
+	HandleOptions(Accept, Decline, Holder, Position or UDim2.fromScale(1, 0.890))
 end
 
 function BoogaUI:Dialog(Title, Text, Callback)
