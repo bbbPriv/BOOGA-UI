@@ -652,17 +652,14 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 
 	self:ResizePage()
 
-	local Holder = Utility.Create("ImageLabel", {
+	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
-		BackgroundTransparency = 1,
+		BackgroundTransparency = 0.1,
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
 		Position = UDim2.new(1, -50, 0.5, -8),
 		Size = UDim2.new(0.950, 0, 0, 50),
 		ZIndex = 2,
-		ImageColor3 = Color3.fromRGB(17, 17, 17),
-		Image = "rbxassetid://5028857472",
-		ScaleType = Enum.ScaleType.Slice,
-		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
 
 	table.insert(self.Instances, {instance = Holder, Size = Holder.Size})
@@ -672,7 +669,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		Parent = Holder,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0.02, 0, 0.320, 0),
+		Position = UDim2.new(0.02, 0, 0.280, 0),
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
@@ -701,7 +698,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		Parent = Holder,
 		Name = "Bar",
 		ZIndex = 2,
-		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+		BackgroundColor3 = Color3.fromRGB(45, 45, 45),
 		Size = UDim2.fromScale(0.633, 0.22),
 		Position = UDim2.fromScale(0.205, 0.550)
 	})
