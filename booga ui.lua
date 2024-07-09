@@ -228,6 +228,8 @@ function Sections:AddButton(Name, Callback)
 
 		Pressing = false
 	end)
+	
+	return Button
 end
 
 function Sections:AddToggle(Name, IsEnabled, Callback)
@@ -359,9 +361,11 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 		Switching = false
 	end)
+	
+	return Toggle
 end
 
-function Sections:AddTextBox(Name, AutoCallback, CallBack)
+function Sections:AddTextBox(Name, CallBack)
 
 	local DoubleClick = 0
 
@@ -473,11 +477,9 @@ function Sections:AddTextBox(Name, AutoCallback, CallBack)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 
-		if AutoCallback then
-			task.spawn(function()
-				CallBack(TextBox.Text)
-			end)
-		end
+		task.spawn(function()
+			CallBack(TextBox.Text, false)
+		end)
 
 		Pop(Label, 4)
 	end)
@@ -492,10 +494,10 @@ function Sections:AddTextBox(Name, AutoCallback, CallBack)
 
 		TextBox.TextXAlignment = Enum.TextXAlignment.Center
 
-		if not AutoCallback then
-			CallBack(TextBox.Text)
-		end
+		CallBack(TextBox.Text, true)
 	end)
+	
+	return Holder
 end
 
 function Sections:AddKeybind(Name, Key, Callback)
@@ -641,6 +643,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 			end
 		end
 	end)
+	
+	return Holder
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)	
@@ -819,6 +823,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 			Callback(UpdateSlider(Bar, Box.Text, Min, Max))
 		end
 	end)
+	
+	return Holder
 end
 
 function Sections:AddDropdown(Name, Entries, Callback)
@@ -1115,6 +1121,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		
 		Dropping = false
 	end)
+	
+	return Holder
 end
 
 function Pages:AddSection(Name : string)
