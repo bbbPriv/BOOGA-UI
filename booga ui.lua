@@ -135,14 +135,18 @@ Sections.__index = Sections
 
 setmetatable(Sections, {__index = Pages})
 
-function Sections:Resize(Num)
-	if not Num then
-		self.Instances[self.Section].Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + 45)
-		self.Section.Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + 45)
-	else
-		self.Instances[self.Section].Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + Num)
-		self.Section.Size = UDim2.new(1, -16, 0, self.Section.Size.Y.Offset + Num)
+function Sections:Resize()
+	local padding = 8
+	local Size = (8 * padding) + 28
+	
+	for _,v in self.Section.Frame:GetChildren() do
+		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" then
+			Size += v.AbsoluteSize.Y + 8
+		end
 	end
+	
+	self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size)
+	self.Section.Size = UDim2.new(1, -16, 0, Size)
 end
 
 function Sections:AddButton(Name, Callback)
@@ -164,7 +168,7 @@ function Sections:AddButton(Name, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0.1
 	})
-	
+
 	self:AddInstances({Button, Button.Size})
 
 	Utility.Create("UICorner", {
@@ -201,7 +205,7 @@ function Sections:AddButton(Name, Callback)
 		if Pressing then
 			return
 		end
-		
+
 		task.spawn(Callback)
 
 		local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 24)})
@@ -228,7 +232,7 @@ function Sections:AddButton(Name, Callback)
 
 		Pressing = false
 	end)
-	
+
 	return Button
 end
 
@@ -248,7 +252,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Parent = Toggle,
 		Name = "Toggled"
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Toggle,
 		CornerRadius = UDim.new(0, 4)
@@ -293,10 +297,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			Size = UDim2.fromOffset(40, 16),
 			ZIndex = 2,
 		}),
-		
+
 		CornerRadius = UDim.new(0, 8)
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Utility.Create("Frame", {
 			Parent = Toggle.ToggleBase,
@@ -310,7 +314,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 		CornerRadius = UDim.new(0, 8)
 	})
-	
+
 	local Button = Utility.Create("ImageButton", {
 		Parent = Toggle.ToggleBase,
 		ZIndex = 2,
@@ -318,7 +322,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		ImageTransparency = 1,
 		BackgroundTransparency = 1
 	})
-	
+
 	self:AddInstances({Toggle, Toggle.Size, Toggle.Title, Toggle.Title.Size, Toggle.ToggleBase, Toggle.ToggleBase.Size, Toggle.ToggleBase.ToggleCircle, Toggle.ToggleBase.ToggleCircle.Size})
 
 	Toggle.MouseEnter:Connect(function()
@@ -361,7 +365,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 		Switching = false
 	end)
-	
+
 	return Toggle
 end
 
@@ -427,7 +431,7 @@ function Sections:AddTextBox(Name, CallBack)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
-	
+
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
 
 	Holder.MouseEnter:Connect(function()
@@ -496,7 +500,7 @@ function Sections:AddTextBox(Name, CallBack)
 
 		CallBack(TextBox.Text, true)
 	end)
-	
+
 	return Holder
 end
 
@@ -540,7 +544,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		TextTransparency = 0.10000000149012,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
-	
+
 	local Label = Utility.Create("ImageLabel", {
 		Parent = Holder,
 		BackgroundTransparency = 1,
@@ -566,7 +570,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
-	
+
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, KeyLabel, KeyLabel.Size})
 
 	Holder.MouseEnter:Connect(function()
@@ -643,12 +647,12 @@ function Sections:AddKeybind(Name, Key, Callback)
 			end
 		end
 	end)
-	
+
 	return Holder
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)	
-	self:Resize(65)
+	self:Resize()
 
 	self:ResizePage()
 
@@ -710,7 +714,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		Size = UDim2.fromScale(0.142, 1)
 	})
-	
+
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Box, Box.Size, Bar, Bar.Size, Fill, Fill.Size})
 
 	Utility.Create("UICorner", {
@@ -808,39 +812,39 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
 		end
 	end)
-	
+
 	Box:GetPropertyChangedSignal("Text"):Connect(function()
 		local Num = tonumber(Box.Text)
-		
+
 		if Num then
 			if FixValues then
 				Box.Text = Num > Max and Max or Num < Min and Min or Box.Text
 			end
-			
+
 			Callback(UpdateSlider(Bar, Box.Text, Min, Max))
 		end
 	end)
-	
+
 	return Holder
 end
 
 function Sections:AddDropdown(Name, Entries, Callback)
 	local Dropping = false
 	local Last = 0
-	
+
 	local Dont = false
-	
+
 	local Holder = Utility.Create("Frame", {
 		Name = "Dropdown",
 		Parent = self.Section.Frame,
 		Size = UDim2.new(0.950, 0, 0, 30),
 		BackgroundTransparency = 1
 	})
-	
+
 	self:Resize()
 
 	self:ResizePage()
-	
+
 	local Holder2 = Utility.Create("Frame", {
 		Parent = Holder,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
@@ -849,14 +853,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Position = UDim2.fromOffset(0.02, 0),
 		ZIndex = 3,
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Holder2,
 		CornerRadius = UDim.new(0, 4)
 	})
 
 	local ScrollingFrame
-	
+
 	local function MakeEntries(Optional)
 
 		for _,v in ScrollingFrame:GetChildren() do
@@ -864,14 +868,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				v:Destroy()
 			end
 		end
-		
+
 		if Entries then
 			for _,v in Entries do
-				
+
 				if Holder2.TextBox.Text ~= "None Selected" and not v:find(Holder2.TextBox.Text) then
 					continue
 				end
-				
+
 				local Pressing = false
 				local Hovering = false
 
@@ -887,7 +891,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					BackgroundColor3 = Color3.fromRGB(41, 41, 41),
 					BackgroundTransparency = 0.1
 				})
-				
+
 				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.fromScale(0.950, 0.130)}):Play()
 
 				Button.MouseEnter:Connect(function()
@@ -911,9 +915,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					task.spawn(function()
 						Callback(v)
 					end)
-					
+
 					Dont = true
-					
+
 					Holder2.TextBox.Text = v
 
 					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 24)})
@@ -945,15 +949,15 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					Parent = Button,
 					CornerRadius = UDim.new(0, 8)
 				})
-				
+
 				if Optional and not StartsWith(v, Holder2.TextBox.Text) then
 					task.spawn(function()
 						if Holder2.TextBox.Text:len() <= 1 then
-							
+
 							if Holder2.TextBox.Text:len() == 1 then
 								Button:Destroy()
 							end
-							
+
 							TS:Create(Button, TweenInfo.new(0.2), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
 
 							task.wait(0.2)
@@ -964,12 +968,12 @@ function Sections:AddDropdown(Name, Entries, Callback)
 						end
 					end)
 				end
-				
+
 				Last = Holder2.TextBox.Text:len()
 			end
 		end
 	end
-	
+
 	Utility.Create("TextLabel", {
 		Parent = Holder2,
 		AnchorPoint = Vector2.new(0, 0.5),
@@ -984,7 +988,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		TextTransparency = 0.10000000149012,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
-	
+
 	local TextBox = Utility.Create("TextBox", {
 		Parent = Holder2,
 		AnchorPoint = Vector2.new(0, 0.5),
@@ -999,29 +1003,29 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		TextTransparency = 0.10000000149012,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
-	
+
 	self:AddInstances({Holder, Holder.Size, Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
-		
+
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
-		
+
 		if Dont then
 			Dont = false
 			return
 		end
-		
+
 		if TextBox.Text == "None Selected" then
 			return
 		end
 
 		MakeEntries(TextBox.Text)
 	end)
-	
+
 	TextBox.FocusLost:Connect(function()
 		if TextBox.Text == "" then
 			TextBox.Text = "None Selected"
 		end
 	end)
-	
+
 	Utility.Create("ImageButton", {
 		Parent = Holder2,
 		Image = "http://www.roblox.com/asset/?id=293296862",
@@ -1030,7 +1034,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Position = UDim2.new(0.93, 0, 0, 0),
 		Size = UDim2.fromScale(0.060, 0.9)
 	})
-	
+
 	local List = Utility.Create("Frame", {
 		BackgroundTransparency = 1,
 		Name = "List",
@@ -1041,12 +1045,12 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Position = UDim2.fromScale(0.010, 0),
 		ZIndex = 2,
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = List,
 		CornerRadius = UDim.new(0, 8)
 	})
-	
+
 	ScrollingFrame = Utility.Create("ScrollingFrame", {
 		Visible = false,
 		Parent = List,
@@ -1057,13 +1061,13 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		ScrollBarThickness = 6,
 		ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
 	})
-	
+
 	Utility.Create("UIListLayout", {
 		Parent = ScrollingFrame,
 		Padding = UDim.new(0, 8),
 		HorizontalAlignment = Enum.HorizontalAlignment.Center
 	})
-	
+
 	local Button = Utility.Create("ImageButton", {
 		Parent = Holder,
 		Size = Holder.Size,
@@ -1071,54 +1075,54 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		BackgroundTransparency = 1,
 		ZIndex = 3
 	})
-	
+
 	Holder2.ImageButton.MouseButton1Click:Connect(function()
 		if Dropping then
 			return
 		end
-		
+
 		Dropping = true
-		
+
 		if Holder2.ImageButton.Rotation == 0 then
-			
+
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 180}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
-			
+
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 150)}):Play()
 			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, 0.2)}):Play()
 			TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 120)}):Play()
-			
+
 			ScrollingFrame.Visible = true
-			
+
 			MakeEntries()
-			
+
 		else
 
 			for _,v in ScrollingFrame:GetChildren() do
 				if v.ClassName == "TextButton" then
 					local Tween = TS:Create(v, TweenInfo.new(0.2), {Size = UDim2.fromScale(0, 0.130), TextTransparency = 1, BackgroundTransparency = 1})
 					Tween:Play()
-					
+
 					Tween.Completed:Connect(function()
 						v:Destroy()
 					end)					
 				end
 			end
-			
+
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 0}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-			
+
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
 			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 30), BackgroundTransparency = 1}):Play()
 			TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 30)}):Play()
-		
+
 		end
-		
+
 		task.wait(0.3)
-		
+
 		Dropping = false
 	end)
-	
+
 	return Holder
 end
 
@@ -1194,7 +1198,7 @@ function Pages:AddSection(Name : string)
 end
 
 function Pages:ResizePage()
-	local Size = 0
+	local Size = self.SectionPage["Search Bar"].Visible and 50 or 0
 
 	for _, section in self.SectionPage:GetChildren() do
 		if section.ClassName == "ImageLabel" then
@@ -1209,20 +1213,20 @@ end
 function Pages:AddSearchBar()
 	local Bar = self.Page["Search Bar"]
 	Bar.Visible = true
-	
+
 	local Tween
-	
+
 	Bar.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
-		
+
 		if not Tween then
 			Tween = TS:Create(self.Page, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, 0)})
 			Tween:Play()
-			
+
 			Tween.Completed:Connect(function()
 				Tween = nil
 			end)
 		end
-		
+
 		for _, v in self.Page:GetChildren() do
 			if v.ClassName == "ImageLabel" then
 				for _, v2 in v.Frame:GetChildren() do
@@ -1230,29 +1234,29 @@ function Pages:AddSearchBar()
 						v2.Visible = true
 						continue
 					end
-					
+
 					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame.TextLabel
-					
-					
+
+
 					if Label then
 						if Label.ClassName == "TextLabel" then
-							
+
 							if Label.Parent.Parent.Name == "Dropdown" then
 								Label.Parent.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 							else
 								Label.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 							end
-							
+
 						else
 							Label.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 						end
 					end
-					
+
 				end
 			end
 		end
 	end)
-	
+
 	return self
 end
 
@@ -1428,7 +1432,7 @@ function BoogaUI:AddPage(Title, Icon)
 		Text = "",
 		TextSize = 14
 	})
-	
+
 	local Size = 0
 
 	for _, section in self.PagesScrolling:GetChildren() do
@@ -1478,7 +1482,7 @@ function BoogaUI:AddPage(Title, Icon)
 		["Visible"] = Button == self.FocusedPage and true or false
 
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Utility.Create("Frame", {
 			Name = "Search Bar",
@@ -1488,10 +1492,10 @@ function BoogaUI:AddPage(Title, Icon)
 			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
 			Visible = false
 		}),
-		
+
 		CornerRadius = UDim.new(0, 6)
 	})
-	
+
 	Utility.Create("ImageButton", {
 		Parent = Page["Search Bar"],
 		Image = "http://www.roblox.com/asset/?id=11496279085",
@@ -1501,7 +1505,7 @@ function BoogaUI:AddPage(Title, Icon)
 		Position = UDim2.fromScale(0.9, 0.1),
 		ZIndex = 2
 	})
-	
+
 	Utility.Create("TextBox", {
 		Parent = Page["Search Bar"],
 		Size = UDim2.fromScale(0.930, 0.9),
@@ -1606,19 +1610,19 @@ function BoogaUI:AddPage(Title, Icon)
 
 					if instance.ClassName == "Frame" or instance.ClassName == "TextButton" then
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), BackgroundTransparency = 1}):Play()
-						
+
 						if instance.ClassName == "TextButton" then
 							TS:Create(instance, TweenInfo.new(0.3), {TextSize = 0, TextTransparency = 1}):Play()
 						end
-						
+
 					elseif instance.ClassName == "TextLabel" then
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), TextTransparency = 1}):Play()
-						
+
 					else
 						if instance.Name == "Title" or instance.Name == "TextBox" or instance.Name == "KeyLabel" then
 							continue
 						end
-						
+
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), ImageTransparency = 1}):Play()
 					end
 
@@ -1676,7 +1680,7 @@ function BoogaUI:AddPage(Title, Icon)
 				instance.Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, 0, 0)
 
 				TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, v.Size.Y.Scale, v.Size.Y.Offset)}):Play()
-				
+
 				if instance.ClassName == "TextButton" then
 					TS:Create(instance, TweenInfo.new(0.150), {TextSize = 16, TextTransparency = 0.1}):Play()
 				end
