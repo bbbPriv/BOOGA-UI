@@ -1237,17 +1237,17 @@ function Pages:AddSearchBar()
 					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame.TextLabel
 					
 					
-					if Label and not Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) then
+					if Label then
 						if Label.ClassName == "TextLabel" then
 							
 							if Label.Parent.Parent.Name == "Dropdown" then
-								Label.Parent.Parent.Visible = false
+								Label.Parent.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 							else
-								Label.Parent.Visible = false
+								Label.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 							end
 							
 						else
-							Label.Visible = false
+							Label.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 						end
 					end
 					
