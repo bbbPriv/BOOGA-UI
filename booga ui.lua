@@ -730,7 +730,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		Parent = Fill,
 		Name = "Circle",
 		ImageTransparency = 1,
-		Size = UDim2.fromOffset(21, 15),
+		Size = UDim2.fromOffset(19, 15),
 		Position = UDim2.fromScale(-0.5, 0),
 		ZIndex = 2,
 		BackgroundTransparency = 1,
@@ -1255,6 +1255,8 @@ function Pages:AddSearchBar()
 			end
 		end
 	end)
+	
+	return self
 end
 
 
@@ -1449,7 +1451,7 @@ function BoogaUI:AddPage(Title, Icon)
 		["TextSize"] = 22,
 		["Font"] = Enum.Font.Arial,
 		["TextColor3"] = Color3.fromRGB(220, 220, 220),
-		["Position"] = UDim2.fromScale(0.5, 0.5)
+		["Size"] = UDim2.fromScale(1, 1)
 	})
 
 	local Icon = Utility.Create("ImageLabel", {
