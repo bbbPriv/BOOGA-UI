@@ -703,7 +703,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		ZIndex = 2,
 		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
 		Size = UDim2.fromScale(0.633, 0.22),
-		Position = UDim2.fromScale(0.205, 0.46)
+		Position = UDim2.fromScale(0.205, 0.550)
 	})
 
 	local Fill = Utility.Create("Frame", {
