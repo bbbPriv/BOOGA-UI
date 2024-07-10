@@ -1744,7 +1744,7 @@ function BoogaUI:AddPage(Title, Icon)
 end
 
 function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
-	local Clicked = false
+	local Clicked
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.MainLabel.Parent,
@@ -1853,6 +1853,12 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 		task.spawn(function()
 			Callback(true)
 		end)
+		
+		task.spawn(function()
+			task.wait(0.5)
+
+			HandleOptions(Accept, Decline, Holder, Position or UDim2.fromScale(1, 0.890))
+		end)
 
 		TS:Create(Accept, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.062, 0.2)}):Play()
 
@@ -1883,6 +1889,12 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 		task.spawn(function()
 			Callback(false)
 		end)
+		
+		task.spawn(function()
+			task.wait(0.5)
+
+			HandleOptions(Accept, Decline, Holder, Position or UDim2.fromScale(1, 0.890))
+		end)
 
 		TS:Create(Decline, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.055, 0.153)}):Play()
 
@@ -1891,11 +1903,7 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 		TS:Create(Decline, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.1, 0.21)}):Play()
 	end)
 
-	repeat task.wait() until Clicked
-
-	task.wait(0.5)
-
-	HandleOptions(Accept, Decline, Holder, Position or UDim2.fromScale(1, 0.890))
+	return Holder
 end
 
 function BoogaUI:Dialog(Title, Text, Callback)
@@ -1998,6 +2006,12 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		task.spawn(function()
 			Callback(true)
 		end)
+		
+		task.spawn(function()
+			task.wait(0.5)
+
+			HandleOptions(Accept, Decline, Dialog, nil, UDim2.fromScale(0, 0))
+		end)
 
 		TS:Create(Accept, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.068, 0.134)}):Play()
 
@@ -2029,6 +2043,12 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		task.spawn(function()
 			Callback(false)
 		end)
+		
+		task.spawn(function()
+			task.wait(0.5)
+
+			HandleOptions(Accept, Decline, Dialog, nil, UDim2.fromScale(0, 0))
+		end)
 
 		TS:Create(Decline, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.039, 0.115)}):Play()
 
@@ -2037,11 +2057,7 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		TS:Create(Decline, TweenInfo.new(0.15), {Size = UDim2.fromScale(0.084, 0.172)}):Play()
 	end)
 
-	repeat task.wait() until Clicked
-
-	task.wait(0.5)
-
-	HandleOptions(Accept, Decline, Dialog, nil, UDim2.fromScale(0, 0))
+	return Dialog
 end
 
 function BoogaUI:Toggle()
