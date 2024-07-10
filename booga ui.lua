@@ -44,7 +44,7 @@ local function Pop(instance, Offset)
 	instance.ImageTransparency = 0
 end
 
-local function UpdateSlider(Bar, Value, Min, Max)
+local function UpdateSlider(Bar, Value, Min, Max, Decimal)
 	local percent = (Player:GetMouse().X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X
 
 	if Value then
@@ -52,7 +52,8 @@ local function UpdateSlider(Bar, Value, Min, Max)
 	end
 
 	percent = math.clamp(percent, 0, 1)
-	Value = Value or math.floor(Min + (Max - Min) * percent)
+	Value = Value or not Decimal and math.floor(Min + (Max - Min) * percent) or Min + (Max - Min) * percent
+	Value = not Decimal and Value or string.format("%.1f", Value)
 
 	Bar.Parent.TextBox.Text = Value
 	TS:Create(Bar.Fill, TweenInfo.new(0.1), {Size = UDim2.new(percent, 0, 1 ,0)}):Play()
@@ -656,7 +657,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 	return Holder
 end
 
-function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)	
+function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)	
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -746,14 +747,14 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		Position = UDim2.fromScale(-0.5, 0),
 		ZIndex = 2,
 		BackgroundTransparency = 1,
-		Image = "rbxassetid://4608020054"
+		Image = "rbxassetid://4608020054",
 	})
 
 	local Old
 
 	local dragging = false
 
-	UpdateSlider(Bar, Value, Min, Max)
+	UpdateSlider(Bar, Value, Min, Max, Decimal)
 
 	Holder.MouseEnter:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 49)}):Play()
@@ -777,7 +778,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
-			Callback(UpdateSlider(Bar, nil, Min, Max))		
+			Callback(UpdateSlider(Bar, nil, Min, Max, Decimal))		
 
 			repeat task.wait() until not dragging
 
@@ -788,6 +789,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 			end
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+			
+			task.wait(0.2)
+			
 		end
 	end)
 
@@ -800,14 +804,15 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 	UIS.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 
+			
 			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 15, 0, -2)}):Play()
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
-			local Num = UpdateSlider(Bar, nil, Min, Max)
+			local Num = UpdateSlider(Bar, nil, Min, Max, Decimal)
 
 			if Num ~= Old then
-				Callback(UpdateSlider(Bar, nil, Min, Max))
+				Callback(UpdateSlider(Bar, nil, Min, Max, Decimal))
 			end
 
 			Old = Num
@@ -821,6 +826,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 			end
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+			
+			task.wait(0.2)
+			
 		end
 	end)
 
@@ -832,7 +840,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 				Box.Text = Num > Max and Max or Num < Min and Min or Box.Text
 			end
 
-			Callback(UpdateSlider(Bar, Box.Text, Min, Max))
+			Callback(UpdateSlider(Bar, Box.Text, Min, Max, Decimal))
 		end
 	end)
 
