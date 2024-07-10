@@ -138,15 +138,22 @@ setmetatable(Sections, {__index = Pages})
 function Sections:Resize()
 	local padding = 8
 	local Size = (8 * padding) + 28
-	
+
 	for _,v in self.Section.Frame:GetChildren() do
 		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" then
-			Size += v.AbsoluteSize.Y + 8
+			
+			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
+				Size += 128
+			else
+				Size += v.AbsoluteSize.Y + 8
+			end
 		end
 	end
-	
+
 	self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size)
 	self.Section.Size = UDim2.new(1, -16, 0, Size)
+	
+	return Size
 end
 
 function Sections:AddButton(Name, Callback)
@@ -427,7 +434,7 @@ function Sections:AddTextBox(Name, CallBack)
 		Size = UDim2.new(1, -10, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Name,
+		Text = "",
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
@@ -638,7 +645,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 	end)
 
 	UIS.InputBegan:Connect(function(Input, GME)
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 then			
+		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 			if not isPointInBounds(Input.Position, Holder) and KeyLabel.Text == "..." then
 				Stop = true
 				Selecting = false
@@ -664,6 +671,11 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		Position = UDim2.new(1, -50, 0.5, -8),
 		Size = UDim2.new(0.950, 0, 0, 50),
 		ZIndex = 2,
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Holder,
+		CornerRadius = UDim.new(0, 4)
 	})
 
 	table.insert(self.Instances, {instance = Holder, Size = Holder.Size})
@@ -1012,6 +1024,10 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			Dont = false
 			return
 		end
+		
+		if Holder.List.Size.Y.Offset == 30 then
+			return
+		end
 
 		if TextBox.Text == "None Selected" then
 			return
@@ -1068,14 +1084,6 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		HorizontalAlignment = Enum.HorizontalAlignment.Center
 	})
 
-	local Button = Utility.Create("ImageButton", {
-		Parent = Holder,
-		Size = Holder.Size,
-		ImageTransparency = 1,
-		BackgroundTransparency = 1,
-		ZIndex = 3
-	})
-
 	Holder2.ImageButton.MouseButton1Click:Connect(function()
 		if Dropping then
 			return
@@ -1095,6 +1103,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			ScrollingFrame.Visible = true
 
 			MakeEntries()
+			
+			self:Resize()
+			self:ResizePage(true)
 
 		else
 
@@ -1108,6 +1119,13 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					end)					
 				end
 			end
+			
+			local Size = self:Resize()
+
+			self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - 120)
+			self.Section.Size = UDim2.new(1, -16, 0, Size - 120)
+			
+			self:ResizePage()
 
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 0}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
@@ -1197,7 +1215,7 @@ function Pages:AddSection(Name : string)
 	return setmetatable({SectionPage = self.Page, Section = Section}, Sections)
 end
 
-function Pages:ResizePage()
+function Pages:ResizePage(DropdownCall)
 	local Size = self.SectionPage["Search Bar"].Visible and 50 or 0
 
 	for _, section in self.SectionPage:GetChildren() do
@@ -1207,7 +1225,14 @@ function Pages:ResizePage()
 	end
 
 	self.SectionPage.CanvasSize = UDim2.fromOffset(0, Size)
+	
+	if DropdownCall and self.SectionPage.ScrollBarImageTransparency == 1 then
+		TS:Create(self.SectionPage, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, self.SectionPage.CanvasPosition.Y + 60)}):Play()
+	end
+	
 	self.SectionPage.ScrollBarImageTransparency = Size > self.SectionPage.AbsoluteSize.Y and 0 or 1
+	
+	return Size
 end
 
 function Pages:AddSearchBar()
