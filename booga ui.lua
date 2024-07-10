@@ -136,8 +136,7 @@ Sections.__index = Sections
 setmetatable(Sections, {__index = Pages})
 
 function Sections:Resize()
-	local padding = 8
-	local Size = (8 * padding) + 28
+	local Size = 32
 
 	for _,v in self.Section.Frame:GetChildren() do
 		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" then
@@ -161,11 +160,8 @@ function Sections:AddButton(Name, Callback)
 
 	local Hovering
 
-	self:Resize()
-
-	self:ResizePage()
-
 	local Button = Utility.Create("TextButton", {
+		Parent = self.Section.Frame,
 		ZIndex = 2,
 		Text = Name,
 		TextSize = 16,
@@ -175,6 +171,10 @@ function Sections:AddButton(Name, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0.1
 	})
+	
+	self:Resize()
+
+	self:ResizePage()
 
 	self:AddInstances({Button, Button.Size})
 
@@ -182,8 +182,6 @@ function Sections:AddButton(Name, Callback)
 		Parent = Button,
 		CornerRadius = UDim.new(0, 4)
 	})
-
-	Button.Parent = self.Section.Frame
 
 	Button.MouseEnter:Connect(function()
 		Hovering = true
@@ -382,10 +380,6 @@ function Sections:AddTextBox(Name, CallBack)
 
 	local DoubleClicked = false
 
-	self:Resize()
-
-	self:ResizePage()
-
 	local Holder = Utility.Create("ImageButton", {
 		Parent = self.Section.Frame,
 		BackgroundTransparency = 1,
@@ -393,10 +387,14 @@ function Sections:AddTextBox(Name, CallBack)
 		Size = UDim2.new(0.950, 0, 0, 30),
 		ZIndex = 2,
 		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(0, 0, 0),
+		ImageColor3 = Color3.fromRGB(15, 15, 15),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
+	
+	self:Resize()
+
+	self:ResizePage()
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
@@ -421,7 +419,7 @@ function Sections:AddTextBox(Name, CallBack)
 		Size = UDim2.new(0, 100, 0, 16),
 		ZIndex = 2,
 		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(17, 17, 17),
+		ImageColor3 = Color3.fromRGB(28, 28, 28),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
@@ -512,15 +510,11 @@ function Sections:AddTextBox(Name, CallBack)
 end
 
 function Sections:AddKeybind(Name, Key, Callback)
-	local Old = Key and Key.Name or "None"
+	local Old = typeof(Key) == "string" and Enum.KeyCode[Key:upper()].Name or (Key and Key.Name or "None")
 
 	local Selecting = false
 
 	local Stop = false
-
-	self:Resize()
-
-	self:ResizePage()
 
 	local Holder = Utility.Create("ImageButton", {
 		Parent = self.Section.Frame,
@@ -529,12 +523,16 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Size = UDim2.new(0.950, 0, 0, 30),
 		ZIndex = 2,
 		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(0, 0, 0),
+		ImageColor3 = Color3.fromRGB(15, 15, 15),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
+	
+	self:Resize()
 
-	table.insert(self.Instances, {instance = Holder, Size = Holder.Size})
+	self:ResizePage()
+
+	self:AddInstances({Holder, Holder.Size})
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
@@ -559,7 +557,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Size = UDim2.new(0, 100, 0, 16),
 		ZIndex = 2,
 		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(17, 17, 17),
+		ImageColor3 = Color3.fromRGB(28, 28, 28),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
@@ -573,7 +571,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Size = UDim2.new(1, -10, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Key and Key.Name or "None",
+		Text = typeof(Key) == "string" and Enum.KeyCode[Key:upper()].Name or (Key and Key.Name or "None"),
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
@@ -659,9 +657,6 @@ function Sections:AddKeybind(Name, Key, Callback)
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)	
-	self:Resize()
-
-	self:ResizePage()
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -672,6 +667,10 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Callback)
 		Size = UDim2.new(0.950, 0, 0, 50),
 		ZIndex = 2,
 	})
+	
+	self:Resize()
+
+	self:ResizePage()
 	
 	Utility.Create("UICorner", {
 		Parent = Holder,
@@ -1142,6 +1141,24 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	end)
 
 	return Holder
+end
+
+function Sections:AddSeparator(YOffset)
+	local Separator = Utility.Create("Frame", {
+		Parent = self.Section.Frame,
+		ZIndex = 2,
+		Size = UDim2.new(0.950, 0, 0, YOffset),
+		BackgroundTransparency = 1
+	})
+	
+	self:Resize()
+
+	self:ResizePage()
+
+	self:AddInstances({Separator, Separator.Size})
+
+
+	return Separator
 end
 
 function Pages:AddSection(Name : string)
