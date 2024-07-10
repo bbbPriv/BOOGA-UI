@@ -1163,9 +1163,6 @@ function Sections:AddSeparator(YOffset)
 
 	self:ResizePage()
 
-	self:AddInstances({Separator, Separator.Size})
-
-
 	return Separator
 end
 
