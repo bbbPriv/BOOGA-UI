@@ -1166,7 +1166,7 @@ function Sections:AddSeparator(YOffset)
 	return Separator
 end
 
-function Pages:AddSection(Name : string)
+function Pages:AddSection(Name)
 
 	if not Name then
 		error("No section name")
@@ -1308,7 +1308,7 @@ function Pages:AddSearchBar()
 end
 
 
-function BoogaUI.New(Name : string)
+function BoogaUI.New(Name)
 
 	if not Name then
 		error("No Name argument")
