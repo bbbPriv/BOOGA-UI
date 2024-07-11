@@ -2081,7 +2081,7 @@ function BoogaUI:Toggle()
 				TS:Create(v, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
 			elseif v.ClassName == "TextBox" then
 				TS:Create(v, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-			elseif v.ClassName == "ImageLabel" or v.ClassName == "ImageButton" then
+			elseif v.Name ~= "TextBoxBox" and (v.ClassName == "ImageLabel" or v.ClassName == "ImageButton") then
 				TS:Create(v, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
 			elseif v.ClassName == "Frame" then
 				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
@@ -2136,7 +2136,10 @@ function BoogaUI:Toggle()
 		for _,v in pairs(self.Instances) do
 
 			if v.instance.Name == "TextBoxBox" then
-				v.instance.Position = UDim2.new(1, -110, 0.5, -8)
+				v.instance.Position = v.instance.Size.X.Offset < 160 and UDim2.new(1, -110, 0.5, -8) or UDim2.new(1, -230, 0.5, -8)
+				TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.instance.Size.X.Offset < 160 and UDim2.new(0, 100, 0, 16) or UDim2.new(0, 220, 0, 16)}):Play()
+				
+				continue
 			elseif v.instance.ClassName == "TextLabel" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			elseif v.instance.ClassName == "TextBox" then
