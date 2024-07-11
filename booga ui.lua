@@ -512,7 +512,8 @@ function Sections:AddTextBox(Name, CallBack)
 end
 
 function Sections:AddKeybind(Name, Key, Callback)
-	local Old = typeof(Key) == "string" and Enum.KeyCode[Key:upper()].Name or (Key and Key.Name or "None")
+	local Old = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()].Name or (Key and Key.Name or "None")
+	Key = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()] or (Key and Key.Name or "None")
 
 	local Selecting = false
 
@@ -573,7 +574,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Size = UDim2.new(1, -10, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = typeof(Key) == "string" and Enum.KeyCode[Key:upper()].Name or (Key and Key.Name or "None"),
+		Text = Old,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
