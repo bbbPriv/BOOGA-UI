@@ -9,7 +9,7 @@ local TS = game:GetService("TweenService")
 function Utility.Create(ClassName, Properties)
 	local instance = Instance.new(ClassName)
 
-	for k,v in Properties do
+	for k,v in pairs(Properties) do
 		if not pcall(function() instance[k] = v end) then
 			warn("Property " .. k .. " does not exist in " .. instance.Name)
 		end
@@ -139,9 +139,9 @@ setmetatable(Sections, {__index = Pages})
 function Sections:Resize()
 	local Size = 32
 
-	for _,v in self.Section.Frame:GetChildren() do
+	for _,v in pairs(self.Section.Frame:GetChildren()) do
 		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" then
-			
+
 			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
 				Size += 128
 			else
@@ -152,7 +152,7 @@ function Sections:Resize()
 
 	self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size)
 	self.Section.Size = UDim2.new(1, -16, 0, Size)
-	
+
 	return Size
 end
 
@@ -172,7 +172,7 @@ function Sections:AddButton(Name, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0.1
 	})
-	
+
 	self:Resize()
 
 	self:ResizePage()
@@ -392,7 +392,7 @@ function Sections:AddTextBox(Name, CallBack)
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
-	
+
 	self:Resize()
 
 	self:ResizePage()
@@ -414,6 +414,7 @@ function Sections:AddTextBox(Name, CallBack)
 	})
 
 	local Label = Utility.Create("ImageLabel", {
+		Name = "TextBoxBox",
 		Parent = Holder,
 		BackgroundTransparency = 1,
 		Position = UDim2.new(1, -110, 0.5, -8),
@@ -528,7 +529,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
-	
+
 	self:Resize()
 
 	self:ResizePage()
@@ -668,11 +669,11 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 		Size = UDim2.new(0.950, 0, 0, 50),
 		ZIndex = 2,
 	})
-	
+
 	self:Resize()
 
 	self:ResizePage()
-	
+
 	Utility.Create("UICorner", {
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
@@ -789,9 +790,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 			end
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
-			
+
 			task.wait(0.2)
-			
+
 		end
 	end)
 
@@ -804,7 +805,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 	UIS.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 
-			
+
 			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 15, 0, -2)}):Play()
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
@@ -826,9 +827,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 			end
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
-			
+
 			task.wait(0.2)
-			
+
 		end
 	end)
 
@@ -882,14 +883,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 	local function MakeEntries(Optional)
 
-		for _,v in ScrollingFrame:GetChildren() do
+		for _,v in pairs(ScrollingFrame:GetChildren()) do
 			if v.ClassName == "TextButton" then
 				v:Destroy()
 			end
 		end
 
 		if Entries then
-			for _,v in Entries do
+			for _,v in pairs(Entries) do
 
 				if Holder2.TextBox.Text ~= "None Selected" and not v:find(Holder2.TextBox.Text) then
 					continue
@@ -1031,7 +1032,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			Dont = false
 			return
 		end
-		
+
 		if Holder.List.Size.Y.Offset == 30 then
 			return
 		end
@@ -1110,13 +1111,13 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			ScrollingFrame.Visible = true
 
 			MakeEntries()
-			
+
 			self:Resize()
 			self:ResizePage(true)
 
 		else
 
-			for _,v in ScrollingFrame:GetChildren() do
+			for _,v in pairs(ScrollingFrame:GetChildren()) do
 				if v.ClassName == "TextButton" then
 					local Tween = TS:Create(v, TweenInfo.new(0.2), {Size = UDim2.fromScale(0, 0.130), TextTransparency = 1, BackgroundTransparency = 1})
 					Tween:Play()
@@ -1126,12 +1127,12 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					end)					
 				end
 			end
-			
+
 			local Size = self:Resize()
 
 			self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - 120)
 			self.Section.Size = UDim2.new(1, -16, 0, Size - 120)
-			
+
 			self:ResizePage()
 
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 0}):Play()
@@ -1158,7 +1159,7 @@ function Sections:AddSeparator(YOffset)
 		Size = UDim2.new(0.950, 0, 0, YOffset),
 		BackgroundTransparency = 1
 	})
-	
+
 	self:Resize()
 
 	self:ResizePage()
@@ -1240,20 +1241,20 @@ end
 function Pages:ResizePage(DropdownCall)
 	local Size = self.SectionPage["Search Bar"].Visible and 50 or 0
 
-	for _, section in self.SectionPage:GetChildren() do
+	for _, section in pairs(self.SectionPage:GetChildren()) do
 		if section.ClassName == "ImageLabel" then
 			Size += section.AbsoluteSize.Y + 10
 		end
 	end
 
 	self.SectionPage.CanvasSize = UDim2.fromOffset(0, Size)
-	
+
 	if DropdownCall and self.SectionPage.ScrollBarImageTransparency == 1 then
 		TS:Create(self.SectionPage, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, self.SectionPage.CanvasPosition.Y + 60)}):Play()
 	end
-	
+
 	self.SectionPage.ScrollBarImageTransparency = Size > self.SectionPage.AbsoluteSize.Y and 0 or 1
-	
+
 	return Size
 end
 
@@ -1274,9 +1275,9 @@ function Pages:AddSearchBar()
 			end)
 		end
 
-		for _, v in self.Page:GetChildren() do
+		for _, v in pairs(self.Page:GetChildren()) do
 			if v.ClassName == "ImageLabel" then
-				for _, v2 in v.Frame:GetChildren() do
+				for _, v2 in pairs(v.Frame:GetChildren()) do
 					if Bar.TextBox.Text == "" and v2.ClassName ~= "UIListLayout" then
 						v2.Visible = true
 						continue
@@ -1482,7 +1483,7 @@ function BoogaUI:AddPage(Title, Icon)
 
 	local Size = 0
 
-	for _, section in self.PagesScrolling:GetChildren() do
+	for _, section in pairs(self.PagesScrolling:GetChildren()) do
 		if section.ClassName == "TextButton" then
 			Size += section.AbsoluteSize.Y + 10
 		end
@@ -1628,7 +1629,7 @@ function BoogaUI:AddPage(Title, Icon)
 		local OldTextTransparency
 		local OldImageTransparency
 
-		for _,v in self.Instances do
+		for _,v in pairs(self.Instances) do
 			local instance = v.instance
 
 			if instance:IsDescendantOf(self.FocusedPage) then
@@ -1673,7 +1674,7 @@ function BoogaUI:AddPage(Title, Icon)
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), ImageTransparency = 1}):Play()
 					end
 
-					for _,instance in instance:GetDescendants() do
+					for _,instance in pairs(instance:GetDescendants()) do
 
 						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" then
 							continue
@@ -1720,7 +1721,7 @@ function BoogaUI:AddPage(Title, Icon)
 
 		Old.Visible = false
 
-		for _,v in self.Instances do
+		for _,v in pairs(self.Instances) do
 			local instance = v.instance
 
 			if instance:IsDescendantOf(Page) then
@@ -1853,7 +1854,7 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 		task.spawn(function()
 			Callback(true)
 		end)
-		
+
 		task.spawn(function()
 			task.wait(0.5)
 
@@ -1889,7 +1890,7 @@ function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 		task.spawn(function()
 			Callback(false)
 		end)
-		
+
 		task.spawn(function()
 			task.wait(0.5)
 
@@ -2006,7 +2007,7 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		task.spawn(function()
 			Callback(true)
 		end)
-		
+
 		task.spawn(function()
 			task.wait(0.5)
 
@@ -2043,7 +2044,7 @@ function BoogaUI:Dialog(Title, Text, Callback)
 		task.spawn(function()
 			Callback(false)
 		end)
-		
+
 		task.spawn(function()
 			task.wait(0.5)
 
@@ -2067,13 +2068,13 @@ function BoogaUI:Toggle()
 
 		self.MainLabel.TitleHolder.Title.ZIndex = 5
 
-		for _, PageTitle in self.MainLabel.Pages:GetDescendants() do
+		for _, PageTitle in pairs(self.MainLabel.Pages:GetDescendants()) do
 			if PageTitle.ClassName == "TextLabel" or PageTitle.Name == "Icon" then
 				PageTitle.ZIndex = 5
 			end
 		end
 
-		for _,v in self.Instances do
+		for _,v in pairs(self.Instances) do
 			v = v.instance
 
 			if v.ClassName == "TextLabel" then
@@ -2095,7 +2096,7 @@ function BoogaUI:Toggle()
 
 		TS:Create(self.MainLabel.TitleHolder.Title, TweenInfo.new(0.250), {TextTransparency = 1}):Play()
 
-		for _, PageTitle in self.MainLabel.Pages:GetDescendants() do
+		for _, PageTitle in pairs(self.MainLabel.Pages:GetDescendants()) do
 			if PageTitle.ClassName == "TextLabel" then
 				TS:Create(PageTitle, TweenInfo.new(0.250), {TextTransparency = 1, TextSize = 0}):Play()
 			elseif PageTitle.Name == "Icon" then
@@ -2132,9 +2133,11 @@ function BoogaUI:Toggle()
 		self.MainLabel.Size = UDim2.fromOffset(self.MainLabel.Size.X.Offset, 428)
 		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.128, 0)}):Play()
 
-		for _,v in self.Instances do
+		for _,v in pairs(self.Instances) do
 
-			if v.instance.ClassName == "TextLabel" then
+			if v.instance.Name == "TextBoxBox" then
+				v.instance.Position = UDim2.new(1, -110, 0.5, -8)
+			elseif v.instance.ClassName == "TextLabel" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			elseif v.instance.ClassName == "TextBox" then
 				TS:Create(v.instance, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
@@ -2153,7 +2156,7 @@ function BoogaUI:Toggle()
 
 		TS:Create(self.MainLabel.TitleHolder.Title, TweenInfo.new(0.250), {TextTransparency = 0}):Play()
 
-		for _, PageTitle in self.MainLabel.Pages:GetDescendants() do
+		for _, PageTitle in pairs(self.MainLabel.Pages:GetDescendants()) do
 			if PageTitle.ClassName == "TextLabel" then
 				TS:Create(PageTitle, TweenInfo.new(0.250), {TextTransparency = 0}):Play()
 
@@ -2165,10 +2168,10 @@ function BoogaUI:Toggle()
 
 		self.MainLabel.Glow.Visible = true
 
-		self.MainLabel.TitleHolder.ZIndex = 1	
+		self.MainLabel.TitleHolder.ZIndex = 1
 		self.MainLabel.TitleHolder.Title.ZIndex = 1
 
-		for _, PageTitle in self.MainLabel.Pages:GetDescendants() do
+		for _, PageTitle in pairs(self.MainLabel.Pages:GetDescendants()) do
 			if PageTitle.ClassName == "TextLabel" or PageTitle.Name == "Icon" then
 				PageTitle.ZIndex = 1
 			end
