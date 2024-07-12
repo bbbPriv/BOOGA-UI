@@ -56,6 +56,7 @@ local function UpdateSlider(Bar, Value, Min, Max, Decimal)
 	Value = not Decimal and Value or string.format("%.1f", Value)
 
 	Bar.Parent.TextBox.Text = Value
+	BoogaUI.Instances[Bar.Fill].Size = UDim2.new(percent, 0, 1 ,0)
 	TS:Create(Bar.Fill, TweenInfo.new(0.1), {Size = UDim2.new(percent, 0, 1 ,0)}):Play()
 
 	return Value
@@ -680,8 +681,6 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 		CornerRadius = UDim.new(0, 4)
 	})
 
-	table.insert(self.Instances, {instance = Holder, Size = Holder.Size})
-
 	Utility.Create("TextLabel", {
 		Name = "Title",
 		Parent = Holder,
@@ -727,6 +726,11 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 		ZIndex = 2,
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		Size = UDim2.fromScale(0.142, 1)
+	})
+	
+	Utility.Create("StringValue", {
+		Parent = Fill,
+		Name = "AddIndex"
 	})
 
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Box, Box.Size, Bar, Bar.Size, Fill, Fill.Size})
@@ -2139,7 +2143,7 @@ function BoogaUI:Toggle()
 			if v.instance.Name == "TextBoxBox" then
 				v.instance.Position = v.instance.Size.X.Offset < 160 and UDim2.new(1, -110, 0.5, -8) or UDim2.new(1, -230, 0.5, -8)
 				TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.instance.Size.X.Offset < 160 and UDim2.new(0, 100, 0, 16) or UDim2.new(0, 220, 0, 16)}):Play()
-				
+
 				continue
 			elseif v.instance.ClassName == "TextLabel" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
@@ -2189,7 +2193,12 @@ end
 function BoogaUI:AddInstances(Arg)
 	if #Arg > 2 then
 		for idx = 1, #Arg, 2 do
-			table.insert(self.Instances, {instance = Arg[idx], Size = Arg[idx + 1]})
+			local tbl = {instance = Arg[idx], Size = Arg[idx + 1]}
+			table.insert(self.Instances, tbl)
+			
+			if Arg[idx]:FindFirstChild("AddIndex") then
+				self.Instances[Arg[idx]] = tbl
+			end
 		end
 	else
 		table.insert(self.Instances, {instance = Arg[1], Size = Arg[2]})
