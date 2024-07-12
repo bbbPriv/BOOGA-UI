@@ -425,7 +425,7 @@ function Sections:AddTextBox(Name, CallBack)
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
-	
+
 	Utility.Create("StringValue", {
 		Parent = Label,
 		Name = "AddIndex"
@@ -507,11 +507,11 @@ function Sections:AddTextBox(Name, CallBack)
 	end)
 
 	TextBox.FocusLost:Connect(function()
-		
+
 		task.spawn(function()
 			CallBack(TextBox.Text, true)
 		end)
-		
+
 		if DoubleClicked then
 			DoubleClicked = false
 			task.wait(0.1)
@@ -604,8 +604,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
 	end)
 
-	UIS.InputBegan:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Key and not Selecting then
+	UIS.InputBegan:Connect(function(Input, GME)
+		if not GME and Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Key and not Selecting then
 			task.spawn(function()
 				Callback(Enum.KeyCode[Key.Name])
 			end)
@@ -741,7 +741,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		Size = UDim2.fromScale(0.142, 1)
 	})
-	
+
 	Utility.Create("StringValue", {
 		Parent = Fill,
 		Name = "AddIndex"
@@ -1344,6 +1344,8 @@ function BoogaUI.New(Name)
 
 	BoogaUI.Pages = {}
 
+	BoogaUI.LastPageButton = false
+
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
 		["Name"] = Name,
@@ -1378,7 +1380,7 @@ function BoogaUI.New(Name)
 	local Pages = Utility.Create("ImageLabel", {
 		["Parent"] = MainLabel,
 		["Name"] = "Pages",
-		["Size"] = UDim2.fromScale(0.200, 0.871),
+		["Size"] = UDim2.fromScale(0.220, 0.871),
 		["Position"] = UDim2.new(0, 0, 0.128, 0),
 		["BorderSizePixel"] = 0,
 		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
@@ -1516,10 +1518,13 @@ function BoogaUI:AddPage(Title, Icon)
 		["Parent"] = Button,
 		["BackgroundTransparency"] = 1,
 		["Text"] = Title,
-		["TextSize"] = 22,
+		["RichText"] = true,
+		["TextSize"] = 17,
 		["Font"] = Enum.Font.Arial,
-		["TextColor3"] = Color3.fromRGB(220, 220, 220),
-		["Size"] = UDim2.fromScale(1, 1)
+		["TextColor3"] = Color3.fromRGB(185, 185, 185),
+		["Size"] = UDim2.new(1, -10, 1, 0),
+		["TextXAlignment"] = Enum.TextXAlignment.Left,
+		["Position"] = UDim2.fromScale(0.25, 0)
 	})
 
 	local Icon = Utility.Create("ImageLabel", {
@@ -1529,7 +1534,7 @@ function BoogaUI:AddPage(Title, Icon)
 		ImageTransparency = 0.5,
 		Image = tostring(Icon):find("rbx") and Icon or "rbxassetid://" .. tostring(Icon),
 		Size = UDim2.fromOffset(20, 20),
-		Position = UDim2.new(0, 4, 0.13, 0),
+		Position = UDim2.new(0, 7, 0.118, 0),
 	})
 
 	if not self.FocusedPage then
@@ -1540,8 +1545,8 @@ function BoogaUI:AddPage(Title, Icon)
 		["Parent"] = self.MainLabel,
 		["Name"] = Title,
 		["BackgroundTransparency"] = 1,
-		["Position"] = UDim2.new(0.225, 0, 0.14, 0),
-		["Size"] = UDim2.new(1, -142, 1, -56),
+		["Position"] = UDim2.new(0.252, 1.5, 0.14, 0),
+		["Size"] = UDim2.new(0.973, -142, 1, -56),
 		["ScrollBarThickness"] = 3,
 		["ScrollBarImageColor3"] = Color3.fromRGB(0, 0, 0),
 		["ScrollBarImageTransparency"] = 1,
@@ -1597,17 +1602,20 @@ function BoogaUI:AddPage(Title, Icon)
 			return
 		end
 
-		TS:Create(PageTitle, TweenInfo.new(0.1), {TextColor3 = Color3.fromRGB(170, 170, 170)}):Play()
+		PageTitle.Text = "<b>" .. PageTitle.Text .. "</b>"
+		TS:Create(PageTitle, TweenInfo.new(0.150), {TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 
 	end)
 
 	Button.MouseLeave:Connect(function()
 		if AnimatingClick then
 			return
+		end 
+
+		if self.LastPageButton ~= PageTitle then
+			PageTitle.Text = PageTitle.Text:gsub("<b>", ""):gsub("</b>", "")
+			TS:Create(PageTitle, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(185, 185, 185)}):Play()
 		end
-
-		TS:Create(PageTitle, TweenInfo.new(0.1), {TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
-
 	end)
 
 	Button.MouseButton1Down:Connect(function()
@@ -1615,25 +1623,25 @@ function BoogaUI:AddPage(Title, Icon)
 			return
 		end
 
-		TS:Create(PageTitle, TweenInfo.new(0.2), {TextSize = 20}):Play()
-
-		TS:Create(Icon, TweenInfo.new(0.1), {Size = UDim2.fromOffset(18, 18)}):Play()
+		PageTitle.Text = PageTitle.Text:gsub("<b>", ""):gsub("</b>", "")
+		TS:Create(PageTitle, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(135, 135, 135)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
 
+
+		if self.LastPageButton then 
+			self.LastPageButton.Text = self.LastPageButton.Text:gsub("<b>", ""):gsub("</b>", "")
+			TS:Create(PageTitle, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		end
+
+		self.LastPageButton = PageTitle
+
 		task.spawn(function()
 			AnimatingClick = true
 
-			TS:Create(PageTitle, TweenInfo.new(0.2), {TextSize = 27}):Play()
-
-			TS:Create(Icon, TweenInfo.new(0.1), {Size = UDim2.fromOffset(21, 22)}):Play()
-
-			task.wait(0.2)
-
-			TS:Create(PageTitle, TweenInfo.new(0.2), {TextSize = 22}):Play()
-
-			TS:Create(Icon, TweenInfo.new(0.1), {Size = UDim2.fromOffset(20, 20)}):Play()
+			PageTitle.Text = "<b>" .. PageTitle.Text .. "</b>"
+			TS:Create(PageTitle, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 
 			task.wait(0.2)
 
@@ -2163,10 +2171,6 @@ function BoogaUI:Toggle()
 				TS:Create(v.instance, TweenInfo.new(0.3), {BackgroundTransparency = v.instance.Name == "ToggleBase" and 0.9 or v.instance.Name == "ToggleCircle" and 0.1 or 0}):Play()
 			end
 
-			if v.instance:FindFirstChild("AddIndex") then
-				print(v.Size)
-			end
-
 			TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.Size}):Play()
 		end
 
@@ -2207,7 +2211,7 @@ function BoogaUI:AddInstances(Arg)
 		for idx = 1, #Arg, 2 do
 			local tbl = {instance = Arg[idx], Size = Arg[idx + 1]}
 			table.insert(self.Instances, tbl)
-			
+
 			if Arg[idx]:FindFirstChild("AddIndex") then
 				self.Instances[Arg[idx]] = tbl
 			end
