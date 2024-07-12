@@ -415,7 +415,6 @@ function Sections:AddTextBox(Name, CallBack)
 	})
 
 	local Label = Utility.Create("ImageLabel", {
-		Name = "TextBoxBox",
 		Parent = Holder,
 		BackgroundTransparency = 1,
 		Position = UDim2.new(1, -110, 0.5, -8),
@@ -425,6 +424,11 @@ function Sections:AddTextBox(Name, CallBack)
 		ImageColor3 = Color3.fromRGB(28, 28, 28),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
+	})
+	
+	Utility.Create("StringValue", {
+		Parent = Label,
+		Name = "AddIndex"
 	})
 
 	local TextBox = Utility.Create("TextBox", {
@@ -453,8 +457,10 @@ function Sections:AddTextBox(Name, CallBack)
 	Holder.MouseButton1Click:Connect(function()
 
 		if Label.Size ~= UDim2.new(0, 220, 0, 16) then
+			self.Instances[Label].Size = UDim2.new(0, 220, 0, 16)
 			TS:Create(Label, TweenInfo.new(0.2), {Size = UDim2.new(0, 220, 0, 16), Position = UDim2.new(1, -230, 0.5, -8)}):Play()
 		else
+			self.Instances[Label].Size = UDim2.new(0, 100, 0, 16)
 			TS:Create(Label, TweenInfo.new(0.2), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
 		end
 
@@ -464,7 +470,6 @@ function Sections:AddTextBox(Name, CallBack)
 	UIS.InputBegan:Connect(function(Input)
 
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-
 			if isPointInBounds(Input.Position, Label) then
 				DoubleClick += 1
 
@@ -472,10 +477,12 @@ function Sections:AddTextBox(Name, CallBack)
 					if Label.Size == UDim2.new(0, 100, 0, 16) then
 						DoubleClicked = true
 
+						self.Instances[Label].Size = UDim2.new(0, 220, 0, 16)
 						TS:Create(Label, TweenInfo.new(0.2), {Size = UDim2.new(0, 220, 0, 16), Position = UDim2.new(1, -230, 0.5, -8)}):Play()
 					else
 						DoubleClicked = false
 
+						self.Instances[Label].Size = UDim2.new(0, 100, 0, 16)
 						TS:Create(Label, TweenInfo.new(0.2), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
 					end
 				end
@@ -483,6 +490,9 @@ function Sections:AddTextBox(Name, CallBack)
 				task.wait(0.3)
 
 				DoubleClick = 0
+			elseif Label.Size.X.Offset > 100 and isPointInBounds(Input.Position, Label) then
+				self.Instances[Label].Size = UDim2.new(0, 100, 0, 16)
+				TS:Create(Label, TweenInfo.new(0.2), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
 			end
 		end
 	end)
@@ -497,16 +507,20 @@ function Sections:AddTextBox(Name, CallBack)
 	end)
 
 	TextBox.FocusLost:Connect(function()
+		
+		task.spawn(function()
+			CallBack(TextBox.Text, true)
+		end)
+		
 		if DoubleClicked then
 			DoubleClicked = false
 			task.wait(0.1)
 
+			self.Instances[Label].Size = UDim2.new(1, -110, 0.5, -8)
 			TS:Create(Label, TweenInfo.new(0.2), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
 		end
 
 		TextBox.TextXAlignment = Enum.TextXAlignment.Center
-
-		CallBack(TextBox.Text, true)
 	end)
 
 	return Holder
@@ -1681,7 +1695,7 @@ function BoogaUI:AddPage(Title, Icon)
 
 					for _,instance in pairs(instance:GetDescendants()) do
 
-						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" then
+						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" then
 							continue
 						end
 
@@ -2086,7 +2100,7 @@ function BoogaUI:Toggle()
 				TS:Create(v, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
 			elseif v.ClassName == "TextBox" then
 				TS:Create(v, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-			elseif v.Name ~= "TextBoxBox" and (v.ClassName == "ImageLabel" or v.ClassName == "ImageButton") then
+			elseif (v.ClassName == "ImageLabel" or v.ClassName == "ImageButton") then
 				TS:Create(v, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
 			elseif v.ClassName == "Frame" then
 				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
@@ -2139,13 +2153,7 @@ function BoogaUI:Toggle()
 		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.128, 0)}):Play()
 
 		for _,v in pairs(self.Instances) do
-
-			if v.instance.Name == "TextBoxBox" then
-				v.instance.Position = v.instance.Size.X.Offset < 160 and UDim2.new(1, -110, 0.5, -8) or UDim2.new(1, -230, 0.5, -8)
-				TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.instance.Size.X.Offset < 160 and UDim2.new(0, 100, 0, 16) or UDim2.new(0, 220, 0, 16)}):Play()
-
-				continue
-			elseif v.instance.ClassName == "TextLabel" then
+			if v.instance.ClassName == "TextLabel" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			elseif v.instance.ClassName == "TextBox" then
 				TS:Create(v.instance, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
@@ -2153,6 +2161,10 @@ function BoogaUI:Toggle()
 				TS:Create(v.instance, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 			elseif v.instance.ClassName == "Frame" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {BackgroundTransparency = v.instance.Name == "ToggleBase" and 0.9 or v.instance.Name == "ToggleCircle" and 0.1 or 0}):Play()
+			end
+
+			if v.instance:FindFirstChild("AddIndex") then
+				print(v.Size)
 			end
 
 			TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.Size}):Play()
