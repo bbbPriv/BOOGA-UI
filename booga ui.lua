@@ -2268,4 +2268,12 @@ function BoogaUI:AddInstances(Arg)
 	end
 end
 
+function BoogaUI:Destroy(DestroyPrevious)
+	for _,v in pairs(identifyexecutor and game.CoreGui:GetChildren() or Player.PlayerGui:GetChildren()) do
+		if (DestroyPrevious and v ~= self.MainLabel.Parent) or (v:FindFirstChild("MainLabel") and v.MainLabel:FindFirstChild("TitleHolder")) then
+			v:Destroy()
+		end
+	end
+end
+
 return BoogaUI
