@@ -137,11 +137,31 @@ Sections.__index = Sections
 
 setmetatable(Sections, {__index = Pages})
 
-function Sections:Resize()
-	local Size = 32
+local AllSections = {}
 
-	for _,v in pairs(self.Section.Frame:GetChildren()) do
-		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" then
+function Pages:GetSectionEnv(Section)
+	for _,v in pairs(AllSections) do
+		for k, v2 in pairs(v) do
+			if typeof(v2) == "Instance" and not self[k] then
+				self[k] = v2
+			end
+		end
+	end
+	
+	for k,v in pairs(Sections) do
+		if k == "Resize" then
+			self[k] = v
+		end
+	end
+	
+	return self
+end
+
+function Sections:Resize(Section)
+	local Size = 32
+	
+	for _,v in pairs(Section and Section:GetChildren() or self.Section.Frame:GetChildren()) do
+		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" and v.Visible then
 
 			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
 				Size += 128
@@ -150,9 +170,14 @@ function Sections:Resize()
 			end
 		end
 	end
-
-	self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size)
-	self.Section.Size = UDim2.new(1, -16, 0, Size)
+	
+	if not Section then
+		self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size)
+		self.Section.Size = UDim2.new(1, -16, 0, Size)
+	else
+		self.Instances[Section.Parent].Size = UDim2.new(1, -16, 0, Size)
+		Section.Parent.Size = UDim2.new(1, -16, 0, Size)
+	end
 
 	return Size
 end
@@ -1254,7 +1279,10 @@ function Pages:AddSection(Name)
 	})
 
 
-	return setmetatable({SectionPage = self.Page, Section = Section}, Sections)
+	local tbl = {SectionPage = self.Page, Section = Section}
+	table.insert(AllSections, tbl)
+	
+	return setmetatable(tbl, Sections)
 end
 
 function Pages:ResizePage(DropdownCall)
@@ -1320,6 +1348,12 @@ function Pages:AddSearchBar()
 					end
 
 				end
+				
+				local self = self:GetSectionEnv(v)
+				
+				self:Resize()
+				
+				self:ResizePage()
 			end
 		end
 	end)
