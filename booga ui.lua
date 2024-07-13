@@ -1324,10 +1324,18 @@ function Pages:AddSearchBar()
 
 		for _, v in pairs(self.Page:GetChildren()) do
 			if v.ClassName == "ImageLabel" then
+				local Invisible = true
+				
 				for _, v2 in pairs(v.Frame:GetChildren()) do
 					if Bar.TextBox.Text == "" and v2.ClassName ~= "UIListLayout" then
 						v2.Visible = true
+						v.Visible = true
+						Invisible = false
 						continue
+					end
+					
+					if v2.ClassName ~= "UIListLayout" and v2.ClassName ~= "TextLabel" and v2.Visible then
+						Invisible = false
 					end
 
 					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame.TextLabel
@@ -1347,6 +1355,11 @@ function Pages:AddSearchBar()
 						end
 					end
 
+				end
+				
+				if Invisible then
+					v.Visible = false
+					continue
 				end
 				
 				local self = self:GetSectionEnv(v)
