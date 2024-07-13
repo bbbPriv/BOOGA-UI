@@ -1571,7 +1571,7 @@ function BoogaUI:AddPage(Title, Icon)
 		["TextColor3"] = Color3.fromRGB(185, 185, 185),
 		["Size"] = UDim2.new(1, -10, 1, 0),
 		["TextXAlignment"] = Enum.TextXAlignment.Left,
-		["Position"] = UDim2.fromScale(0.25, 0)
+		["Position"] = Icon and UDim2.fromScale(0.25, 0) or UDim2.fromScale(0.05, 0)
 	})
 
 	local Icon = Utility.Create("ImageLabel", {
