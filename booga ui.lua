@@ -596,8 +596,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 	local Label = Utility.Create("ImageLabel", {
 		Parent = Holder,
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -110, 0.5, -8),
-		Size = UDim2.new(0, 100, 0, 16),
+		Position = UDim2.new(1, -45, 0.5, -8),
+		Size = UDim2.new(0, 35, 0, 16),
 		ZIndex = 2,
 		Image = "rbxassetid://5028857472",
 		ImageColor3 = Color3.fromRGB(28, 28, 28),
@@ -638,6 +638,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 	end)
 
 	Holder.MouseButton1Click:Connect(function()
+		TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
+		
 		if KeyLabel.Text ~= "..." then
 			Old = KeyLabel.Text
 		end
@@ -656,10 +658,14 @@ function Sections:AddKeybind(Name, Key, Callback)
 			if not Selecting then
 				Key = Enum.KeyCode[Old]
 				KeyLabel.Text = Key.Name
+				
+				TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 35, 0, 16), Position = UDim2.new(1, -45, 0.5, -8)}):Play()
 
 				break
 			end
 		end
+		
+		TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 35, 0, 16), Position = UDim2.new(1, -45, 0.5, -8)}):Play()
 
 		if not Selecting then
 
@@ -692,6 +698,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 				Selecting = false
 
 				KeyLabel.Text = Old
+				
+				TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 35, 0, 16), Position = UDim2.new(1, -45, 0.5, -8)}):Play()
 			end
 		end
 	end)
