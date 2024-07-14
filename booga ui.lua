@@ -1920,6 +1920,12 @@ function BoogaUI:AddSeparator(YOffset)
 	return Separator
 end
 
+function BoogaUI:UpdateTitle(Title)
+	self.MainLabel.TitleHolder.Title.Text = Title
+	
+	return self.MainLabel.TitleHolder.Title
+end
+
 function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
 	local Clicked
 
