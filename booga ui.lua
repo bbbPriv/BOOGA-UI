@@ -402,7 +402,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	return Toggle
 end
 
-function Sections:AddTextBox(Name, Text, CallBack)
+function Sections:AddTextBox(Name, CallBack)
 
 	local DoubleClick = 0
 
@@ -469,14 +469,6 @@ function Sections:AddTextBox(Name, Text, CallBack)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
-	
-	if Text then
-		TextBox.Text = Text
-		
-		task.spawn(function()
-			CallBack(TextBox.Text, false)
-		end)
-	end
 
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
 
