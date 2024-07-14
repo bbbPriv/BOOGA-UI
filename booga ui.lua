@@ -196,7 +196,8 @@ function Sections:AddButton(Name, Callback)
 		Size = UDim2.new(0.950, 0, 0, 30),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextTransparency = 0.1
+		TextTransparency = 0.1,
+		AutoButtonColor = false
 	})
 
 	self:Resize()
@@ -1382,8 +1383,22 @@ function Pages:AddSearchBar()
 	return self
 end
 
+function Pages:AddSeparator(YOffset)
+	local Separator = Utility.Create("Frame", {
+		Name = "Separator",
+		Parent = self.Page,
+		ZIndex = 2,
+		Size = UDim2.new(0.950, 0, 0, YOffset),
+		BackgroundTransparency = 1
+	})
 
-function BoogaUI.New(Name)
+	self.SectionPage = self.Page
+	self:ResizePage()
+
+	return Separator
+end
+
+function BoogaUI.New(Name, TogglePages)
 
 	if not Name then
 		error("No Name argument")
@@ -1536,6 +1551,62 @@ function BoogaUI.New(Name)
 			TS:Create(MainLabel, TweenInfo.new(0.090, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0), {Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)}):Play()
 		end
 	end)
+	
+	if TogglePages then
+		local Hidden = false
+		
+		local Button = Utility.Create("TextButton", {
+			Parent = MainLabel,
+			BackgroundTransparency = 1,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BorderSizePixel = 0,
+			Size = UDim2.new(0.03, 0,1, 0),
+			Position = UDim2.fromScale(0.19, 0.127),
+			ZIndex = 3,
+			AutoButtonColor = false,
+			Text = "",
+		})
+		
+		Button.MouseButton1Click:Connect(function()
+			Hidden = not Hidden
+			
+			if Hidden then
+				TS:Create(Pages, TweenInfo.new(0.2), {Size = UDim2.fromScale(0, 0.871)}):Play()
+				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.fromScale(0.02, 1), Position = UDim2.fromScale(0, 0.127)}):Play()
+				
+				for _,v in pairs(PagesScrolling:GetDescendants()) do
+					if v.ClassName == "TextLabel" then
+						TS:Create(v, TweenInfo.new(0.150), {TextTransparency = 1}):Play()
+					elseif v.ClassName == "ImageLabel" then
+						TS:Create(v, TweenInfo.new(0.150), {ImageTransparency = 1}):Play()
+					end
+				end
+				
+				for _,v in pairs(MainLabel:GetChildren()) do
+					if v.ClassName == "ScrollingFrame" then
+						TS:Create(v, TweenInfo.new(0.3), {Size = UDim2.new(0.973, 0, 1, -56), Position = UDim2.new(0.02, 1.5, 0.14, 0)}):Play()
+					end
+				end
+			else
+				TS:Create(Pages, TweenInfo.new(0.3), {Size = UDim2.fromScale(0.22, 0.871)}):Play()
+				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.fromScale(0.03, 1), Position = UDim2.fromScale(0.19, 0.127)}):Play()
+				
+				for _,v in pairs(PagesScrolling:GetDescendants()) do
+					if v.ClassName == "TextLabel" then
+						TS:Create(v, TweenInfo.new(0.150), {TextTransparency = 0}):Play()
+					elseif v.ClassName == "ImageLabel" then
+						TS:Create(v, TweenInfo.new(0.150), {ImageTransparency = 0.5}):Play()
+					end
+				end
+				
+				for _,v in pairs(MainLabel:GetChildren()) do
+					if v.ClassName == "ScrollingFrame" then
+						TS:Create(v, TweenInfo.new(0.2), {Size = UDim2.new(0.973, -142, 1, -56), Position = UDim2.new(0.252, 1.5, 0.14, 0)}):Play()
+					end
+				end
+			end
+		end)
+	end
 
 	return BoogaUI
 end
@@ -1824,6 +1895,29 @@ function BoogaUI:AddPage(Title, Icon)
 	BoogaUI.LastPage = Button
 
 	return setmetatable({Page = Page}, Pages)
+end
+
+function BoogaUI:AddSeparator(YOffset)
+	local Separator = Utility.Create("Frame", {
+		Name = "Separator",
+		Parent = self.PagesScrolling,
+		ZIndex = 2,
+		Size = UDim2.new(0.950, 0, 0, YOffset),
+		BackgroundTransparency = 1
+	})
+	
+	local Size = 0
+
+	for _, section in pairs(self.PagesScrolling:GetChildren()) do
+		if section.ClassName == "TextButton" or section.Name == "Separator" then
+			Size += section.AbsoluteSize.Y + 10
+		end
+	end
+
+	self.PagesScrolling.CanvasSize = UDim2.fromOffset(0, Size)
+	self.PagesScrolling.ScrollBarImageTransparency = Size > self.PagesScrolling.AbsoluteSize.Y and 0 or 1
+
+	return Separator
 end
 
 function BoogaUI:Notify(Title, Text, Position, Direction, Callback)
