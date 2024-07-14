@@ -906,6 +906,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	local Last = 0
 
 	local Dont = false
+	local Open = false
 
 	local Holder = Utility.Create("Frame", {
 		Name = "Dropdown",
@@ -955,7 +956,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				local Button = Utility.Create("TextButton", {
 					Parent = ScrollingFrame,
 					Text = v,
-					TextSize = 14,
+					TextSize = 16,
+					TextWrapped = true,
 					Font = Enum.Font.Arial,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					TextTransparency = 0.1,
@@ -1006,11 +1008,11 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 					Button.TextSize = 0
 
-					local Effect = TS:Create(Button, TweenInfo.new(0.2), {TextSize = 16})
+					local Effect = TS:Create(Button, TweenInfo.new(0.2), {TextSize = 18})
 					Effect:Play()
 
 					Effect.Completed:Connect(function()
-						TS:Create(Button, TweenInfo.new(0.1), {TextSize = 12}):Play()
+						TS:Create(Button, TweenInfo.new(0.1), {TextSize = 16}):Play()
 					end)
 
 					Pressing = true
@@ -1078,6 +1080,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	})
 
 	self:AddInstances({Holder, Holder.Size, Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
+	
+	Holder.MouseEnter:Connect(function()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and 150 or 29)}):Play()
+	end)
+
+	Holder.MouseLeave:Connect(function()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and 150 or 30)}):Play()
+	end)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 
@@ -1153,7 +1163,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Dropping = true
 
 		if Holder2.ImageButton.Rotation == 0 then
-
+			Open = true
+			
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 180}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
 
@@ -1169,6 +1180,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			self:ResizePage(true)
 
 		else
+			
+			Open = false
 
 			for _,v in pairs(ScrollingFrame:GetChildren()) do
 				if v.ClassName == "TextButton" then
@@ -1415,6 +1428,8 @@ function BoogaUI.New(Name, TogglePages)
 	BoogaUI.Pages = {}
 
 	BoogaUI.LastPageButton = false
+	
+	BoogaUI.ChangingPage = false
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
@@ -1486,6 +1501,11 @@ function BoogaUI.New(Name, TogglePages)
 		["BorderSizePixel"] = 0,
 		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
 		["Image"] = "rbxassetid://5012534273"
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Top,
+		CornerRadius = UDim.new(0, 5)
 	})
 
 	Utility.Create("TextLabel", {
@@ -1754,7 +1774,12 @@ function BoogaUI:AddPage(Title, Icon)
 	end)
 
 	Button.MouseButton1Click:Connect(function()
-
+		print(self.ChangingPage)
+		if self.ChangingPage then
+			return
+		end
+		
+		self.ChangingPage = true
 
 		if self.LastPageButton then 
 			self.LastPageButton.Text = self.LastPageButton.Text:gsub("<b>", ""):gsub("</b>", "")
@@ -1775,6 +1800,7 @@ function BoogaUI:AddPage(Title, Icon)
 		end)
 
 		if self.FocusedPage == Page then
+			self.ChangingPage = false
 			return
 		end
 
@@ -1818,6 +1844,13 @@ function BoogaUI:AddPage(Title, Icon)
 
 					elseif instance.ClassName == "TextLabel" then
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), TextTransparency = 1}):Play()
+						
+						local OldTextSize = instance.TextSize
+						TS:Create(instance, TweenInfo.new(0.3), {TextTransparency = 1, TextSize = OldTextSize - 2}):Play()
+
+						task.delay(0.305, function()
+							TS:Create(instance, TweenInfo.new(0.3), {TextSize = OldTextSize}):Play()
+						end)
 
 					else
 						if instance.Name == "Title" or instance.Name == "TextBox" or instance.Name == "KeyLabel" then
@@ -1890,6 +1923,9 @@ function BoogaUI:AddPage(Title, Icon)
 
 		Page.Visible = true
 
+		task.wait(0.3)
+		
+		self.ChangingPage = false
 	end)
 
 	BoogaUI.LastPage = Button
