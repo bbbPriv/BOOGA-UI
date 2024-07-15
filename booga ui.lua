@@ -166,7 +166,7 @@ function Sections:Resize(Section)
 			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
 				Size += 128
 			else
-				Size += v.AbsoluteSize.Y + 8
+				Size += v.AbsoluteSize.Y + 5
 			end
 		end
 	end
@@ -195,7 +195,7 @@ function Sections:AddButton(Name, Callback)
 		Text = Name,
 		TextSize = 16,
 		Font = Enum.Font.Arial,
-		Size = UDim2.new(0.950, 0, 0, 30),
+		Size = UDim2.new(0.950, 0, 0, 31),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0.1,
@@ -206,8 +206,8 @@ function Sections:AddButton(Name, Callback)
 		Parent = Button,
 		BackgroundTransparency = 1,
 		BorderColor3 = Color3.fromRGB(27, 42, 53),
-		Size = UDim2.fromScale(0.07, 0.85),
-		Position = UDim2.fromScale(0.92, 0),
+		Size = UDim2.fromScale(0.06, 0.68),
+		Position = UDim2.fromScale(0.93, 0.12),
 		Image = "rbxassetid://3926305904",
 		ImageTransparency = 0.05,
 		ImageRectOffset = Vector2.new(84, 204),
@@ -294,7 +294,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Parent = self.Section.Frame,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
-		Size = UDim2.new(0.950, 0, 0, 30),
+		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
 
@@ -426,16 +426,18 @@ function Sections:AddTextBox(Name, Callback)
 
 	local DoubleClicked = false
 
-	local Holder = Utility.Create("ImageButton", {
+	local Holder = Utility.Create("Frame", {
+		Name = "Toggle",
 		Parent = self.Section.Frame,
-		BackgroundTransparency = 1,
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
-		Size = UDim2.new(0.950, 0, 0, 30),
+		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
-		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(15, 15, 15),
-		ScaleType = Enum.ScaleType.Slice,
-		SliceCenter = Rect.new(2, 2, 298, 298)
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Holder,
+		CornerRadius = UDim.new(0, 4)
 	})
 
 	self:Resize()
@@ -487,18 +489,26 @@ function Sections:AddTextBox(Name, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
+	
+	local Button = Utility.Create("ImageButton", {
+		Parent = Holder,
+		ZIndex = 2,
+		Size = Holder.Size,
+		ImageTransparency = 1,
+		BackgroundTransparency = 1
+	})
 
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
 
-	Holder.MouseEnter:Connect(function()
+	Button.MouseEnter:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
 	end)
 
-	Holder.MouseLeave:Connect(function()
+	Button.MouseLeave:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
 	end)
 
-	Holder.MouseButton1Click:Connect(function()
+	Button.MouseButton1Click:Connect(function()
 
 		if Label.Size ~= UDim2.new(0, 220, 0, 16) then
 			self.Instances[Label].Size = UDim2.new(0, 220, 0, 16)
@@ -580,23 +590,23 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 	local Stop = false
 
-	local Holder = Utility.Create("ImageButton", {
+	local Holder = Utility.Create("Frame", {
+		Name = "Toggle",
 		Parent = self.Section.Frame,
-		BackgroundTransparency = 1,
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
-		Size = UDim2.new(0.950, 0, 0, 30),
+		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
-		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(15, 15, 15),
-		ScaleType = Enum.ScaleType.Slice,
-		SliceCenter = Rect.new(2, 2, 298, 298)
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Holder,
+		CornerRadius = UDim.new(0, 4)
 	})
 
 	self:Resize()
 
 	self:ResizePage()
-
-	self:AddInstances({Holder, Holder.Size})
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
@@ -639,14 +649,22 @@ function Sections:AddKeybind(Name, Key, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
+	
+	local Button = Utility.Create("ImageButton", {
+		Parent = Holder,
+		ZIndex = 2,
+		Size = Holder.Size,
+		ImageTransparency = 1,
+		BackgroundTransparency = 1
+	})
 
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, KeyLabel, KeyLabel.Size})
 
-	Holder.MouseEnter:Connect(function()
+	Button.MouseEnter:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
 	end)
 
-	Holder.MouseLeave:Connect(function()
+	Button.MouseLeave:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
 	end)
 
@@ -658,7 +676,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		end
 	end)
 
-	Holder.MouseButton1Click:Connect(function()
+	Button.MouseButton1Click:Connect(function()
 		TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
 		
 		if KeyLabel.Text ~= "..." then
@@ -938,7 +956,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	local Holder = Utility.Create("Frame", {
 		Name = "Dropdown",
 		Parent = self.Section.Frame,
-		Size = UDim2.new(0.950, 0, 0, 30),
+		Size = UDim2.new(0.950, 0, 0, 31),
 		BackgroundTransparency = 1
 	})
 
@@ -1305,7 +1323,7 @@ function Pages:AddSection(Name)
 		["Parent"] = Section.Frame,
 		["SortOrder"] = Enum.SortOrder.LayoutOrder,
 		["HorizontalAlignment"] = Enum.HorizontalAlignment.Center
-	}).Padding = UDim.new(0, 8)
+	}).Padding = UDim.new(0, 5)
 
 	Utility.Create("UIListLayout", {
 		["Parent"] = self.Page[Name],
