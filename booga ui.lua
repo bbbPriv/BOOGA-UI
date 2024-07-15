@@ -229,13 +229,13 @@ function Sections:AddButton(Name, Callback)
 	Button.MouseEnter:Connect(function()
 		Hovering = true
 
-		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
+		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 	end)
 
 	Button.MouseLeave:Connect(function()
 		Hovering = false
 
-		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 
 		if Button.TextSize == 10 then
 			TS:Create(Button, TweenInfo.new(0.1), {TextSize = 16}):Play()
@@ -243,7 +243,7 @@ function Sections:AddButton(Name, Callback)
 	end)
 
 	Button.MouseButton1Down:Connect(function()
-		TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.900, 0, 0, 26)}):Play()
+		TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.900, 0, 0, 27)}):Play()
 
 		TS:Create(Button, TweenInfo.new(0.1), {TextSize = 14}):Play()
 	end)
@@ -256,14 +256,14 @@ function Sections:AddButton(Name, Callback)
 
 		task.spawn(Callback)
 
-		local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 24)})
+		local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 25)})
 		Tween:Play()
 
 		Tween.Completed:Connect(function()
 			if Hovering then
-				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 28)}):Play()
+				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 			else
-				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 			end
 		end)
 
@@ -376,11 +376,11 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	self:AddInstances({Toggle, Toggle.Size, Toggle.Title, Toggle.Title.Size, Toggle.ToggleBase, Toggle.ToggleBase.Size, Toggle.ToggleBase.ToggleCircle, Toggle.ToggleBase.ToggleCircle.Size})
 
 	Toggle.MouseEnter:Connect(function()
-		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
+		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 	end)
 
 	Toggle.MouseLeave:Connect(function()
-		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
@@ -501,11 +501,11 @@ function Sections:AddTextBox(Name, Callback)
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
 
 	Button.MouseEnter:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 	end)
 
 	Button.MouseLeave:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
@@ -661,11 +661,11 @@ function Sections:AddKeybind(Name, Key, Callback)
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, KeyLabel, KeyLabel.Size})
 
 	Button.MouseEnter:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 	end)
 
 	Button.MouseLeave:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
 	UIS.InputBegan:Connect(function(Input, GME)
@@ -1127,11 +1127,11 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	self:AddInstances({Holder, Holder.Size, Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
 	
 	Holder.MouseEnter:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and 150 or 29)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and 150 or 30)}):Play()
 	end)
 
 	Holder.MouseLeave:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and 150 or 30)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and 150 or 31)}):Play()
 	end)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -1173,7 +1173,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Parent = Holder,
 		BackgroundColor3 = Color3.fromRGB(17, 17, 17),
 		BorderSizePixel = 0,
-		Size = UDim2.new(0.97, 0, 0, 30),
+		Size = UDim2.new(0.97, 0, 0, 31),
 		Position = UDim2.fromScale(0.010, 0),
 		ZIndex = 2,
 	})
@@ -1249,8 +1249,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 0}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
 
-			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
-			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 30), BackgroundTransparency = 1}):Play()
+			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 31), BackgroundTransparency = 1}):Play()
 			TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 30)}):Play()
 
 		end
