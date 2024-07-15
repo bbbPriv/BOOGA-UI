@@ -183,6 +183,8 @@ function Sections:Resize(Section)
 end
 
 function Sections:AddButton(Name, Callback)
+	Callback = Callback or function() end
+	
 	local Pressing = false
 
 	local Hovering
@@ -198,6 +200,19 @@ function Sections:AddButton(Name, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0.1,
 		AutoButtonColor = false
+	})
+	
+	Utility.Create("ImageLabel", {
+		Parent = Button,
+		BackgroundTransparency = 1,
+		BorderColor3 = Color3.fromRGB(27, 42, 53),
+		Size = UDim2.fromScale(0.07, 0.85),
+		Position = UDim2.fromScale(0.92, 0),
+		Image = "rbxassetid://3926305904",
+		ImageTransparency = 0.05,
+		ImageRectOffset = Vector2.new(84, 204),
+		ImageRectSize = Vector2.new(36, 36),
+		ZIndex = 2
 	})
 
 	self:Resize()
@@ -270,6 +285,8 @@ function Sections:AddButton(Name, Callback)
 end
 
 function Sections:AddToggle(Name, IsEnabled, Callback)
+	Callback = Callback or function() end
+	
 	local Switching = false
 
 	local Toggle = Utility.Create("Frame", {
@@ -402,7 +419,8 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	return Toggle
 end
 
-function Sections:AddTextBox(Name, CallBack)
+function Sections:AddTextBox(Name, Callback)
+	Callback = Callback or function() end
 
 	local DoubleClick = 0
 
@@ -526,7 +544,7 @@ function Sections:AddTextBox(Name, CallBack)
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 
 		task.spawn(function()
-			CallBack(TextBox.Text, false)
+			Callback(TextBox.Text, false)
 		end)
 
 		Pop(Label, 4)
@@ -535,7 +553,7 @@ function Sections:AddTextBox(Name, CallBack)
 	TextBox.FocusLost:Connect(function()
 
 		task.spawn(function()
-			CallBack(TextBox.Text, true)
+			Callback(TextBox.Text, true)
 		end)
 
 		if DoubleClicked then
@@ -553,6 +571,8 @@ function Sections:AddTextBox(Name, CallBack)
 end
 
 function Sections:AddKeybind(Name, Key, Callback)
+	Callback = Callback or function() end
+	
 	local Old = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()].Name or (Key and Key.Name or "None")
 	Key = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()] or (Key and Key.Name or "None")
 
@@ -597,8 +617,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 	local Label = Utility.Create("ImageLabel", {
 		Parent = Holder,
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -45, 0.5, -8),
-		Size = UDim2.new(0, 35, 0, 16),
+		Position = UDim2.new(1, -52, 0.5, -8),
+		Size = UDim2.new(0, 42, 0, 16),
 		ZIndex = 2,
 		Image = "rbxassetid://5028857472",
 		ImageColor3 = Color3.fromRGB(28, 28, 28),
@@ -660,13 +680,17 @@ function Sections:AddKeybind(Name, Key, Callback)
 				Key = Enum.KeyCode[Old]
 				KeyLabel.Text = Key.Name
 				
-				TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 35, 0, 16), Position = UDim2.new(1, -45, 0.5, -8)}):Play()
+				if Key.Name:len() <= 5 then
+					TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
+				end
 
 				break
 			end
 		end
 		
-		TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 35, 0, 16), Position = UDim2.new(1, -45, 0.5, -8)}):Play()
+		if Key.KeyCode.Name:len() <= 5 then
+			TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
+		end
 
 		if not Selecting then
 
@@ -700,7 +724,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 				KeyLabel.Text = Old
 				
-				TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 35, 0, 16), Position = UDim2.new(1, -45, 0.5, -8)}):Play()
+				TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
 			end
 		end
 	end)
@@ -709,6 +733,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)	
+	Callback = Callback or function() end
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -902,6 +927,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Callback)
 end
 
 function Sections:AddDropdown(Name, Entries, Callback)
+	Callback = Callback or function() end
+	
 	local Dropping = false
 	local Last = 0
 
