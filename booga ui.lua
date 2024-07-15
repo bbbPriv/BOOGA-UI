@@ -45,6 +45,7 @@ local function Pop(instance, Offset)
 end
 
 local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
+	warn(Increment)
 	local Old = Value
 	
 	local percent = (Player:GetMouse().X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X
@@ -771,10 +772,6 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	FixValues, Callback = TypeCheck(FixValues, Callback, false)
 	Decimal, Callback = TypeCheck(Decimal, Callback, {false, 1})
 	Increment, Callback = TypeCheck(Increment, Callback, 1)
-	
-	if Decimal[1] == true then
-		Increment = Decimal[2]
-	end
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
