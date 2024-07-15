@@ -44,7 +44,9 @@ local function Pop(instance, Offset)
 	instance.ImageTransparency = 0
 end
 
-local function UpdateSlider(Bar, Value, Min, Max, Decimal, Increment)
+local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
+	local Old = Value
+	
 	local percent = (Player:GetMouse().X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X
 
 	if Value then
@@ -58,7 +60,8 @@ local function UpdateSlider(Bar, Value, Min, Max, Decimal, Increment)
 		Value = math.floor((Value / Increment) + 0.5) * Increment
 	end
 
-	Value = not Decimal and math.floor(Value) or string.format("%." .. Decimal[2] .. "f", Value)
+	Value = FixValues and Value or Old or Value
+	Value = typeof(Decimal) ~= "table" and math.floor(Value) or (Decimal[1] == true and string.format("%." .. Decimal[2] .. "f", Value)) or math.floor(Value)
 
 	Bar.Parent.TextBox.Text = Value
 	BoogaUI.Instances[Bar.Fill].Size = UDim2.new(percent, 0, 1 ,0)
@@ -115,6 +118,14 @@ end
 
 local function StartsWith(str, start)
 	return string.match(str, "^" .. start) ~= nil
+end
+
+local function TypeCheck(Check, Callback, Default)
+	if typeof(Check) == "function" then
+		return Default, Check
+	end
+	
+	return Check, Callback
 end
 
 function Utility.Press(instance, Duration)
@@ -756,7 +767,14 @@ function Sections:AddKeybind(Name, Key, Callback)
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment, Callback)	
-	Callback = Callback or function() end
+	
+	FixValues, Callback = TypeCheck(FixValues, Callback, false)
+	Decimal, Callback = TypeCheck(Decimal, Callback, {false, 1})
+	Increment, Callback = TypeCheck(Increment, Callback, 1)
+	
+	if Decimal[1] == true then
+		Increment = Decimal[2]
+	end
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -856,7 +874,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 	local dragging = false
 
-	UpdateSlider(Bar, Value, Min, Max, Decimal, Increment)
+	UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
 
 	Holder.MouseEnter:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 49)}):Play()
@@ -880,7 +898,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
-			Callback(UpdateSlider(Bar, nil, Min, Max, Decimal, Increment))		
+			Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))		
 
 			repeat task.wait() until not dragging
 
@@ -911,10 +929,10 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
-			local Num = UpdateSlider(Bar, nil, Min, Max, Decimal, Increment)
+			local Num = UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment)
 
 			if Num ~= Old then
-				Callback(UpdateSlider(Bar, nil, Min, Max, Decimal, Increment))
+				Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
 			end
 
 			Old = Num
@@ -942,7 +960,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 				Box.Text = Num > Max and Max or Num < Min and Min or Box.Text
 			end
 
-			Callback(UpdateSlider(Bar, Box.Text, Min, Max, Decimal, Increment))
+			Callback(UpdateSlider(Bar, Box.Text, Min, Max, FixValues, Decimal, Increment))
 		end
 	end)
 
