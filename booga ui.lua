@@ -45,7 +45,6 @@ local function Pop(instance, Offset)
 end
 
 local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
-	warn(Increment)
 	local Old = Value
 	
 	local percent = (Player:GetMouse().X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X
@@ -1839,7 +1838,6 @@ function BoogaUI:AddPage(Title, Icon)
 	end)
 
 	Button.MouseButton1Click:Connect(function()
-		print(self.ChangingPage)
 		if self.ChangingPage then
 			return
 		end
