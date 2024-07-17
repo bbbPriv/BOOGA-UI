@@ -1773,7 +1773,7 @@ function BoogaUI:AddPage(Title, Icon)
 		Size = UDim2.fromScale(0.91, 1),
 		Position = UDim2.fromScale(0.03, 0.04),
 		BackgroundColor3 = Color3.fromRGB(85, 85, 85),
-		BackgroundTransparency = self.SelectorMovement and 0.8 or 1,
+		BackgroundTransparency = (not self.FocusedPage and self.SelectorMovement) and 0.8 or 1,
 	})
 	
 	if not self.FocusedPage then
