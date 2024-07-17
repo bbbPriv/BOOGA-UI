@@ -169,18 +169,31 @@ function Pages:GetSectionEnv(Section)
 	return self
 end
 
-function Sections:Resize(Section)
+function Sections:Resize(Section, DropdownSize)
+	local Stop = false
 	local Size = 32
 
 	for _,v in pairs(Section and Section:GetChildren() or self.Section.Frame:GetChildren()) do
 		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" and v.Visible then
 
 			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
-				Size += 152
+				Size += DropdownSize and DropdownSize * 40 + 32 or 152
+				
+				if DropdownSize then
+					self.Instances[self.Section].Size = UDim2.new(1, -16, 0, DropdownSize == 1000 and Size - (DropdownSize and DropdownSize * 40) or Size)
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = UDim2.new(1, -16, 0, DropdownSize == 1000 and Size - (DropdownSize and DropdownSize * 40) or Size)}):Play()
+					Stop = true
+
+					break
+				end
 			else
 				Size += v.AbsoluteSize.Y + 5
 			end
 		end
+	end
+	
+	if Stop then
+		return
 	end
 
 	if not Section then
@@ -1284,7 +1297,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 			end
 
-			self:Resize()
+			self:Resize(nil, #Entries)
 			self:ResizePage(true)
 
 		else
@@ -1302,10 +1315,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				end
 			end
 
-			local Size = self:Resize()
-
-			self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - 120)
-			self.Section.Size = UDim2.new(1, -16, 0, Size - 120)
+			self:Resize(nil, 1000)
 
 			self:ResizePage()
 
@@ -1504,7 +1514,7 @@ function Pages:AddSearchBar()
 	return self
 end
 
-function BoogaUI.New(Name, TogglePages)
+function BoogaUI.New(Name, TogglePages, SelectorMovement)
 
 	if not Name then
 		error("No Name argument")
@@ -1521,10 +1531,14 @@ function BoogaUI.New(Name, TogglePages)
 	BoogaUI.Pages = {}
 	
 	BoogaUI.Orders = {}
+	
+	BoogaUI.SelectorMovement = SelectorMovement
 
 	BoogaUI.LastPageButton = false
 	
 	BoogaUI.LastSelected = false
+	
+	BoogaUI.LastButton = false
 
 	BoogaUI.ChangingPage = false
 
@@ -1753,31 +1767,33 @@ function BoogaUI:AddPage(Title, Icon)
 	
 	self.Orders[Button] = Size
 	
+	local Selected = Utility.Create("Frame", {
+		Name = "Selector",
+		Parent = Button,
+		Size = UDim2.fromScale(0.91, 1),
+		Position = UDim2.fromScale(0.03, 0.04),
+		BackgroundColor3 = Color3.fromRGB(85, 85, 85),
+		BackgroundTransparency = self.SelectorMovement and 0.8 or 1,
+	})
+	
 	if not self.FocusedPage then
-		local Selected = Utility.Create("Frame", {
-			Parent = Button,
-			Size = UDim2.fromScale(0.93, 1),
-			Position = UDim2.fromScale(0.03, 0.04),
-			BackgroundColor3 = Color3.fromRGB(85, 85, 85),
-			BackgroundTransparency = not self.FocusedPage and 0.8 or 1,
-		})
-	
 		self.Selected = Selected
-	
-		Utility.Create("UICorner", {
-			Parent = Selected,
-			CornerRadius = UDim.new(0, 4)
-		})
-		
-		Utility.Create("UIStroke", {
-			Parent = Selected,
-			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-			Thickness = 1.5,
-			Color = Color3.fromRGB(135, 135, 135),
-			Enabled = not self.FocusedPage and true or false
-		})
 	end
-
+	
+	Utility.Create("UICorner", {
+		Parent = Selected,
+		CornerRadius = UDim.new(0, 4)
+	})
+		
+	Utility.Create("UIStroke", {
+		Parent = Selected,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = not self.FocusedPage and 1.5 or 0,
+		Color = Color3.fromRGB(135, 135, 135),
+		Transparency = not self.FocusedPage and 0 or 1,
+		Enabled = true,
+	})
+	
 	local Size = 0
 
 	for _, section in pairs(self.PagesScrolling:GetChildren()) do
@@ -1910,7 +1926,14 @@ function BoogaUI:AddPage(Title, Icon)
 
 		self.ChangingPage = true
 		
-		TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * 1.385)}):Play()
+		if self.SelectorMovement then
+			TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * 1.385)}):Play()
+		else
+			TS:Create(self.Selected.UIStroke, TweenInfo.new(0.5), {Thickness = 0, Transparency = 1}):Play()
+			TS:Create(Button.Selector.UIStroke, TweenInfo.new(0.5), {Thickness = 1.5, Transparency = 0}):Play()
+			
+			self.Selected = Selected
+		end
 
 		if self.LastPageButton then 
 			self.LastPageButton.Text = self.LastPageButton.Text:gsub("<b>", ""):gsub("</b>", "")
