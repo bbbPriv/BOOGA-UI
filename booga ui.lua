@@ -150,6 +150,7 @@ Sections.__index = Sections
 setmetatable(Sections, {__index = Pages})
 
 local AllSections = {}
+local CountedDropdowns = {}
 
 function Pages:GetSectionEnv(Section)
 	for _,v in pairs(AllSections) do
@@ -175,8 +176,17 @@ function Sections:Resize(Section, DropdownSize)
 
 	for _,v in pairs(Section and Section:GetChildren() or self.Section.Frame:GetChildren()) do
 		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" and v.Visible then
-
+			
 			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
+				
+				local DropdownSize = 0
+				
+				for _,v in v.List.ScrollingFrame:GetChildren() do
+					if v.ClassName == "TextButton" then
+						DropdownSize += 1
+					end
+				end
+				
 				Size += DropdownSize <= 3 and DropdownSize * 40 + 32 or DropdownSize > 3 and 160 or 152
 			else
 				Size += v.AbsoluteSize.Y + 5
@@ -1310,6 +1320,10 @@ function Sections:AddDropdown(Name, Entries, Callback)
 						v:Destroy()
 					end)					
 				end
+			end
+			
+			for k,v in pairs(CountedDropdowns) do
+				CountedDropdowns[k] = nil
 			end
 
 			local Size = self:Resize(nil, #Entries)
