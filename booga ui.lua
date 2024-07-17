@@ -1172,7 +1172,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			return
 		end
 
-		if Holder.List.Size.Y.Offset == 30 then
+		if Holder.List.Size.Y.Offset == 31 then
 			return
 		end
 
