@@ -178,14 +178,6 @@ function Sections:Resize(Section, DropdownSize)
 
 			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
 				Size += DropdownSize and DropdownSize * 40 + 32 or 152
-				
-				if DropdownSize then
-					self.Instances[self.Section].Size = UDim2.new(1, -16, 0, DropdownSize == 1000 and Size - (DropdownSize and DropdownSize * 40) or Size)
-					TS:Create(self.Section, TweenInfo.new(0.3), {Size = UDim2.new(1, -16, 0, DropdownSize == 1000 and Size - (DropdownSize and DropdownSize * 40) or Size)}):Play()
-					Stop = true
-
-					break
-				end
 			else
 				Size += v.AbsoluteSize.Y + 5
 			end
@@ -1070,21 +1062,22 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = Color3.fromRGB(41, 41, 41),
+					Position = UDim2.fromScale(0.025, 0.17),
 					BackgroundTransparency = 0.1
 				})
 
-				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)}):Play()
 
 				Button.MouseEnter:Connect(function()
 					Hovering = true
 
-					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 29)}):Play()
+					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, #Entries == 1 and 25 or 29)}):Play()
 				end)
 
 				Button.MouseLeave:Connect(function()
 					Hovering = false
 
-					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)}):Play()
 				end)
 
 				Button.MouseButton1Click:Connect(function()
@@ -1101,14 +1094,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 					Holder2.TextBox.Text = v
 
-					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 30)})
+					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, #Entries == 1 and 26 or 30)})
 					Tween:Play()
 
 					Tween.Completed:Connect(function()
 						if Hovering then
-							TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 28)}):Play()
+							TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, #Entries == 1 and 24 or 28)}):Play()
 						else
-							TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+							TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)}):Play()
 						end
 					end)
 
@@ -1188,11 +1181,11 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	self:AddInstances({Holder, Holder.Size, Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
 
 	Holder.MouseEnter:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and 150 or 30)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and #Entries * 40 + 30 or 30)}):Play()
 	end)
 
 	Holder.MouseLeave:Connect(function()
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and 150 or 31)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and #Entries * 40 + 30 or 31)}):Play()
 	end)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -1254,12 +1247,15 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		ScrollBarThickness = 6,
 		ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
 	})
+	
+	if #Entries > 1 then
 
-	Utility.Create("UIListLayout", {
-		Parent = ScrollingFrame,
-		Padding = UDim.new(0, 8),
-		HorizontalAlignment = Enum.HorizontalAlignment.Center
-	})
+		Utility.Create("UIListLayout", {
+			Parent = ScrollingFrame,
+			Padding = UDim.new(0, 8),
+			HorizontalAlignment = Enum.HorizontalAlignment.Center
+		})
+	end
 
 	Holder2.ImageButton.MouseButton1Click:Connect(function()
 		if Dropping then
@@ -1272,10 +1268,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			Open = true
 
 			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 180}):Play()
-			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
+			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, #Entries <= 3 and #Entries * 40 + 30 or 160), BackgroundTransparency = 1}):Play()
 
-			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 150)}):Play()
-			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, 0.2)}):Play()
+			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, #Entries >= 3 and 0.2 or #Entries == 2 and 0.275 or #Entries == 1 and 0.367)}):Play()
 			
 			ScrollingFrame.Visible = true
 			TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, #Entries <= 3 and #Entries * 40 or 120)}):Play()
@@ -1315,7 +1310,10 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				end
 			end
 
-			self:Resize(nil, 1000)
+			local Size = self:Resize(nil, #Entries)
+
+			self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - #Entries * 40)
+			self.Section.Size = UDim2.new(1, -16, 0, Size - #Entries * 40)
 
 			self:ResizePage()
 
