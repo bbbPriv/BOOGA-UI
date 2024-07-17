@@ -170,8 +170,7 @@ function Pages:GetSectionEnv(Section)
 	return self
 end
 
-function Sections:Resize(Section, DropdownSize)
-	local Stop = false
+function Sections:Resize(Section)
 	local Size = 32
 
 	for _,v in pairs(Section and Section:GetChildren() or self.Section.Frame:GetChildren()) do
@@ -192,10 +191,6 @@ function Sections:Resize(Section, DropdownSize)
 				Size += v.AbsoluteSize.Y + 5
 			end
 		end
-	end
-	
-	if Stop then
-		return
 	end
 
 	if not Section then
@@ -1304,7 +1299,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 			end
 
-			self:Resize(nil, #Entries)
+			self:Resize()
 			self:ResizePage(true)
 
 		else
@@ -1326,7 +1321,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				CountedDropdowns[k] = nil
 			end
 
-			local Size = self:Resize(nil, #Entries)
+			local Size = self:Resize()
 
 			self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)
 			self.Section.Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)
