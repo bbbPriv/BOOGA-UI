@@ -647,6 +647,23 @@ function Sections:AddKeybind(Name, Key, Callback)
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
+	
+	if Key:len() <= 3 then
+		Label.Size = UDim2.new(0, 38, 0, 16)
+		Label.Position = UDim2.new(1, -48, 0.5, -8)
+	elseif Key:len() == 4 then
+		Label.Size = UDim2.new(0, 42, 0, 16)
+		Label.Position = UDim2.new(1, -52, 0.5, -8)
+	elseif Key:len() == 5 then
+		Label.Size = UDim2.new(0, Key == "Comma" and 50 or 46, 0, 16)
+		Label.Position = UDim2.new(1, Key == "Comma" and -60 or -56, 0.5, -8)
+	elseif Key:len() == 6 then
+		Label.Size = UDim2.new(0, 52, 0, 16)
+		Label.Position = UDim2.new(1, -60, 0.5, -8)
+	else
+		Label.Size = UDim2.new(0, Key:find("Keypad") and 80 or 76, 0, 16)
+		Label.Position = UDim2.new(1, Key:find("Keypad") and -88 or -84, 0.5, -8)
+	end
 
 	local KeyLabel = Utility.Create("TextLabel", {
 		Name = "KeyLabel",
@@ -1447,10 +1464,6 @@ function Pages:AddSearchBar()
 						continue
 					end
 
-					if v2.ClassName ~= "UIListLayout" and v2.ClassName ~= "TextLabel" and v2.Visible then
-						Invisible = false
-					end
-
 					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame.TextLabel
 
 
@@ -1466,6 +1479,10 @@ function Pages:AddSearchBar()
 						else
 							Label.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 						end
+					end
+					
+					if v2.ClassName ~= "UIListLayout" and v2.ClassName ~= "TextLabel" and v2.Visible then
+						Invisible = false
 					end
 
 				end
@@ -1517,8 +1534,12 @@ function BoogaUI.New(Name, TogglePages)
 	BoogaUI.Name = Name
 
 	BoogaUI.Pages = {}
+	
+	BoogaUI.Orders = {}
 
 	BoogaUI.LastPageButton = false
+	
+	BoogaUI.LastSelected = false
 
 	BoogaUI.ChangingPage = false
 
@@ -1738,6 +1759,39 @@ function BoogaUI:AddPage(Title, Icon)
 		Text = "",
 		TextSize = 14
 	})
+	
+	local Size = 1
+	
+	for _,v in pairs(self.Orders) do
+		Size += 1
+	end
+	
+	self.Orders[Button] = Size
+	
+	if not self.FocusedPage then
+		local Selected = Utility.Create("Frame", {
+			Parent = Button,
+			Size = UDim2.fromScale(0.93, 1),
+			Position = UDim2.fromScale(0.03, 0.04),
+			BackgroundColor3 = Color3.fromRGB(85, 85, 85),
+			BackgroundTransparency = not self.FocusedPage and 0.8 or 1,
+		})
+	
+		self.Selected = Selected
+	
+		Utility.Create("UICorner", {
+			Parent = Selected,
+			CornerRadius = UDim.new(0, 4)
+		})
+		
+		Utility.Create("UIStroke", {
+			Parent = Selected,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Thickness = 1.5,
+			Color = Color3.fromRGB(135, 135, 135),
+			Enabled = not self.FocusedPage and true or false
+		})
+	end
 
 	local Size = 0
 
@@ -1870,6 +1924,8 @@ function BoogaUI:AddPage(Title, Icon)
 		end
 
 		self.ChangingPage = true
+		
+		TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * 1.385)}):Play()
 
 		if self.LastPageButton then 
 			self.LastPageButton.Text = self.LastPageButton.Text:gsub("<b>", ""):gsub("</b>", "")
