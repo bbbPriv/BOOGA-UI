@@ -1504,21 +1504,6 @@ function Pages:AddSearchBar()
 	return self
 end
 
-function Pages:AddSeparator(YOffset)
-	local Separator = Utility.Create("Frame", {
-		Name = "Separator",
-		Parent = self.Page,
-		ZIndex = 2,
-		Size = UDim2.new(0.950, 0, 0, YOffset),
-		BackgroundTransparency = 1
-	})
-
-	self.SectionPage = self.Page
-	self:ResizePage()
-
-	return Separator
-end
-
 function BoogaUI.New(Name, TogglePages)
 
 	if not Name then
