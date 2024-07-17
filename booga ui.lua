@@ -1582,7 +1582,7 @@ function BoogaUI.New(Name, TogglePages)
 		Font = Enum.Font.GothamBold,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		Text = Name,
-		TextSize = 24,
+		TextSize = 22,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
