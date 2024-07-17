@@ -180,7 +180,7 @@ function Sections:Resize(Section)
 				
 				local DropdownSize = 0
 				
-				for _,v in v.List.ScrollingFrame:GetChildren() do
+				for _,v in pairs(v.List.ScrollingFrame:GetChildren()) do
 					if v.ClassName == "TextButton" then
 						DropdownSize += 1
 					end
