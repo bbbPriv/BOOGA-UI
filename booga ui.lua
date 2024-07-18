@@ -2494,6 +2494,8 @@ function BoogaUI:Toggle()
 				TS:Create(v, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
 			elseif v.ClassName == "Frame" then
 				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+			elseif v.Name == "Dropdown Option" then
+				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
 			end
 
 			if not v:FindFirstChild("UIListLayout") and v:FindFirstChild("Frame") then
@@ -2551,6 +2553,11 @@ function BoogaUI:Toggle()
 				TS:Create(v.instance, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 			elseif v.instance.ClassName == "Frame" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {BackgroundTransparency = v.instance.Name == "ToggleBase" and 0.9 or v.instance.Name == "ToggleCircle" and 0.1 or 0}):Play()
+			elseif v.instance.Name == "Dropdown Option" then
+				TS:Create(v.instance, TweenInfo.new(0.5), {BackgroundTransparency = 0, TextTransparency = 0.1}):Play()
+				TS:Create(v.instance, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+				
+				continue
 			end
 
 			TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.Size}):Play()
