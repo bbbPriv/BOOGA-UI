@@ -116,6 +116,25 @@ local function HandleOptions(Accept, Decline, Holder, Position, Size)
 	Holder:Destroy()
 end
 
+local function SetKeybindSize(self, Key, Label, Duration)
+	if Key.Name:len() <= 3 then
+		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, 38, 0, 16), Position = UDim2.new(1, -48, 0.5, -8)}):Play()
+		self.Instances[Label].Size = UDim2.new(0, 38, 0, 16)
+	elseif Key.Name:len() == 4 then
+		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
+		self.Instances[Label].Size = UDim2.new(0, 42, 0, 16)
+		elseif Key.Name:len() == 5 then
+		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, Key.Name == "Comma" and 50 or 46, 0, 16), Position = UDim2.new(1, Key.Name == "Comma" and -60 or -56, 0.5, -8)}):Play()
+		self.Instances[Label].Size = UDim2.new(0, Key.Name == "Comma" and 50 or 46, 0, 16)
+	elseif Key.Name:len() == 6 then
+		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, 52, 0, 16), Position = UDim2.new(1, -60, 0.5, -8)}):Play()
+		self.Instances[Label].Size = UDim2.new(0, 52, 0, 16)
+	else
+		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, Key.Name:find("Keypad") and 80 or 76, 0, 16), Position = UDim2.new(1, Key.Name:find("Keypad") and -88 or -84, 0.5, -8)}):Play()
+		self.Instances[Label].Size = UDim2.new(0, Key.Name:find("Keypad") and 80 or 76, 0, 16)
+	end
+end
+
 local function StartsWith(str, start)
 	return string.match(str, "^" .. start) ~= nil
 end
@@ -186,7 +205,7 @@ function Sections:Resize(Section)
 					end
 				end
 				
-				Size += DropdownSize <= 3 and DropdownSize * 40 + 32 or DropdownSize > 3 and 160 or 152
+				Size += DropdownSize <= 3 and DropdownSize * 40 + 32 or DropdownSize > 3 and 162 or 154
 			else
 				Size += v.AbsoluteSize.Y + 5
 			end
@@ -607,7 +626,11 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 	local Old = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()].Name or (Key and Key.Name or "None")
 	Key = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()] or (Key and Key.Name or "None")
-
+	
+	if typeof(Key) == "string" then
+		Key = Enum.KeyCode[Key]
+	end
+	
 	local Selecting = false
 
 	local Stop = false
@@ -658,22 +681,16 @@ function Sections:AddKeybind(Name, Key, Callback)
 		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
 	
-	if Key:len() <= 3 then
-		Label.Size = UDim2.new(0, 38, 0, 16)
-		Label.Position = UDim2.new(1, -48, 0.5, -8)
-	elseif Key:len() == 4 then
-		Label.Size = UDim2.new(0, 42, 0, 16)
-		Label.Position = UDim2.new(1, -52, 0.5, -8)
-	elseif Key:len() == 5 then
-		Label.Size = UDim2.new(0, Key == "Comma" and 50 or 46, 0, 16)
-		Label.Position = UDim2.new(1, Key == "Comma" and -60 or -56, 0.5, -8)
-	elseif Key:len() == 6 then
-		Label.Size = UDim2.new(0, 52, 0, 16)
-		Label.Position = UDim2.new(1, -60, 0.5, -8)
-	else
-		Label.Size = UDim2.new(0, Key:find("Keypad") and 80 or 76, 0, 16)
-		Label.Position = UDim2.new(1, Key:find("Keypad") and -88 or -84, 0.5, -8)
-	end
+	Utility.Create("StringValue", {
+		Parent = Label,
+		Name = "AddIndex"
+	})
+	
+	self:AddInstances({Label, Label.Size})
+	
+	print(self.Instances[Label])
+	
+	SetKeybindSize(self, Key, Label, 0.3)
 
 	local KeyLabel = Utility.Create("TextLabel", {
 		Name = "KeyLabel",
@@ -697,7 +714,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		BackgroundTransparency = 1
 	})
 
-	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, KeyLabel, KeyLabel.Size})
+	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, KeyLabel, KeyLabel.Size})
 
 	Button.MouseEnter:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
@@ -737,33 +754,13 @@ function Sections:AddKeybind(Name, Key, Callback)
 				Key = Enum.KeyCode[Old]
 				KeyLabel.Text = Key.Name
 
-				if Key.KeyCode.Name:len() <= 3 then
-					TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 38, 0, 16), Position = UDim2.new(1, -48, 0.5, -8)}):Play()
-				elseif Key.KeyCode.Name:len() == 4 then
-					TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
-				elseif Key.KeyCode.Name:len() == 5 then
-					TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, Key.KeyCode.Name == "Comma" and 50 or 46, 0, 16), Position = UDim2.new(1, Key.KeyCode.Name == "Comma" and -60 or -56, 0.5, -8)}):Play()
-				elseif Key.KeyCode.Name:len() == 6 then
-					TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 52, 0, 16), Position = UDim2.new(1, -60, 0.5, -8)}):Play()
-				else
-					TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, Key.KeyCode.Name:find("Keypad") and 80 or 76, 0, 16), Position = UDim2.new(1, Key.KeyCode.Name:find("Keypad") and -88 or -84, 0.5, -8)}):Play()
-				end
+				SetKeybindSize(self, typeof(Key) == "Instance" and Key.KeyCode or Key, Label, 0.3)
 
 				break
 			end
 		end
 		
-		if Key.KeyCode.Name:len() <= 3 then
-			TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 38, 0, 16), Position = UDim2.new(1, -48, 0.5, -8)}):Play()
-		elseif Key.KeyCode.Name:len() == 4 then
-			TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
-		elseif Key.KeyCode.Name:len() == 5 then
-			TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, Key.KeyCode.Name == "Comma" and 50 or 46, 0, 16), Position = UDim2.new(1, Key.KeyCode.Name == "Comma" and -60 or -56, 0.5, -8)}):Play()
-		elseif Key.KeyCode.Name:len() == 6 then
-			TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 52, 0, 16), Position = UDim2.new(1, -60, 0.5, -8)}):Play()
-		else
-			TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, Key.KeyCode.Name:find("Keypad") and 80 or 76, 0, 16), Position = UDim2.new(1, Key.KeyCode.Name:find("Keypad") and -88 or -84, 0.5, -8)}):Play()
-		end
+		SetKeybindSize(self, typeof(Key) == "Instance" and Key.KeyCode or Key, Label, 0.3)
 
 		if not Selecting then
 
@@ -1058,6 +1055,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 				local Button = Utility.Create("TextButton", {
 					Parent = ScrollingFrame,
+					Name = "Dropdown Option",
 					Text = v,
 					TextSize = 16,
 					TextWrapped = true,
@@ -1185,7 +1183,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
-	self:AddInstances({Holder, Holder.Size, Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
+	self:AddInstances({Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
 
 	Holder.MouseEnter:Connect(function()
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 160 or 30)}):Play()
@@ -1238,11 +1236,18 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Position = UDim2.fromScale(0.010, 0),
 		ZIndex = 2,
 	})
-
+	
+	Utility.Create("StringValue", {
+		Parent = List,
+		Name = "AddIndex"
+	})
+	
 	Utility.Create("UICorner", {
 		Parent = List,
 		CornerRadius = UDim.new(0, 8)
 	})
+	
+	self:AddInstances({List, List.Size})
 
 	ScrollingFrame = Utility.Create("ScrollingFrame", {
 		Visible = false,
@@ -1278,6 +1283,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, #Entries <= 3 and #Entries * 40 + 30 or 160), BackgroundTransparency = 1}):Play()
 
 			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, #Entries >= 3 and 0.190 or #Entries == 2 and 0.275 or #Entries == 1 and 0.367)}):Play()
+			
+			self.Instances[List].Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120)
 			
 			ScrollingFrame.Visible = true
 			TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, #Entries <= 3 and #Entries * 40 or 120)}):Play()
@@ -1333,6 +1340,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 31), BackgroundTransparency = 1}):Play()
+			
+			self.Instances[List].Size = UDim2.new(0.970, 0, 0, 31)
+			
 			TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 31)}):Play()
 
 		end
@@ -1993,6 +2003,10 @@ function BoogaUI:AddPage(Title, Icon)
 						OldBackgroundTransparency = 0.1
 					end
 
+					if instance.Name == "Dropdown Option" then
+						instance.Size = UDim2.new(0.950, 0, 0, 30)
+					end
+					
 					instance[Properties[instance.ClassName]] = (Properties[instance.ClassName] == "BackgroundTransparency" and OldBackgroundTransparency) or (Properties[instance.ClassName] == "TextTransparency" and OldTextTransparency) or (Properties[instance.ClassName] == "ImageTransparency" and OldImageTransparency)
 				end)
 
@@ -2025,7 +2039,7 @@ function BoogaUI:AddPage(Title, Icon)
 
 					for _,instance in pairs(instance:GetDescendants()) do
 
-						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" then
+						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" then
 							continue
 						end
 
@@ -2079,6 +2093,10 @@ function BoogaUI:AddPage(Title, Icon)
 				TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, v.Size.Y.Scale, v.Size.Y.Offset)}):Play()
 
 				if instance.ClassName == "TextButton" then
+					if instance.Name == "Dropdown Option" then
+						TS:Create(instance, TweenInfo.new(0.150), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
+					end
+					
 					TS:Create(instance, TweenInfo.new(0.150), {TextSize = 16, TextTransparency = 0.1}):Play()
 				end
 			end
@@ -2454,6 +2472,16 @@ function BoogaUI:Toggle()
 				PageTitle.ZIndex = 5
 			end
 		end
+		
+		for _, Page in pairs(self.MainLabel:GetChildren()) do
+			if Page.ClassName == "ScrollingFrame" then
+				for _, Section in Page:GetChildren() do
+					if Section.ClassName == "ImageLabel" then
+						TS:Create(Section.Frame.Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+					end
+				end
+			end
+		end
 
 		for _,v in pairs(self.Instances) do
 			v = v.instance
@@ -2527,6 +2555,18 @@ function BoogaUI:Toggle()
 
 			TS:Create(v.instance, TweenInfo.new(0.3), {Size = v.Size}):Play()
 		end
+		
+		task.delay(0.2, function()
+			for _, Page in pairs(self.MainLabel:GetChildren()) do
+				if Page.ClassName == "ScrollingFrame" then
+					for _, Section in Page:GetChildren() do
+						if Section.ClassName == "ImageLabel" then
+							TS:Create(Section.Frame.Title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+						end
+					end
+				end
+			end
+		end)
 
 		self.MainLabel.ClipsDescendants = true
 
@@ -2571,7 +2611,12 @@ function BoogaUI:AddInstances(Arg)
 			end
 		end
 	else
-		table.insert(self.Instances, {instance = Arg[1], Size = Arg[2]})
+		local tbl = {instance = Arg[1], Size = Arg[2]}
+		table.insert(self.Instances, tbl)
+		
+		if Arg[1]:FindFirstChild("AddIndex") then
+			self.Instances[Arg[1]] = tbl
+		end
 	end
 end
 
