@@ -1100,7 +1100,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 					Holder2.TextBox.Text = v
 
-					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, #Entries == 1 and 26 or 30)})
+					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)})
 					Tween:Play()
 
 					Tween.Completed:Connect(function()
