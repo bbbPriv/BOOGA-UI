@@ -1077,13 +1077,13 @@ function Sections:AddDropdown(Name, Entries, Callback)
 				Button.MouseEnter:Connect(function()
 					Hovering = true
 
-					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, #Entries == 1 and 25 or 29)}):Play()
+					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, #Entries == 1 and 25 or 29), Position = UDim2.fromScale(0.035, 0.17)}):Play()
 				end)
 
 				Button.MouseLeave:Connect(function()
 					Hovering = false
 
-					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)}):Play()
+					TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30), Position = UDim2.fromScale(0.025, 0.17)}):Play()
 				end)
 
 				Button.MouseButton1Click:Connect(function()
@@ -1100,8 +1100,12 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 					Holder2.TextBox.Text = v
 
-					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)})
+					local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, #Entries == 1 and 24 or 28)})
 					Tween:Play()
+					
+					if #Entries == 1 then
+						TS:Create(Button, TweenInfo.new(0.1), {Position = UDim2.fromScale(0.07, 0.17)}):Play()
+					end
 
 					Tween.Completed:Connect(function()
 						if Hovering then
@@ -1109,6 +1113,15 @@ function Sections:AddDropdown(Name, Entries, Callback)
 						else
 							TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)}):Play()
 						end
+						
+						if #Entries == 1 then
+							if Hovering then
+								TS:Create(Button, TweenInfo.new(0.1), {Position = UDim2.fromScale(0.035, 0.17)}):Play()
+							else
+								TS:Create(Button, TweenInfo.new(0.1), {Position = UDim2.fromScale(0.025, 0.17)}):Play()
+							end
+						end
+
 					end)
 
 					Button.TextSize = 0
