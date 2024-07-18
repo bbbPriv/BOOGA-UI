@@ -1062,6 +1062,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					Font = Enum.Font.Arial,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					TextTransparency = 0.1,
+					Size = UDim2.fromScale(0.950, 0),
 					ZIndex = 2,
 					BorderSizePixel = 0,
 					BackgroundColor3 = Color3.fromRGB(41, 41, 41),
@@ -1315,7 +1316,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 			for _,v in pairs(ScrollingFrame:GetChildren()) do
 				if v.ClassName == "TextButton" then
-					local Tween = TS:Create(v, TweenInfo.new(0.2), {Size = UDim2.fromScale(0, 0.130), TextTransparency = 1, BackgroundTransparency = 1})
+					local Tween = TS:Create(v, TweenInfo.new(0.2), {Size = UDim2.fromScale(0.950, 0), TextTransparency = 1, BackgroundTransparency = 1})
 					Tween:Play()
 
 					Tween.Completed:Connect(function()
