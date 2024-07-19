@@ -297,15 +297,15 @@ function Sections:AddButton(Name, Callback)
 		Time = tick()
 
 		while self.StrokeBorders and Hovering do
-			task.wait(0.1)
+			task.wait()
 
-			if tick() - Time > 1 then
+			if tick() - Time > self.StrokeBordersDelay then
 				Button.StrokeBorder.Enabled = true
 
 				local StrokeTween = TS:Create(Button.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
-				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				Button.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
@@ -482,15 +482,15 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Time = tick()
 
 		while self.StrokeBorders and Hovering do
-			task.wait(0.1)
+			task.wait()
 
-			if tick() - Time > 1 then
+			if tick() - Time > self.StrokeBordersDelay then
 				Toggle.ToggleBase.StrokeBorder.Enabled = true
 
 				local StrokeTween = TS:Create(Toggle.ToggleBase.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
-				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				Toggle.ToggleBase.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
@@ -649,15 +649,15 @@ function Sections:AddTextBox(Name, Callback)
 		Time = tick()
 		
 		while self.StrokeBorders and Hovering do
-			task.wait(0.1)
+			task.wait()
 
-			if not TextBox:IsFocused() and tick() - Time > 1 then
+			if not TextBox:IsFocused() and tick() - Time > self.StrokeBordersDelay then
 				Label.StrokeBorder.Enabled = true
 
 				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 				
-				repeat task.wait() until not Hovering or TextBox:IsFocused() or tick() - Time < 1 or not self.StrokeBorders
+				repeat task.wait() until not Hovering or TextBox:IsFocused() or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				Label.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
@@ -863,15 +863,15 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Time = tick()
 
 		while self.StrokeBorders and Hovering do
-			task.wait(0.1)
+			task.wait()
 
-			if tick() - Time > 1 then
+			if tick() - Time > self.StrokeBordersDelay then
 				Label.StrokeBorder.Enabled = true
 
 				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
-				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				Label.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
@@ -1096,15 +1096,15 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Time = tick()
 		
 		while Hovering do
-			task.wait(0.1)
+			task.wait()
 
-			if self.StrokeBorders and tick() - Time > 1 then
+			if self.StrokeBorders and tick() - Time > self.StrokeBordersDelay1 then
 				Bar.StrokeBorder.Enabled = true
 
 				local StrokeTween = TS:Create(Bar.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1, Transparency = 0.1})
 				StrokeTween:Play()
 
-				repeat task.wait() until not Hovering or tick() - Time < 1 or Box:IsFocused() or not self.StrokeBorders
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or Box:IsFocused() or not self.StrokeBorders
 
 				Bar.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
@@ -1434,13 +1434,13 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Time = tick()
 
 		while self.StrokeBorders and Hovering do
-			task.wait(0.1)
+			task.wait()
 	
-			if tick() - Time > 1 then
+			if tick() - Time > self.StrokeBordersDelay then
 				local StrokeTween = TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {ImageTransparency = 0.7})
 				StrokeTween:Play()
 
-				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
 				Holder2["Dropdown Arrow"].ImageTransparency = 0
@@ -1826,6 +1826,8 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	BoogaUI.ChangingPage = false
 	
 	BoogaUI.StrokeBorders = true
+	
+	BoogaUI.StrokeBordersDelay = 1
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
