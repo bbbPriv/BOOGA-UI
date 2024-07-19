@@ -407,9 +407,9 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	})
 
 	local Button = Utility.Create("ImageButton", {
-		Parent = Toggle.ToggleBase,
+		Parent = Toggle,
 		ZIndex = 2,
-		Size = Toggle.ToggleBase.Size,
+		Size = UDim2.fromScale(1, 1),
 		ImageTransparency = 1,
 		BackgroundTransparency = 1
 	})
@@ -687,8 +687,6 @@ function Sections:AddKeybind(Name, Key, Callback)
 	})
 	
 	self:AddInstances({Label, Label.Size})
-	
-	print(self.Instances[Label])
 	
 	SetKeybindSize(self, Key, Label, 0.3)
 
@@ -1070,9 +1068,18 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					BackgroundTransparency = 0.1
 				})
 				
+				Utility.Create("StringValue", {
+					Parent = Button,
+					Name = "AddIndex"
+				})
+				
 				self:AddInstances({Button, Button.Size})
 
 				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 26 or 30)}):Play()
+				
+				Button.Destroying:Connect(function()
+					self.Instances[Button] = nil
+				end)
 
 				Button.MouseEnter:Connect(function()
 					Hovering = true
@@ -1232,6 +1239,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	end)
 
 	Utility.Create("ImageButton", {
+		Name = "Dropdown Arrow",
 		Parent = Holder2,
 		Image = "http://www.roblox.com/asset/?id=293296862",
 		ZIndex = 4,
@@ -1261,7 +1269,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		CornerRadius = UDim.new(0, 8)
 	})
 	
-	self:AddInstances({List, List.Size})
+	self:AddInstances({List, List.Size, Holder2["Dropdown Arrow"], Holder2["Dropdown Arrow"].Size})
 
 	ScrollingFrame = Utility.Create("ScrollingFrame", {
 		Visible = false,
@@ -1283,17 +1291,17 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		})
 	end
 
-	Holder2.ImageButton.MouseButton1Click:Connect(function()
+	Holder2["Dropdown Arrow"].MouseButton1Click:Connect(function()
 		if Dropping then
 			return
 		end
 
 		Dropping = true
 
-		if Holder2.ImageButton.Rotation == 0 then
+		if Holder2["Dropdown Arrow"].Rotation == 0 then
 			Open = true
 
-			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 180}):Play()
+			TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(0.3), {Rotation = 180}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, #Entries <= 3 and #Entries * 40 + 30 or 160), BackgroundTransparency = 1}):Play()
 
 			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, #Entries >= 3 and 0.190 or #Entries == 2 and 0.275 or #Entries == 1 and 0.367)}):Play()
@@ -1349,11 +1357,11 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 			self:ResizePage()
 
-			TS:Create(Holder2.ImageButton, TweenInfo.new(0.3), {Rotation = 0}):Play()
+			TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(0.3), {Rotation = 0}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
 
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
-			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 31), BackgroundTransparency = 1}):Play()
+			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, 31), Position = UDim2.fromScale(0.010, 0), BackgroundTransparency = 1}):Play()
 			
 			self.Instances[List].Size = UDim2.new(0.970, 0, 0, 31)
 			
@@ -2505,6 +2513,8 @@ function BoogaUI:Toggle()
 				TS:Create(v, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
 			elseif v.ClassName == "TextBox" then
 				TS:Create(v, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+			elseif v.Name == "Dropdown Arrow" then
+				TS:Create(v, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
 			elseif (v.ClassName == "ImageLabel" or v.ClassName == "ImageButton") then
 				TS:Create(v, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
 			elseif v.ClassName == "Frame" then
@@ -2564,6 +2574,12 @@ function BoogaUI:Toggle()
 				TS:Create(v.instance, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 			elseif v.instance.ClassName == "TextBox" then
 				TS:Create(v.instance, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+			elseif v.instance.Name == "Dropdown Arrow" then
+				
+				task.delay(0.150, function()
+					TS:Create(v.instance, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+				end)
+				
 			elseif v.instance.ClassName == "ImageLabel" or v.instance.ClassName == "ImageButton" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 			elseif v.instance.ClassName == "Frame" then
