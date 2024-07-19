@@ -983,6 +983,10 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	end)
 
 	Box:GetPropertyChangedSignal("Text"):Connect(function()
+		if not tonumber(Box.Text:sub(#Box.Text)) then
+			Box.Text = Box.Text:sub(1, -2)
+		end
+		
 		local Num = tonumber(Box.Text)
 
 		if Num then
