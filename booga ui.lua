@@ -179,7 +179,8 @@ Sections.__index = Sections
 setmetatable(Sections, {__index = Pages})
 
 local AllSections = {}
-local CountedDropdowns = {}
+
+local CleanConnections = {}
 
 function Pages:GetSectionEnv(Section)
 	for _,v in pairs(AllSections) do
@@ -888,7 +889,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
-	UIS.InputBegan:Connect(function(Input, GME)
+	CleanConnections[#CleanConnections + 1] = UIS.InputBegan:Connect(function(Input, GME)
 		if not GME and Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Key and not Selecting then
 			task.spawn(function()
 				Callback(Enum.KeyCode[Key.Name])
@@ -953,7 +954,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Key = Key.KeyCode
 	end)
 
-	UIS.InputBegan:Connect(function(Input, GME)
+	CleanConnections[#CleanConnections + 1] = UIS.InputBegan:Connect(function(Input, GME)
 		if Input.UserInputType == Enum.UserInputType.MouseButton1 then
 			if not isPointInBounds(Input.Position, Holder) and KeyLabel.Text == "..." then
 				Stop = true
@@ -1586,10 +1587,6 @@ function Sections:AddDropdown(Name, Entries, Callback)
 						v:Destroy()
 					end)					
 				end
-			end
-			
-			for k,v in pairs(CountedDropdowns) do
-				CountedDropdowns[k] = nil
 			end
 
 			local Size = self:Resize()
@@ -2913,6 +2910,11 @@ function BoogaUI:Destroy(DestroyPrevious)
 		if (DestroyPrevious and v ~= self.MainLabel.Parent and v:FindFirstChild("MainLabel")) or (not DestroyPrevious and v:FindFirstChild("MainLabel") and v.MainLabel:FindFirstChild("TitleHolder")) then
 			v:Destroy()
 		end
+	end
+	
+	for idx = 1, #CleanConnections do
+		CleanConnections[idx]:Disconnect()
+		CleanConnections[idx] = nil
 	end
 end
 
