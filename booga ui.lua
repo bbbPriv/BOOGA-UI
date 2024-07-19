@@ -239,6 +239,8 @@ function Sections:AddButton(Name, Callback)
 	local Pressing = false
 
 	local Hovering
+	
+	local Time = 0
 
 	local Button = Utility.Create("TextButton", {
 		Parent = self.Section.Frame,
@@ -251,6 +253,16 @@ function Sections:AddButton(Name, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0.1,
 		AutoButtonColor = false
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Button,
+		Name = "StrokeBorder",
+		Thickness = 0,
+		Color = Color3.fromRGB(15, 15, 15),
+		Transparency = 0.5,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Enabled = false
 	})
 
 	Utility.Create("ImageLabel", {
@@ -281,6 +293,28 @@ function Sections:AddButton(Name, Callback)
 		Hovering = true
 
 		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		
+		Time = tick()
+
+		while self.StrokeBorders and Hovering do
+			task.wait(0.1)
+
+			if tick() - Time > 1 then
+				Button.StrokeBorder.Enabled = true
+
+				local StrokeTween = TS:Create(Button.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				StrokeTween:Play()
+
+				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+
+				Button.StrokeBorder.Enabled = false
+				StrokeTween:Cancel()
+
+				Button.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
+				Button.StrokeBorder.Transparency = 0.5
+				Button.StrokeBorder.Thickness = 0
+			end
+		end
 	end)
 
 	Button.MouseLeave:Connect(function()
@@ -300,6 +334,8 @@ function Sections:AddButton(Name, Callback)
 	end)
 
 	Button.MouseButton1Click:Connect(function()
+		
+		Hovering = false
 
 		if Pressing then
 			return
@@ -339,9 +375,13 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	Callback = Callback or function() end
 
 	local Switching = false
+	
+	local Hovering = false
+	
+	local Time = 0
 
 	local Toggle = Utility.Create("Frame", {
-		Name = "Toggle",
+		Name = "Toggle1",
 		Parent = self.Section.Frame,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
@@ -401,6 +441,15 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 		CornerRadius = UDim.new(0, 8)
 	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Toggle.ToggleBase,
+		Name = "StrokeBorder",
+		Thickness = 0,
+		Color = Color3.fromRGB(15, 15, 15),
+		Transparency = 0.5,
+		Enabled = false
+	})
 
 	Utility.Create("UICorner", {
 		Parent = Utility.Create("Frame", {
@@ -427,14 +476,40 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	self:AddInstances({Toggle, Toggle.Size, Toggle.Title, Toggle.Title.Size, Toggle.ToggleBase, Toggle.ToggleBase.Size, Toggle.ToggleBase.ToggleCircle, Toggle.ToggleBase.ToggleCircle.Size})
 
 	Toggle.MouseEnter:Connect(function()
+		Hovering = true
 		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		
+		Time = tick()
+
+		while self.StrokeBorders and Hovering do
+			task.wait(0.1)
+
+			if tick() - Time > 1 then
+				Toggle.ToggleBase.StrokeBorder.Enabled = true
+
+				local StrokeTween = TS:Create(Toggle.ToggleBase.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				StrokeTween:Play()
+
+				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+
+				Toggle.ToggleBase.StrokeBorder.Enabled = false
+				StrokeTween:Cancel()
+
+				Toggle.ToggleBase.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
+				Toggle.ToggleBase.StrokeBorder.Transparency = 0.5
+				Toggle.ToggleBase.StrokeBorder.Thickness = 0
+			end
+		end
 	end)
 
 	Toggle.MouseLeave:Connect(function()
+		Hovering = false
 		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
+		
+		Hovering = false
 
 		if Switching then
 			return
@@ -478,9 +553,11 @@ function Sections:AddTextBox(Name, Callback)
 	local DoubleClicked = false
 	
 	local Hovering = false
+	
+	local Time = 0
 
 	local Holder = Utility.Create("Frame", {
-		Name = "Toggle",
+		Name = "TextBox",
 		Parent = self.Section.Frame,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
@@ -530,13 +607,14 @@ function Sections:AddTextBox(Name, Callback)
 	
 	Utility.Create("UICorner", {
 		Parent = Label,
-		CornerRadius = UDim.new(0, 2)
+		CornerRadius = UDim.new(0, 3)
 	})
 	
 	Utility.Create("UIStroke", {
 		Parent = Label,
+		Name = "StrokeBorder",
 		Thickness = 0,
-		Color = Color3.fromRGB(0, 0, 0),
+		Color = Color3.fromRGB(15, 15, 15),
 		Transparency = 0.5,
 		Enabled = false
 	})
@@ -570,23 +648,23 @@ function Sections:AddTextBox(Name, Callback)
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 		Time = tick()
 		
-		while Hovering do
+		while self.StrokeBorders and Hovering do
 			task.wait(0.1)
 
-			if not TextBox:IsFocused() and Time and tick() - Time > 0.7 then
-				Label.UIStroke.Enabled = true
+			if not TextBox:IsFocused() and tick() - Time > 1 then
+				Label.StrokeBorder.Enabled = true
 
-				local StrokeTween = TS:Create(Label.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 				
-				repeat task.wait() until not Hovering or TextBox:IsFocused()
+				repeat task.wait() until not Hovering or TextBox:IsFocused() or tick() - Time < 1 or not self.StrokeBorders
 
-				Label.UIStroke.Enabled = false
+				Label.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
 				
-				Label.UIStroke.Color = Color3.fromRGB(0, 0, 0)
-				Label.UIStroke.Transparency = 0.5
-				Label.UIStroke.Thickness = 0
+				Label.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
+				Label.StrokeBorder.Transparency = 0.5
+				Label.StrokeBorder.Thickness = 0
 			end
 		end
 	end)
@@ -597,6 +675,8 @@ function Sections:AddTextBox(Name, Callback)
 	end)
 
 	Button.MouseButton1Click:Connect(function()
+		
+		Time = tick()
 
 		if Label.Size ~= UDim2.new(0, 220, 0, 16) then
 			self.Instances[Label].Size = UDim2.new(0, 220, 0, 16)
@@ -681,6 +761,10 @@ function Sections:AddKeybind(Name, Key, Callback)
 	local Selecting = false
 
 	local Stop = false
+	
+	local Hovering = false
+	
+	local Time = 0
 
 	local Holder = Utility.Create("Frame", {
 		Name = "Toggle",
@@ -716,16 +800,27 @@ function Sections:AddKeybind(Name, Key, Callback)
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
-	local Label = Utility.Create("ImageLabel", {
+	local Label = Utility.Create("Frame", {
 		Parent = Holder,
-		BackgroundTransparency = 1,
+		BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+		BackgroundTransparency = 0,
 		Position = UDim2.new(1, -55, 0.5, -8),
 		Size = UDim2.new(0, 45, 0, 16),
 		ZIndex = 2,
-		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(28, 28, 28),
-		ScaleType = Enum.ScaleType.Slice,
-		SliceCenter = Rect.new(2, 2, 298, 298)
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Label,
+		Name = "StrokeBorder",
+		Thickness = 0,
+		Color = Color3.fromRGB(15, 15, 15),
+		Transparency = 0.5,
+		Enabled = false
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Label,
+		CornerRadius = UDim.new(0, 3)
 	})
 	
 	Utility.Create("StringValue", {
@@ -762,10 +857,34 @@ function Sections:AddKeybind(Name, Key, Callback)
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, KeyLabel, KeyLabel.Size})
 
 	Button.MouseEnter:Connect(function()
+		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		
+		Time = tick()
+
+		while self.StrokeBorders and Hovering do
+			task.wait(0.1)
+
+			if tick() - Time > 1 then
+				Label.StrokeBorder.Enabled = true
+
+				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				StrokeTween:Play()
+
+				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+
+				Label.StrokeBorder.Enabled = false
+				StrokeTween:Cancel()
+
+				Label.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
+				Label.StrokeBorder.Transparency = 0.5
+				Label.StrokeBorder.Thickness = 0
+			end
+		end
 	end)
 
 	Button.MouseLeave:Connect(function()
+		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
@@ -778,6 +897,9 @@ function Sections:AddKeybind(Name, Key, Callback)
 	end)
 
 	Button.MouseButton1Click:Connect(function()
+		Hovering = false
+		Time = tick()
+
 		TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 100, 0, 16), Position = UDim2.new(1, -110, 0.5, -8)}):Play()
 
 		if KeyLabel.Text ~= "..." then
@@ -852,6 +974,10 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	FixValues, Callback = TypeCheck(FixValues, Callback, false)
 	Decimal, Callback = TypeCheck(Decimal, Callback, {false, 1})
 	Increment, Callback = TypeCheck(Increment, Callback, 1)
+	
+	local Hovering = false
+	
+	local Time = 0
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -910,6 +1036,16 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Size = UDim2.fromScale(0.633, 0.22),
 		Position = UDim2.fromScale(0.205, 0.550)
 	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Bar,
+		Name = "StrokeBorder",
+		Thickness = 0,
+		Color = Color3.fromRGB(15, 15, 15),
+		Transparency = 0.5,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Enabled = false
+	})
 
 	local Fill = Utility.Create("Frame", {
 		Parent = Bar,
@@ -954,10 +1090,35 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
 
 	Holder.MouseEnter:Connect(function()
+		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 49)}):Play()
+		
+		Time = tick()
+		
+		while Hovering do
+			task.wait(0.1)
+
+			if self.StrokeBorders and tick() - Time > 1 then
+				Bar.StrokeBorder.Enabled = true
+
+				local StrokeTween = TS:Create(Bar.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1, Transparency = 0.1})
+				StrokeTween:Play()
+
+				repeat task.wait() until not Hovering or tick() - Time < 1 or Box:IsFocused() or not self.StrokeBorders
+
+				Bar.StrokeBorder.Enabled = false
+				StrokeTween:Cancel()
+
+				Bar.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
+				Bar.StrokeBorder.Transparency = 0.5
+				Bar.StrokeBorder.Thickness = 0
+			end
+		end
 	end)
 
 	Holder.MouseLeave:Connect(function()
+		Hovering = false
+
 		if not dragging then
 			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 50)}):Play()
 		else
@@ -968,6 +1129,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	end)
 
 	Bar.InputBegan:Connect(function(input)
+		Hovering = false
+		Time = tick()
+		
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 
@@ -1030,6 +1194,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	end)
 
 	Box:GetPropertyChangedSignal("Text"):Connect(function()
+		Hovering = false
+		Time = tick()
+
 		if not tonumber(Box.Text:sub(#Box.Text)) then
 			Box.Text = Box.Text:sub(1, -2)
 		end
@@ -1056,6 +1223,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 	local Dont = false
 	local Open = false
+	
+	local Hovering = false
+	local Time = 0
 
 	local Holder = Utility.Create("Frame", {
 		Name = "Dropdown",
@@ -1258,10 +1428,28 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	self:AddInstances({Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
 
 	Holder.MouseEnter:Connect(function()
+		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 160 or 30)}):Play()
+		
+		Time = tick()
+
+		while self.StrokeBorders and Hovering do
+			task.wait(0.1)
+	
+			if tick() - Time > 1 then
+				local StrokeTween = TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {ImageTransparency = 0.7})
+				StrokeTween:Play()
+
+				repeat task.wait() until not Hovering or tick() - Time < 1 or not self.StrokeBorders
+
+				StrokeTween:Cancel()
+				Holder2["Dropdown Arrow"].ImageTransparency = 0
+			end
+		end
 	end)
 
 	Holder.MouseLeave:Connect(function()
+		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 160 or 31)}):Play()
 	end)
 
@@ -1298,7 +1486,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Position = UDim2.new(0.93, 0, 0, 0),
 		Size = UDim2.fromScale(0.060, 0.9)
 	})
-
+	
 	local List = Utility.Create("Frame", {
 		BackgroundTransparency = 1,
 		Name = "List",
@@ -1343,6 +1531,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	end
 
 	Holder2["Dropdown Arrow"].MouseButton1Click:Connect(function()
+		Hovering = false
+		Time = tick()
+		
 		if Dropping then
 			return
 		end
@@ -1633,6 +1824,8 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	BoogaUI.LastButton = false
 
 	BoogaUI.ChangingPage = false
+	
+	BoogaUI.StrokeBorders = true
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
@@ -2081,6 +2274,10 @@ function BoogaUI:AddPage(Title, Icon)
 						instance.Size = UDim2.new(0.950, 0, 0, 30)
 					end
 					
+					if instance.Name == "Toggle1" then
+						OldBackgroundTransparency = 0
+					end
+					
 					instance[Properties[instance.ClassName]] = (Properties[instance.ClassName] == "BackgroundTransparency" and OldBackgroundTransparency) or (Properties[instance.ClassName] == "TextTransparency" and OldTextTransparency) or (Properties[instance.ClassName] == "ImageTransparency" and OldImageTransparency)
 				end)
 
@@ -2113,7 +2310,7 @@ function BoogaUI:AddPage(Title, Icon)
 
 					for _,instance in pairs(instance:GetDescendants()) do
 
-						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" then
+						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" or instance.Name == "StrokeBorder" then
 							continue
 						end
 
