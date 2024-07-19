@@ -34,14 +34,24 @@ local function Pop(instance, Offset)
 	Clone.Parent = instance.Parent
 
 	Clone.Position = instance.Position
-	instance.ImageTransparency = 1
+	
+	if instance.ClassName == "Frame" then
+		instance.BackgroundTransparency = 1
+	else
+		instance.ImageTransparency = 1
+	end
 
 	TS:Create(Clone, TweenInfo.new(0.2), {Size = instance.Size}):Play()
 
 	task.wait(0.2)
 
 	Clone:Destroy()
-	instance.ImageTransparency = 0
+	
+	if instance.ClassName == "Frame" then
+		instance.BackgroundTransparency = 0
+	else
+		instance.ImageTransparency = 0
+	end
 end
 
 local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
@@ -466,6 +476,8 @@ function Sections:AddTextBox(Name, Callback)
 	local DoubleClick = 0
 
 	local DoubleClicked = false
+	
+	local Hovering = false
 
 	local Holder = Utility.Create("Frame", {
 		Name = "Toggle",
@@ -501,21 +513,32 @@ function Sections:AddTextBox(Name, Callback)
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
-	local Label = Utility.Create("ImageLabel", {
+	local Label = Utility.Create("Frame", {
 		Parent = Holder,
-		BackgroundTransparency = 1,
+		BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+		BackgroundTransparency = 0,
+		BorderSizePixel = 0,
 		Position = UDim2.new(1, -110, 0.5, -8),
 		Size = UDim2.new(0, 100, 0, 16),
 		ZIndex = 2,
-		Image = "rbxassetid://5028857472",
-		ImageColor3 = Color3.fromRGB(28, 28, 28),
-		ScaleType = Enum.ScaleType.Slice,
-		SliceCenter = Rect.new(2, 2, 298, 298)
 	})
 
 	Utility.Create("StringValue", {
 		Parent = Label,
 		Name = "AddIndex"
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Label,
+		CornerRadius = UDim.new(0, 2)
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Label,
+		Thickness = 0,
+		Color = Color3.fromRGB(0, 0, 0),
+		Transparency = 0.5,
+		Enabled = false
 	})
 
 	local TextBox = Utility.Create("TextBox", {
@@ -542,10 +565,34 @@ function Sections:AddTextBox(Name, Callback)
 	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
 
 	Button.MouseEnter:Connect(function()
+		Hovering = true
+
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		Time = tick()
+		
+		while Hovering do
+			task.wait(0.1)
+
+			if not TextBox:IsFocused() and Time and tick() - Time > 0.7 then
+				Label.UIStroke.Enabled = true
+
+				local StrokeTween = TS:Create(Label.UIStroke, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				StrokeTween:Play()
+				
+				repeat task.wait() until not Hovering or TextBox:IsFocused()
+
+				Label.UIStroke.Enabled = false
+				StrokeTween:Cancel()
+				
+				Label.UIStroke.Color = Color3.fromRGB(0, 0, 0)
+				Label.UIStroke.Transparency = 0.5
+				Label.UIStroke.Thickness = 0
+			end
+		end
 	end)
 
 	Button.MouseLeave:Connect(function()
+		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 	end)
 
