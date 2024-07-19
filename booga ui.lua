@@ -296,6 +296,8 @@ function Sections:AddButton(Name, Callback)
 		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 		
 		Time = tick()
+		
+		self.StrokeBordersDelay = 0
 
 		while self.StrokeBorders and Hovering do
 			task.wait()
@@ -308,12 +310,16 @@ function Sections:AddButton(Name, Callback)
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
-				Button.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
-
-				Button.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
-				Button.StrokeBorder.Transparency = 0.5
-				Button.StrokeBorder.Thickness = 0
+				
+				local Tween = TS:Create(Button.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				Tween:Play()
+				
+				Tween.Completed:Connect(function()
+					if Button.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+						Button.StrokeBorder.Enabled = false
+					end
+				end)
 			end
 		end
 	end)
@@ -493,12 +499,16 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
-				Toggle.ToggleBase.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
 
-				Toggle.ToggleBase.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
-				Toggle.ToggleBase.StrokeBorder.Transparency = 0.5
-				Toggle.ToggleBase.StrokeBorder.Thickness = 0
+				local Tween = TS:Create(Toggle.ToggleBase.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				Tween:Play()
+
+				Tween.Completed:Connect(function()
+					if Toggle.ToggleBase.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+						Toggle.ToggleBase.StrokeBorder.Enabled = false
+					end
+				end)
 			end
 		end
 	end)
@@ -660,12 +670,16 @@ function Sections:AddTextBox(Name, Callback)
 				
 				repeat task.wait() until not Hovering or TextBox:IsFocused() or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
-				Label.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
 				
-				Label.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
-				Label.StrokeBorder.Transparency = 0.5
-				Label.StrokeBorder.Thickness = 0
+				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				Tween:Play()
+
+				Tween.Completed:Connect(function()
+					if Label.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+						Label.StrokeBorder.Enabled = false
+					end
+				end)
 			end
 		end
 	end)
@@ -874,12 +888,16 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
-				Label.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
 
-				Label.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
-				Label.StrokeBorder.Transparency = 0.5
-				Label.StrokeBorder.Thickness = 0
+				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				Tween:Play()
+
+				Tween.Completed:Connect(function()
+					if Label.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+						Label.StrokeBorder.Enabled = false
+					end
+				end)
 			end
 		end
 	end)
@@ -1107,12 +1125,16 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or Box:IsFocused() or not self.StrokeBorders
 
-				Bar.StrokeBorder.Enabled = false
 				StrokeTween:Cancel()
 
-				Bar.StrokeBorder.Color = Color3.fromRGB(0, 0, 0)
-				Bar.StrokeBorder.Transparency = 0.5
-				Bar.StrokeBorder.Thickness = 0
+				local Tween = TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				Tween:Play()
+
+				Tween.Completed:Connect(function()
+					if Bar.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+						Bar.StrokeBorder.Enabled = false
+					end
+				end)
 			end
 		end
 	end)
@@ -1130,9 +1152,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	end)
 
 	Bar.InputBegan:Connect(function(input)
-		Hovering = false
-		Time = tick()
-		
+
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 
@@ -1166,6 +1186,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	UIS.InputChanged:Connect(function(input)
 		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 
+			Hovering = false
+			Time = tick()
 
 			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 15, 0, -2)}):Play()
 
@@ -1735,32 +1757,31 @@ function Pages:AddSearchBar()
 	
 	Bar.MouseEnter:Connect(function()
 		Hovering = true
-		TS:Create(Bar, TweenInfo.new(0.15), {Size = UDim2.new(0.955, 0, 0, 33)}):Play()
-		
 		Time = tick()
 
 		while Hovering do
-			local Tween = TS:Create(Bar.TextBox, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {TextColor3 = Color3.fromRGB(255, 255, 255), PlaceholderColor3 = Color3.fromRGB(255, 255, 255)})
-			Tween:Play()
-			
-			local Tween2 = TS:Create(Bar.ImageButton, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {ImageTransparency = 0})
-			Tween2:Play()
+			if tick() - Time > self.StrokeBordersDelay then
+				local Tween = TS:Create(Bar.TextBox, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {TextColor3 = Color3.fromRGB(255, 255, 255), PlaceholderColor3 = Color3.fromRGB(255, 255, 255)})
+				Tween:Play()
+				
+				local Tween2 = TS:Create(Bar.ImageButton, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {ImageTransparency = 0})
+				Tween2:Play()
 
-			repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay
-			
-			Tween:Cancel()
-			Tween2:Cancel()
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay
+				
+				Tween:Cancel()
+				Tween2:Cancel()
 
-			Bar.TextBox.PlaceholderColor3 = Color3.fromRGB(176, 176, 176)
-			Bar.TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+				TS:Create(Bar.TextBox, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(255, 255, 255), PlaceholderColor3 = Color3.fromRGB(176, 176, 176)}):Play()
+				TS:Create(Bar.ImageButton, TweenInfo.new(0.3), {ImageTransparency = 0.250}):Play()
+			end
 			
-			Bar.ImageButton.ImageTransparency = 0.250
+			task.wait()
 		end
 	end)
 
 	Bar.MouseLeave:Connect(function()
 		Hovering = false
-		TS:Create(Bar, TweenInfo.new(0.15), {Size = UDim2.new(0.965, 0, 0, 35)}):Play()
 	end)
 
 	local Tween
