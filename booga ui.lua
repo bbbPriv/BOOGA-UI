@@ -1871,7 +1871,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	
 	BoogaUI.StrokeBorders = true
 	
-	BoogaUI.StrokeBordersDelay = 0.8
+	BoogaUI.StrokeBordersDelay = 0.7
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
