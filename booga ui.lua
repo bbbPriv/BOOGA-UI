@@ -183,21 +183,14 @@ local AllSections = {}
 local CleanConnections = {}
 
 function Pages:GetSectionEnv(Section)
-	for _,v in pairs(AllSections) do
-		for k, v2 in pairs(v) do
-			if typeof(v2) == "Instance" and not self[k] then
-				self[k] = v2
-			end
+	for k,v in pairs(AllSections) do
+		if k == Section then
+			self["Section"] = v.Section
+			self["SectionPage"] = v.SectionPage
+			
+			return setmetatable(self, Sections)
 		end
 	end
-
-	for k,v in pairs(Sections) do
-		if k == "Resize" then
-			self[k] = v
-		end
-	end
-
-	return self
 end
 
 function Sections:Resize(Section)
@@ -296,8 +289,6 @@ function Sections:AddButton(Name, Callback)
 		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 		
 		Time = tick()
-		
-		self.StrokeBordersDelay = 0
 
 		while self.StrokeBorders and Hovering do
 			task.wait()
@@ -1722,7 +1713,7 @@ function Pages:AddSection(Name)
 
 
 	local tbl = {SectionPage = self.Page, Section = Section}
-	table.insert(AllSections, tbl)
+	AllSections[Section] = tbl
 
 	return setmetatable(tbl, Sections)
 end
@@ -1731,7 +1722,7 @@ function Pages:ResizePage(DropdownCall)
 	local Size = self.SectionPage["Search Bar"].Visible and 50 or 0
 
 	for _, section in pairs(self.SectionPage:GetChildren()) do
-		if section.ClassName == "ImageLabel" then
+		if section.ClassName == "ImageLabel" and section.Visible then
 			Size += section.AbsoluteSize.Y + 10
 		end
 	end
@@ -1827,21 +1818,22 @@ function Pages:AddSearchBar()
 					end
 					
 					if v2.ClassName ~= "UIListLayout" and v2.ClassName ~= "TextLabel" and v2.Visible then
+						v.Visible = true
 						Invisible = false
 					end
 
 				end
+				
+				local self = self:GetSectionEnv(v)
+				
+				self:ResizePage()
 
 				if Invisible then
 					v.Visible = false
 					continue
 				end
 
-				local self = self:GetSectionEnv(v)
-
-				self:Resize()
-
-				self:ResizePage()
+				self:Resize(v.Frame)
 			end
 		end
 	end)
@@ -1879,7 +1871,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	
 	BoogaUI.StrokeBorders = true
 	
-	BoogaUI.StrokeBordersDelay = 1
+	BoogaUI.StrokeBordersDelay = 0.8
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
