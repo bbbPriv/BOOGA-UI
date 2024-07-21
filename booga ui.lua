@@ -29,6 +29,13 @@ end
 local function Pop(instance, Offset)
 	local Clone = instance:Clone()
 	Clone:ClearAllChildren()
+	
+	if instance:FindFirstChild("UICorner") then
+		Utility.Create("UICorner", {
+			Parent = Clone,
+			CornerRadius = instance.UICorner.CornerRadius
+		})
+	end
 
 	Clone.Size = instance.Size - UDim2.new(0, Offset, 0, Offset)
 	Clone.Parent = instance.Parent
@@ -386,11 +393,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
-
-	local Toggled = Utility.Create("BoolValue", {
-		Parent = Toggle,
-		Name = "Toggled"
-	})
+	
+	getgenv()[Toggle] = false
+	
+	local Value = getgenv()[Toggle]
 
 	Utility.Create("UICorner", {
 		Parent = Toggle,
@@ -399,10 +405,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 	if IsEnabled then
 
-		Toggled.Value = true
+		Value = true
 
 		task.spawn(function()
-			Callback(Toggled)
+			Callback(Value)
 		end)
 	end
 
@@ -517,10 +523,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			return
 		end
 
-		Toggled.Value = not Toggled.Value
+		Value = not Value
 
 		task.spawn(function()
-			Callback(Toggled)
+			Callback(Value)
 		end)
 
 		Switching = true
@@ -530,14 +536,13 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			Out = UDim2.new(0, 20, 0.5, -6)
 		}
 
-		local Frame = Toggle.ToggleBase.ToggleCircle
-		local value = Toggled.Value and "Out" or "In"
+		local value = Value and "Out" or "In"
 
-		TS:Create(Frame, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -9), Position = position[value] + UDim2.new(0, 0, 0, 2.5)}):Play()
+		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -9), Position = position[value] + UDim2.new(0, 0, 0, 2.5)}):Play()
 
 		task.wait(0.1)
 
-		TS:Create(Frame, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -4), Position = position[value]}):Play()
+		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -4), Position = position[value]}):Play()
 
 		task.wait(0.1)
 
@@ -1429,7 +1434,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0.660, 0, 0.5, 0),
-		Size = UDim2.new(0.3, 0, 1, 0),
+		Size = UDim2.new(0.27, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = "None Selected",
@@ -1519,7 +1524,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	
 	Utility.Create("UICorner", {
 		Parent = List,
-		CornerRadius = UDim.new(0, 8)
+		CornerRadius = UDim.new(0, 4)
 	})
 	
 	self:AddInstances({List, List.Size, Holder2["Dropdown Arrow"], Holder2["Dropdown Arrow"].Size})
@@ -1535,6 +1540,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
 	})
 	
+	local Button = Utility.Create("ImageButton", {
+		Parent = Holder,
+		ZIndex = 2,
+		Size = UDim2.fromScale(0.65, 0.95),
+		ImageTransparency = 1,
+		BackgroundTransparency = 1
+	})
+	
 	if #Entries > 1 then
 
 		Utility.Create("UIListLayout", {
@@ -1543,8 +1556,12 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			HorizontalAlignment = Enum.HorizontalAlignment.Center
 		})
 	end
-
+	
 	Holder2["Dropdown Arrow"].MouseButton1Click:Connect(function()
+		firesignal(Button.MouseButton1Click)
+	end)
+
+	Button.MouseButton1Click:Connect(function()
 		Hovering = false
 		Time = tick()
 		
@@ -1797,6 +1814,13 @@ function Pages:AddSearchBar()
 						v2.Visible = true
 						v.Visible = true
 						Invisible = false
+						
+						local self = self:GetSectionEnv(v)
+
+						self:Resize()
+						
+						self:ResizePage()
+						
 						continue
 					end
 
@@ -1871,25 +1895,29 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	
 	BoogaUI.StrokeBorders = true
 	
-	BoogaUI.StrokeBordersDelay = 0.7
+	BoogaUI.StrokeBordersDelay = 0.5
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
 		["Name"] = Name,
 	})
 
-	local MainLabel = Utility.Create("ImageLabel", {
+	local MainLabel = Utility.Create("Frame", {
 		["Parent"] = SG,
 		["Name"] = "MainLabel",
 		["Size"] = UDim2.fromOffset(600, 450),
 		["Position"] = UDim2.new(0.171, 354, 0.133, -24),
-		["BackgroundTransparency"] = 1,
-		["ImageColor3"] = Color3.fromRGB(42, 42, 42),
-		["Image"] = "rbxassetid://4641149554",
+		["BackgroundTransparency"] = 0,
+		["BackgroundColor3"] = Color3.fromRGB(42, 42, 42),
 		["ClipsDescendants"] = true
 	})
 
 	BoogaUI.MainLabel = MainLabel
+	
+	Utility.Create("UICorner", {
+		Parent = MainLabel,
+		CornerRadius = UDim.new(0, 4)
+	})
 
 	Utility.Create("ImageLabel", {
 		Parent = MainLabel,
@@ -1907,7 +1935,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	local Pages = Utility.Create("ImageLabel", {
 		["Parent"] = MainLabel,
 		["Name"] = "Pages",
-		["Size"] = UDim2.fromScale(0.220, 0.871),
+		["Size"] = UDim2.fromScale(0.220, 0.876),
 		["Position"] = UDim2.new(0, 0, 0.128, 0),
 		["BorderSizePixel"] = 0,
 		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
@@ -1947,7 +1975,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 
 	Utility.Create("UICorner", {
 		Parent = Top,
-		CornerRadius = UDim.new(0, 5)
+		CornerRadius = UDim.new(0, 4)
 	})
 
 	Utility.Create("TextLabel", {
