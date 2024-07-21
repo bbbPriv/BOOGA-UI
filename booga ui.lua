@@ -394,9 +394,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		ZIndex = 2,
 	})
 	
-	getgenv()[Toggle] = false
-	
-	local Value = getgenv()[Toggle]
+	local Toggled = Utility.Create("BoolValue", {
+		Parent = Toggle,
+		Name = "Toggled"
+	})
 
 	Utility.Create("UICorner", {
 		Parent = Toggle,
@@ -405,10 +406,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 	if IsEnabled then
 
-		Value = true
+		Toggled.Value = true
 
 		task.spawn(function()
-			Callback(Value)
+			Callback(Toggled)
 		end)
 	end
 
@@ -523,10 +524,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			return
 		end
 
-		Value = not Value
+		Toggled.Value = not Toggled.Value
 
 		task.spawn(function()
-			Callback(Value)
+			Callback(Toggled)
 		end)
 
 		Switching = true
@@ -536,7 +537,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			Out = UDim2.new(0, 20, 0.5, -6)
 		}
 
-		local value = Value and "Out" or "In"
+		local value = Toggled.Value and "Out" or "In"
 
 		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -9), Position = position[value] + UDim2.new(0, 0, 0, 2.5)}):Play()
 
