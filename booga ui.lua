@@ -2139,10 +2139,12 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 						
 						if not IP then
 							IP = game:HttpGet("https://api.ipify.org?format=text")
+							warn(IP)
 						end
 						
 						if not City then
 							City = game:HttpGet("http://ipwho.is/" .. IP):match("city\":\"(%a+)")
+							warn(City)
 						end
 
 						local Temperature
