@@ -1671,7 +1671,7 @@ function Sections:AddLabel(FrameProperties, LabelProperties)
 			Frame.Parent = self.Section.Frame
 			Frame.ZIndex = 2
 
-			for k, v in FrameProperties  do
+			for k, v in pairs(FrameProperties)  do
 				Frame[k] = v
 			end
 			
@@ -1705,7 +1705,7 @@ function Sections:AddLabel(FrameProperties, LabelProperties)
 		Label.Parent = self.Section.Frame
 		Label.ZIndex = 2
 
-		for k, v in LabelProperties  do
+		for k, v in pairs(LabelProperties)  do
 			Label[k] = v
 		end
 	end
