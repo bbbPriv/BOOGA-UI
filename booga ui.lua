@@ -1915,12 +1915,16 @@ function Pages:AddSearchBar()
 				
 				self:ResizePage()
 
+				local Skip = false
+
 				if Invisible then
 					v.Visible = false
-					continue
+					Skip = true
 				end
 
-				self:Resize(v.Frame)
+				if not Skip then
+					self:Resize(v.Frame)
+				end
 			end
 		end
 	end)
