@@ -10,8 +10,11 @@ function Utility.Create(ClassName, Properties)
 	local instance = Instance.new(ClassName)
 
 	for k,v in pairs(Properties) do
-		if not pcall(function() instance[k] = v end) then
-			warn("Property " .. k .. " does not exist in " .. instance.Name)
+		
+		local _, Error = pcall(function() instance[k] = v end)
+		
+		if Error then
+			warn(Error)
 		end
 
 	end
@@ -135,8 +138,8 @@ end
 
 local function SetKeybindSize(self, Key, Label, Duration)
 	if Key.Name:len() <= 3 then
-		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, 38, 0, 16), Position = UDim2.new(1, -48, 0.5, -8)}):Play()
-		self.Instances[Label].Size = UDim2.new(0, 38, 0, 16)
+		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, 34, 0, 16), Position = UDim2.new(1, -44, 0.5, -8)}):Play()
+		self.Instances[Label].Size = UDim2.new(0, 34, 0, 16)
 	elseif Key.Name:len() == 4 then
 		TS:Create(Label, TweenInfo.new(Duration), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
 		self.Instances[Label].Size = UDim2.new(0, 42, 0, 16)
@@ -236,9 +239,6 @@ end
 
 function Sections:AddButton(Name, Callback)
 	Callback = Callback or function() end
-
-	local Pressing = false
-
 	local Hovering
 	
 	local Time = 0
@@ -247,7 +247,7 @@ function Sections:AddButton(Name, Callback)
 		Parent = self.Section.Frame,
 		ZIndex = 2,
 		Text = Name,
-		TextSize = 16,
+		TextSize = 17,
 		Font = Enum.Font.Arial,
 		Size = UDim2.new(0.950, 0, 0, 31),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
@@ -259,11 +259,11 @@ function Sections:AddButton(Name, Callback)
 	Utility.Create("UIStroke", {
 		Parent = Button,
 		Name = "StrokeBorder",
-		Thickness = 0,
-		Color = Color3.fromRGB(15, 15, 15),
-		Transparency = 0.5,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55),
+		Transparency = 0,
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Enabled = false
+		Enabled = true
 	})
 
 	Utility.Create("ImageLabel", {
@@ -301,8 +301,6 @@ function Sections:AddButton(Name, Callback)
 			task.wait()
 
 			if tick() - Time > self.StrokeBordersDelay then
-				Button.StrokeBorder.Enabled = true
-
 				local StrokeTween = TS:Create(Button.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
@@ -310,14 +308,7 @@ function Sections:AddButton(Name, Callback)
 
 				StrokeTween:Cancel()
 				
-				local Tween = TS:Create(Button.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
-				Tween:Play()
-				
-				Tween.Completed:Connect(function()
-					if Button.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
-						Button.StrokeBorder.Enabled = false
-					end
-				end)
+				TS:Create(Button.StrokeBorder, TweenInfo.new(0.2), {Color = Color3.fromRGB(55, 55, 55), Thickness = 1, Transparency = 0}):Play()
 			end
 		end
 	end)
@@ -342,10 +333,6 @@ function Sections:AddButton(Name, Callback)
 		
 		Hovering = false
 
-		if Pressing then
-			return
-		end
-
 		task.spawn(Callback)
 
 		local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 25)})
@@ -367,10 +354,6 @@ function Sections:AddButton(Name, Callback)
 		Effect.Completed:Connect(function()
 			TS:Create(Button, TweenInfo.new(0.1), {TextSize = 16}):Play()
 		end)
-
-		Pressing = true
-
-		Pressing = false
 	end)
 
 	return Button
@@ -378,8 +361,6 @@ end
 
 function Sections:AddToggle(Name, IsEnabled, Callback)
 	Callback = Callback or function() end
-
-	local Switching = false
 	
 	local Hovering = false
 	
@@ -397,6 +378,14 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	local Toggled = Utility.Create("BoolValue", {
 		Parent = Toggle,
 		Name = "Toggled"
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Toggle,
+		Name = "StrokeBorder2",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55)
 	})
 
 	Utility.Create("UICorner", {
@@ -461,7 +450,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			Parent = Toggle.ToggleBase,
 			Name = "ToggleCircle",
 			BackgroundTransparency = 0.1,
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundColor3 = Toggled.Value and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180),
 			Position = not IsEnabled and UDim2.new(0, 2, 0.5, -6) or UDim2.new(0, 20, 0.5, -6),
 			Size = UDim2.new(1, -22, 1, -4),
 			ZIndex = 2,
@@ -520,17 +509,11 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		
 		Hovering = false
 
-		if Switching then
-			return
-		end
-
 		Toggled.Value = not Toggled.Value
 
 		task.spawn(function()
 			Callback(Toggled)
 		end)
-
-		Switching = true
 
 		local position = {
 			In = UDim2.new(0, 2, 0.5, -6),
@@ -539,15 +522,11 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 		local value = Toggled.Value and "Out" or "In"
 
-		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -9), Position = position[value] + UDim2.new(0, 0, 0, 2.5)}):Play()
+		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value], BackgroundColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)}):Play()
 
 		task.wait(0.1)
 
-		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Size = UDim2.new(1, -22, 1, -4), Position = position[value]}):Play()
-
-		task.wait(0.1)
-
-		Switching = false
+		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value]}):Play()
 	end)
 
 	return Toggle
@@ -571,6 +550,14 @@ function Sections:AddTextBox(Name, Callback)
 		BorderSizePixel = 0,
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Holder,
+		Name = "StrokeBorder2",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55)
 	})
 
 	Utility.Create("UICorner", {
@@ -786,6 +773,14 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Holder,
+		Name = "StrokeBorder2",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55)
+	})
 
 	Utility.Create("UICorner", {
 		Parent = Holder,
@@ -849,7 +844,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		BackgroundTransparency = 1,
 		Parent = Label,
 		TextTruncate = Enum.TextTruncate.AtEnd,
-		Position = UDim2.new(0, 5, 0, 0),
+		Position = UDim2.new(0, 5, 0, 1),
 		Size = UDim2.new(1, -10, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
@@ -977,7 +972,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 				KeyLabel.Text = Old
 
-				TS:Create(Label, TweenInfo.new(0.3), {Size = UDim2.new(0, 42, 0, 16), Position = UDim2.new(1, -52, 0.5, -8)}):Play()
+				SetKeybindSize(self, Enum.KeyCode[Old], Label, 0.3)
 			end
 		end
 	end)
@@ -1008,6 +1003,14 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	self:Resize()
 
 	self:ResizePage()
+	
+	Utility.Create("UIStroke", {
+		Parent = Holder,
+		Name = "StrokeBorder2",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55)
+	})
 
 	Utility.Create("UICorner", {
 		Parent = Holder,
@@ -1265,6 +1268,14 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Size = UDim2.new(1, 0, 0, 30),
 		Position = UDim2.fromOffset(0.02, 0),
 		ZIndex = 3,
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Holder2,
+		Name = "StrokeBorder2",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55)
 	})
 
 	Utility.Create("UICorner", {
@@ -1544,7 +1555,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	local Button = Utility.Create("ImageButton", {
 		Parent = Holder,
 		ZIndex = 2,
-		Size = UDim2.fromScale(0.65, 0.95),
+		Size = UDim2.new(0.65, 0, 0, 31),
 		ImageTransparency = 1,
 		BackgroundTransparency = 1
 	})
@@ -1578,7 +1589,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 			TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(0.3), {Rotation = 180}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, #Entries <= 3 and #Entries * 40 + 30 or 160), BackgroundTransparency = 1}):Play()
 
-			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, #Entries >= 3 and 0.190 or #Entries == 2 and 0.275 or #Entries == 1 and 0.367)}):Play()
+			TS:Create(List, TweenInfo.new(0.3), {Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120), BackgroundTransparency = 0.1, Position = UDim2.fromScale(0.010, #Entries >= 3 and 0.210 or #Entries == 2 and 0.3 or #Entries == 1 and 0.392)}):Play()
 			
 			self.Instances[List].Size = UDim2.new(0.970, 0, 0, #Entries <= 3 and #Entries * 40 or 120)
 			
@@ -1647,6 +1658,61 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	return Holder
 end
 
+function Sections:AddLabel(FrameProperties, LabelProperties)
+	local Frame = not FrameProperties and Utility.Create("Frame", {
+		Parent = self.Section.Frame,
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+		BorderSizePixel = 0,
+		ZIndex = 2,
+		Size = UDim2.new(0.950, 0, 0, 40),
+	}) or
+		(function()
+			local Frame = Instance.new("Frame")
+			Frame.Parent = self.Section.Frame
+			Frame.ZIndex = 2
+
+			for k, v in FrameProperties  do
+				Frame[k] = v
+			end
+			
+			return Frame
+		end)()
+	
+	Utility.Create("UICorner", {
+		Parent = Frame,
+		CornerRadius = UDim.new(0, 4)
+	})
+	
+	if not LabelProperties then 
+		Utility.Create("TextLabel", {
+			Name = "Title",
+			Parent = Frame,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0.02, 0, 0.470, 0),
+			Size = UDim2.fromScale(0.950, 0.8),
+			ZIndex = 3,
+			Font = Enum.Font.Arial,
+			Text = "Label",
+			TextWrapped = true,
+			TextColor3 = Color3.fromRGB(255, 255, 255),
+			TextSize = 16,
+			TextTransparency = 0.1,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		})
+	else
+		local Label = Instance.new("Frame")
+		Label.Parent = self.Section.Frame
+		Label.ZIndex = 2
+
+		for k, v in LabelProperties  do
+			Label[k] = v
+		end
+	end
+	
+	self:AddInstances({Frame, Frame.Size, Frame.Title, Frame.Title.Size})
+end
+
 function Sections:AddSeparator(YOffset)
 	local Separator = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -1663,10 +1729,6 @@ function Sections:AddSeparator(YOffset)
 end
 
 function Pages:AddSection(Name)
-
-	if not Name then
-		error("No section name")
-	end
 
 	Utility.Create("UIListLayout", {
 		["Parent"] = self.Page,
@@ -1722,7 +1784,7 @@ function Pages:AddSection(Name)
 		["Size"] = UDim2.new(1, 0, 0, 20),
 		["ZIndex"] = 2,
 		["Font"] = Enum.Font.GothamSemibold,
-		["Text"] = Name,
+		["Text"] = Name or "Section",
 		["TextColor3"] = Color3.fromRGB(255, 255, 255),
 		["TextSize"] = 18,
 		["TextXAlignment"] = Enum.TextXAlignment.Center,
@@ -1868,10 +1930,6 @@ end
 
 function BoogaUI.New(Name, TogglePages, SelectorMovement)
 
-	if not Name then
-		error("No Name argument")
-	end
-
 	BoogaUI.Toggled = false
 
 	BoogaUI.Toggling = false
@@ -1936,7 +1994,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	local Pages = Utility.Create("ImageLabel", {
 		["Parent"] = MainLabel,
 		["Name"] = "Pages",
-		["Size"] = UDim2.fromScale(0.220, 0.876),
+		["Size"] = UDim2.fromScale(0.220, 0.68),
 		["Position"] = UDim2.new(0, 0, 0.128, 0),
 		["BorderSizePixel"] = 0,
 		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
@@ -1945,6 +2003,183 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	})
 
 	BoogaUI.Pages = Pages
+	
+	local Profile = Utility.Create("ImageLabel", {
+		["Parent"] = MainLabel,
+		["Name"] = "Profile",
+		["Size"] = UDim2.fromScale(0.220, 0.2),
+		["Position"] = UDim2.new(0, 0, 0.8, 0),
+		["BorderSizePixel"] = 0,
+		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
+		["Image"] = "rbxassetid://5012534273",
+
+	})
+	
+	Utility.Create("TextLabel", {
+		Parent = Profile,
+		Name = "Game Name",
+		Size = UDim2.fromScale(1, 0.1),
+		BackgroundTransparency = 1,
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		RichText = true,
+		TextWrapped = true,
+		TextSize = 9,
+		Text = "<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>",
+	})
+	
+	Profile["Game Name"].Position = UDim2.fromScale(0, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 16 and 0.12 or 0.15)
+	
+	Utility.Create("TextLabel", {
+		Parent = Profile,
+		Name = "Player Name",
+		Size = UDim2.fromScale(0.1, 0.1),
+		Position = UDim2.fromScale(0.45, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 16 and 0.3 or 0.4),
+		BackgroundTransparency = 1,
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextSize = 9,
+		Text = Player.Name
+	})
+	
+	Utility.Create("TextLabel", {
+		Parent = Profile,
+		Name = "Temperature",
+		Size = UDim2.fromScale(0.1, 0.1),
+		Position = UDim2.fromScale(0.45, 0.7),
+		BackgroundTransparency = 1,
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextSize = 9,
+		Text = "Getting Weather"
+	})
+	
+	local IP
+	
+	local City
+	
+	if identifyexecutor then
+		local FirstWeather = true
+		
+		task.spawn(function()
+			
+			task.spawn(function()
+				
+				Utility.Create("TextLabel", {
+					Parent = Profile,
+					Name = "FPS",
+					Size = UDim2.fromScale(0.1, 0.1),
+					Position = UDim2.fromScale(0.2, 0.7),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 9,
+					Text = "FPS : ",
+					Visible = false
+				})
+
+				local LastTime = tick()
+				local FrameCount = 0
+				
+				local FPS
+
+				game:GetService("RunService").RenderStepped:Connect(function()
+					FrameCount = FrameCount + 1
+					local currentTime = tick()
+
+					if currentTime - LastTime >= 1 then
+						FPS = math.floor(FrameCount / (currentTime - LastTime))
+
+						Profile.FPS.Text = "FPS : " .. FPS
+
+						FrameCount = 0
+						LastTime = currentTime
+					end
+				end)
+				
+				task.spawn(function()
+					
+					while true do
+						
+						local Completed = false
+						
+						Profile.FPS.Visible = false
+						
+						Profile.Temperature.Position = UDim2.fromScale(0.45, 0.7)
+						Profile.Temperature.Text = "Updating Weather"
+						
+						task.spawn(function()
+				
+							while not Completed do
+								task.wait(0.3)
+								
+								if Completed then
+									break
+								end
+								
+								Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "." or "Updating Weather" .. "."
+								
+								task.wait(0.3)
+								
+								if Completed then
+									break
+								end
+								
+								Profile.Temperature.Text = FirstWeather and "Getting Weather" .. ".." or "Updating Weather" .. ".."
+								
+								task.wait(0.3)
+								
+								if Completed then
+									break
+								end
+								
+								Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "..." or "Updating Weather" .. "..."
+							end
+						end)
+						
+						if not IP then
+							IP = game:HttpGet("https://api.ipify.org?format=text")
+						end
+						
+						if not City then
+							City = game:HttpGet("http://ipwho.is/" .. IP):match("city\":\"(%a+)")
+						end
+
+						local Temperature
+						
+						local _, Err = pcall(function()
+							Temperature = game:HttpGet("http://api.weatherapi.com/v1/current.json?key=baabafa5df6448b6a7610230242307&q=" .. City .. "&aqi=no")
+						end)
+						
+						if not Err then
+							Temperature = Temperature:match("like_c\":(%d+)") .. "°C"
+						else
+							warn("Weather Error : " .. Err)
+						end
+
+						Completed = true
+						FirstWeather = false
+
+						Profile.Temperature.Text = Temperature or "Failed"
+						Profile.Temperature.Position = UDim2.fromScale(0.7, 0.7)
+
+						Profile.FPS.Visible = true
+						
+						task.wait(600)
+					end
+				end)
+			end)
+		end)
+	end
+		
+	local Separator = Utility.Create("Frame", {
+		Parent = Profile,
+		Name = "Separator",
+		Size = UDim2.fromScale(0.9, 0.023),
+		Position = UDim2.fromScale(0.05, 0),
+		BorderSizePixel = 0,
+		BackgroundTransparency = 0.750
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Separator
+	})
 
 	local PagesScrolling = Utility.Create("ScrollingFrame", {
 		["Parent"] = Pages,
@@ -1988,7 +2223,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Size = UDim2.new(1, -46, 0, 16),
 		Font = Enum.Font.GothamBold,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		Text = Name,
+		Text = Name or "Booga UI Lib",
 		TextSize = 22,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
@@ -2385,7 +2620,17 @@ function BoogaUI:AddPage(Title, Icon)
 
 					for _,instance in pairs(instance:GetDescendants()) do
 
-						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" or instance.Name == "StrokeBorder" then
+						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" then
+							continue
+						end
+						
+						if instance.Name == "StrokeBorder" or instance.Name == "StrokeBorder2" then
+							instance.Enabled = false
+							
+							task.delay(0.305, function()
+								instance.Enabled = true
+							end)
+							
 							continue
 						end
 
@@ -2483,8 +2728,10 @@ function BoogaUI:AddSeparator(YOffset)
 	return Separator
 end
 
-function BoogaUI:UpdateTitle(Title)
-	self.MainLabel.TitleHolder.Title.Text = Title
+function BoogaUI:UpdateTitle(Properties)
+	for k,v in pairs(Properties) do
+		self.MainLabel.TitleHolder.Title[k] = v
+	end
 
 	return self.MainLabel.TitleHolder.Title
 end
@@ -2842,7 +3089,7 @@ function BoogaUI:Toggle()
 				TS:Create(v, TweenInfo.new(0.5), {ImageTransparency = 1}):Play()
 			elseif v.ClassName == "Frame" then
 				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-			elseif v.Name == "Dropdown Option" then
+			elseif v.Name == "Dropdown Option" or v.ClassName == "TextButton" then
 				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
 			end
 
@@ -2907,6 +3154,8 @@ function BoogaUI:Toggle()
 				TS:Create(v.instance, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 			elseif v.instance.ClassName == "Frame" then
 				TS:Create(v.instance, TweenInfo.new(0.3), {BackgroundTransparency = v.instance.Name == "ToggleBase" and 0.9 or v.instance.Name == "ToggleCircle" and 0.1 or 0}):Play()
+			elseif v.instance.ClassName == "TextButton" then
+				TS:Create(v.instance, TweenInfo.new(0.3), {BackgroundTransparency = 0, TextTransparency = 0.1}):Play()
 			elseif v.instance.Name == "Dropdown Option" then
 				TS:Create(v.instance, TweenInfo.new(0.5), {BackgroundTransparency = 0, TextTransparency = 0.1}):Play()
 				TS:Create(v.instance, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 30)}):Play()
