@@ -2171,6 +2171,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 						end
 					end)
 				else
+					Profile.Temperature.Visible = false
 					Profile.FPS.Position = UDim2.fromScale(0.45, 0.6)
 					Profile.FPS.Visible = true
 				end
