@@ -1915,16 +1915,12 @@ function Pages:AddSearchBar()
 				
 				self:ResizePage()
 
-				local Skip = false
-
 				if Invisible then
 					v.Visible = false
-					Skip = true
+					continue
 				end
 
-				if not Skip then
-					self:Resize(v.Frame)
-				end
+				self:Resize(v.Frame)
 			end
 		end
 	end)
@@ -2055,6 +2051,37 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Text = "Getting Weather"
 	})
 	
+	Utility.Create("TextLabel", {
+		Parent = Profile,
+		Name = "FPS",
+		Size = UDim2.fromScale(0.1, 0.1),
+		Position = UDim2.fromScale(0.2, 0.7),
+		BackgroundTransparency = 1,
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextSize = 9,
+		Text = "FPS : ",
+		Visible = false
+	})
+
+	local LastTime = tick()
+	local FrameCount = 0
+
+	local FPS
+
+	game:GetService("RunService").RenderStepped:Connect(function()
+		FrameCount = FrameCount + 1
+		local currentTime = tick()
+
+		if currentTime - LastTime >= 1 then
+			FPS = math.floor(FrameCount / (currentTime - LastTime))
+
+			Profile.FPS.Text = "FPS : " .. FPS
+
+			FrameCount = 0
+			LastTime = currentTime
+		end
+	end)
+	
 	local IP
 	
 	local City
@@ -2066,110 +2093,83 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 			
 			task.spawn(function()
 				
-				Utility.Create("TextLabel", {
-					Parent = Profile,
-					Name = "FPS",
-					Size = UDim2.fromScale(0.1, 0.1),
-					Position = UDim2.fromScale(0.2, 0.7),
-					BackgroundTransparency = 1,
-					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextSize = 9,
-					Text = "FPS : ",
-					Visible = false
-				})
-
-				local LastTime = tick()
-				local FrameCount = 0
+				if identifyexecutor():lower():find("wave") then
 				
-				local FPS
-
-				game:GetService("RunService").RenderStepped:Connect(function()
-					FrameCount = FrameCount + 1
-					local currentTime = tick()
-
-					if currentTime - LastTime >= 1 then
-						FPS = math.floor(FrameCount / (currentTime - LastTime))
-
-						Profile.FPS.Text = "FPS : " .. FPS
-
-						FrameCount = 0
-						LastTime = currentTime
-					end
-				end)
-				
-				task.spawn(function()
+					task.spawn(function()
+						
+						while true do
+							
+							local Completed = false
+							
+							Profile.FPS.Visible = false
+							
+							Profile.Temperature.Position = UDim2.fromScale(0.45, 0.7)
+							Profile.Temperature.Text = "Updating Weather"
+							
+							task.spawn(function()
 					
-					while true do
-						
-						local Completed = false
-						
-						Profile.FPS.Visible = false
-						
-						Profile.Temperature.Position = UDim2.fromScale(0.45, 0.7)
-						Profile.Temperature.Text = "Updating Weather"
-						
-						task.spawn(function()
-				
-							while not Completed do
-								task.wait(0.3)
-								
-								if Completed then
-									break
+								while not Completed do
+									task.wait(0.3)
+									
+									if Completed then
+										break
+									end
+									
+									Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "." or "Updating Weather" .. "."
+									
+									task.wait(0.3)
+									
+									if Completed then
+										break
+									end
+									
+									Profile.Temperature.Text = FirstWeather and "Getting Weather" .. ".." or "Updating Weather" .. ".."
+									
+									task.wait(0.3)
+									
+									if Completed then
+										break
+									end
+									
+									Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "..." or "Updating Weather" .. "..."
 								end
-								
-								Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "." or "Updating Weather" .. "."
-								
-								task.wait(0.3)
-								
-								if Completed then
-									break
-								end
-								
-								Profile.Temperature.Text = FirstWeather and "Getting Weather" .. ".." or "Updating Weather" .. ".."
-								
-								task.wait(0.3)
-								
-								if Completed then
-									break
-								end
-								
-								Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "..." or "Updating Weather" .. "..."
+							end)
+							
+							if not IP then
+								IP = game:HttpGet("https://api.ipify.org?format=text")
 							end
-						end)
-						
-						if not IP then
-							IP = game:HttpGet("https://api.ipify.org?format=text")
-							warn(IP)
+							
+							if not City then
+								City = game:HttpGet("http://ipwho.is/" .. IP):match("city\":\"(%a+)")
+							end
+
+							local Temperature
+							
+							local _, Err = pcall(function()
+								Temperature = game:HttpGet("http://api.weatherapi.com/v1/current.json?key=baabafa5df6448b6a7610230242307&q=" .. City .. "&aqi=no")
+							end)
+							
+							if not Err then
+								Temperature = Temperature:match("like_c\":(%d+)") .. "°C"
+							else
+								warn("Weather Error : " .. Err)
+							end
+
+							Completed = true
+							FirstWeather = false
+
+							Profile.Temperature.Text = Temperature or "Failed"
+							Profile.Temperature.Position = UDim2.fromScale(0.7, 0.7)
+
+							Profile.FPS.Visible = true
+							
+							task.wait(600)
 						end
-						
-						if not City then
-							City = game:HttpGet("http://ipwho.is/" .. IP):match("city\":\"(%a+)")
-							warn(City)
-						end
-
-						local Temperature
-						
-						local _, Err = pcall(function()
-							Temperature = game:HttpGet("http://api.weatherapi.com/v1/current.json?key=baabafa5df6448b6a7610230242307&q=" .. City .. "&aqi=no")
-						end)
-						
-						if not Err then
-							Temperature = Temperature:match("like_c\":(%d+)") .. "°C"
-						else
-							warn("Weather Error : " .. Err)
-						end
-
-						Completed = true
-						FirstWeather = false
-
-						Profile.Temperature.Text = Temperature or "Failed"
-						Profile.Temperature.Position = UDim2.fromScale(0.7, 0.7)
-
-						Profile.FPS.Visible = true
-						
-						task.wait(600)
-					end
-				end)
+					end)
+				else
+					Profile.FPS.Position = UDim2.fromScale(0.45, 0.6)
+					Profile.FPS.Visible = true
+				end
 			end)
 		end)
 	end
