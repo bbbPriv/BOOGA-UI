@@ -251,7 +251,7 @@ function Sections:AddButton(Name, Callback)
 		Font = Enum.Font.Arial,
 		Size = UDim2.new(0.950, 0, 0, 31),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextTransparency = 0.1,
 		AutoButtonColor = false
 	})
@@ -294,6 +294,7 @@ function Sections:AddButton(Name, Callback)
 		Hovering = true
 
 		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(Button, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -317,6 +318,7 @@ function Sections:AddButton(Name, Callback)
 		Hovering = false
 
 		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(Button, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 
 		if Button.TextSize == 10 then
 			TS:Create(Button, TweenInfo.new(0.1), {TextSize = 16}):Play()
@@ -416,9 +418,9 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = Name,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
-		TextTransparency = 0.10000000149012,
+		TextTransparency = 0.1,
 		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 
@@ -472,6 +474,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	Toggle.MouseEnter:Connect(function()
 		Hovering = true
 		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(Toggle.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -503,6 +506,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	Toggle.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(Toggle.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
@@ -581,9 +585,9 @@ function Sections:AddTextBox(Name, Text, Callback)
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = Name,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
-		TextTransparency = 0.10000000149012,
+		TextTransparency = 0.1,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
@@ -647,6 +651,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 		Hovering = true
 
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 		Time = tick()
 
 		while self.StrokeBorders and Hovering do
@@ -677,6 +682,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 	Button.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
@@ -807,9 +813,9 @@ function Sections:AddKeybind(Name, Key, Callback)
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = Name,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
-		TextTransparency = 0.10000000149012,
+		TextTransparency = 0.1,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
@@ -872,6 +878,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 	Button.MouseEnter:Connect(function()
 		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -903,6 +910,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 	Button.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 	end)
 
 	CleanConnections[#CleanConnections + 1] = UIS.InputBegan:Connect(function(Input, GME)
@@ -1033,7 +1041,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = Name,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
 		TextTransparency = 0.10000000149012,
 		TextXAlignment = Enum.TextXAlignment.Left
@@ -1117,6 +1125,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	Holder.MouseEnter:Connect(function()
 		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 49)}):Play()
+		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -1155,6 +1164,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 50)}):Play()
 		end
+		
+		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 	end)
 
 	Bar.InputBegan:Connect(function(input)
@@ -1434,6 +1445,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 
 	Utility.Create("TextLabel", {
 		Parent = Holder2,
+		Name = "Title",
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0.02, 0, 0.5, 0),
@@ -1441,9 +1453,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = Name,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
-		TextTransparency = 0.10000000149012,
+		TextTransparency = 0.1,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
@@ -1462,11 +1474,12 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
-	self:AddInstances({Holder2, Holder2.Size, Holder2.TextLabel, Holder2.TextLabel.Size, TextBox, TextBox.Size})
+	self:AddInstances({Holder2, Holder2.Size, Holder2.Title, Holder2.Title.Size, TextBox, TextBox.Size})
 
 	Holder.MouseEnter:Connect(function()
 		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 160 or 30)}):Play()
+		TS:Create(Holder2.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -1488,6 +1501,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	Holder.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 160 or 31)}):Play()
+		TS:Create(Holder2.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 	end)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
