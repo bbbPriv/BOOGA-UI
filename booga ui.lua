@@ -2446,7 +2446,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	return BoogaUI
 end
 
-function BoogaUI:AddPage(Title, Icon)
+function BoogaUI:AddPage(Title, Icon, IconProperties)
 
 	local AnimatingClick = false
 
@@ -2523,7 +2523,7 @@ function BoogaUI:AddPage(Title, Icon)
 		["Position"] = Icon and UDim2.fromScale(0.25, 0) or UDim2.fromScale(0.05, 0)
 	})
 
-	local Icon = Utility.Create("ImageLabel", {
+	local Icon = Utility.Create("ImageLabel", IconProperties or {
 		Name = "Icon",
 		Parent = Button,
 		BackgroundTransparency = 1,
@@ -2812,6 +2812,28 @@ function BoogaUI:AddPage(Title, Icon)
 	BoogaUI.LastPage = Button
 
 	return setmetatable({Page = Page}, Pages)
+end
+
+function BoogaUI:AddPageCategory(Title)
+	local Holder = Utility.Create("Frame", {
+		Parent = self.PagesScrolling,
+		Name = Title,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(0.950, 0, 0, 10),
+	})
+	
+	Utility.Create("TextLabel", {
+		Parent = Holder,
+		Name = Title,
+		Text = Title,
+		TextColor3 = Color3.fromRGB(120, 120, 120),
+		TextSize = 16,
+		Font = Enum.Font.Gotham,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(0.950, 0, 0, 10),
+	})
+	
+	Holder[Title].Position = UDim2.fromScale(-0.420 + (Holder[Title].Text:len() * 30 / 1000), self.PagesScrolling:FindFirstChildOfClass("TextButton") and -0.1 or 0.3)
 end
 
 function BoogaUI:AddSeparator(YOffset)
