@@ -534,7 +534,7 @@ end
 
 function Sections:AddTextBox(Name, Text, Callback)
 	Callback = Callback or function() end
-	
+
 	Text, Callback = TypeCheck(Text, Callback, Name)
 
 	local DoubleClick = 0
@@ -628,7 +628,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
-	
+
 	if Text ~= Name then
 		Callback(Text, true)
 	end
@@ -2136,7 +2136,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
-		Text = "Getting Weather"
+		Text = "Loading Info"
 	})
 
 	Utility.Create("TextLabel", {
@@ -2203,7 +2203,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 										break
 									end
 
-									Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "." or "Updating Weather" .. "."
+									Profile.Temperature.Text = FirstWeather and "Loading Info" .. "." or "Updating Weather" .. "."
 
 									task.wait(0.3)
 
@@ -2211,7 +2211,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 										break
 									end
 
-									Profile.Temperature.Text = FirstWeather and "Getting Weather" .. ".." or "Updating Weather" .. ".."
+									Profile.Temperature.Text = FirstWeather and "Loading Info" .. ".." or "Updating Weather" .. ".."
 
 									task.wait(0.3)
 
@@ -2219,7 +2219,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 										break
 									end
 
-									Profile.Temperature.Text = FirstWeather and "Getting Weather" .. "..." or "Updating Weather" .. "..."
+									Profile.Temperature.Text = FirstWeather and "Loading Info" .. "..." or "Updating Weather" .. "..."
 								end
 							end)
 
