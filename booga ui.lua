@@ -2247,7 +2247,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 							FirstWeather = false
 
 							Profile.Temperature.Text = Temperature or "Failed"
-							Profile.Temperature.Position = UDim2.fromScale(0.7, 0.7)
+							Profile.Temperature.Position = UDim2.fromScale(0.73, 0.7)
 
 							Profile.FPS.Visible = true
 
