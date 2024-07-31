@@ -2309,13 +2309,12 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		["Padding"] = UDim.new(0, 10)
 	})
 
-	local Top = Utility.Create("ImageLabel", {
+	local Top = Utility.Create("Frame", {
 		["Parent"] = MainLabel,
 		["Name"] = "TitleHolder",
 		["Size"] = UDim2.fromScale(1, 0.128),
+		["BackgroundColor3"] = Color3.fromRGB(27, 27, 27),
 		["BorderSizePixel"] = 0,
-		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
-		["Image"] = "rbxassetid://5012534273"
 	})
 
 	Utility.Create("UICorner", {
@@ -2833,7 +2832,7 @@ function BoogaUI:AddPageCategory(Title)
 		Size = UDim2.new(0.950, 0, 0, 10),
 	})
 	
-	Holder[Title].Position = UDim2.fromScale(-0.420 + (Holder[Title].Text:len() * 30 / 1000), self.PagesScrolling:FindFirstChildOfClass("TextButton") and -0.1 or 0.3)
+	Holder[Title].Position = UDim2.fromScale(-0.420 + (Holder[Title].Text:len() * 30 / 1000), self.PagesScrolling:FindFirstChildOfClass("TextButton") and 0 or 0.3)
 end
 
 function BoogaUI:AddSeparator(YOffset)
