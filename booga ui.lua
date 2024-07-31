@@ -188,17 +188,47 @@ Sections.__index = Sections
 
 setmetatable(Sections, {__index = Pages})
 
+local Interactables = {}
+Interactables.__index = Interactables
+
+local InteractablesInfo = {}
+
 local AllSections = {}
 
 local CleanConnections = {}
 
+function Interactables:Remove()
+	self.Interactable:Destroy()
+	
+	local Env = Pages:GetSectionEnv(self.Section)
+	Env:Resize()
+	Env:ResizePage()
+end
+
+function Interactables:Edit(Properties)
+	local Interactable = self.Interactable
+
+	if Properties.Text then
+		if Interactable.ClassName ~= "TextButton" then
+			Interactable.Title.Text = Properties.Text
+		else
+			Interactable.Text = Properties.Text
+		end
+	end
+	
+	if Properties.Callback then
+		InteractablesInfo[Interactable].Callback = Properties.Callback
+	end
+	
+	if Properties.InputText then
+		Interactable.Frame.TextBox.Text = Properties.InputText
+	end
+end
+
 function Pages:GetSectionEnv(Section)
 	for k,v in pairs(AllSections) do
 		if k == Section then
-			self["Section"] = v.Section
-			self["SectionPage"] = v.SectionPage
-
-			return setmetatable(self, Sections)
+			return setmetatable({Section = v.Section, SectionPage = v.SectionPage}, Sections)
 		end
 	end
 end
@@ -255,6 +285,8 @@ function Sections:AddButton(Name, Callback)
 		TextTransparency = 0.1,
 		AutoButtonColor = false
 	})
+	
+	InteractablesInfo[Button] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
 		Parent = Button,
@@ -335,7 +367,7 @@ function Sections:AddButton(Name, Callback)
 
 		Hovering = false
 
-		task.spawn(Callback)
+		task.spawn(InteractablesInfo[Button].Callback)
 
 		local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 25)})
 		Tween:Play()
@@ -358,7 +390,7 @@ function Sections:AddButton(Name, Callback)
 		end)
 	end)
 
-	return Button
+	return setmetatable({instance = Button, Interactable = Button, Section = self.Section}, Interactables)
 end
 
 function Sections:AddToggle(Name, IsEnabled, Callback)
@@ -376,6 +408,8 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
+	
+	InteractablesInfo[Toggle] = {Callback = Callback}
 
 	local Toggled = Utility.Create("BoolValue", {
 		Parent = Toggle,
@@ -400,7 +434,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Toggled.Value = true
 
 		task.spawn(function()
-			Callback(Toggled)
+			InteractablesInfo[Toggle].Callback(Tpggled)
 		end)
 	end
 
@@ -516,7 +550,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Toggled.Value = not Toggled.Value
 
 		task.spawn(function()
-			Callback(Toggled)
+			InteractablesInfo[Toggle].Callback(Toggled)
 		end)
 
 		local position = {
@@ -533,7 +567,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value]}):Play()
 	end)
 
-	return Toggle
+	return setmetatable({instance = Toggle, Interactable = Toggle, Section = self.Section}, Interactables)
 end
 
 function Sections:AddTextBox(Name, Text, Callback)
@@ -557,6 +591,8 @@ function Sections:AddTextBox(Name, Text, Callback)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
+	
+	InteractablesInfo[Holder] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -634,7 +670,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 	})
 
 	if Text ~= Name then
-		Callback(Text, true)
+		InteractablesInfo[Holder].Callback(Text, true)
 	end
 
 	local Button = Utility.Create("ImageButton", {
@@ -733,7 +769,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 
 		task.spawn(function()
-			Callback(TextBox.Text, false)
+			InteractablesInfo[Holder].Callback(TextBox.Text, false)
 		end)
 
 		Pop(Label, 4)
@@ -742,7 +778,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 	TextBox.FocusLost:Connect(function()
 
 		task.spawn(function()
-			Callback(TextBox.Text, true)
+			InteractablesInfo[Holder].Callback(TextBox.Text, true)
 		end)
 
 		if DoubleClicked then
@@ -756,7 +792,7 @@ function Sections:AddTextBox(Name, Text, Callback)
 		TextBox.TextXAlignment = Enum.TextXAlignment.Center
 	end)
 
-	return Holder
+	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
 function Sections:AddKeybind(Name, Key, Callback)
@@ -785,6 +821,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
+	
+	InteractablesInfo[Holder] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -916,7 +954,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 	CleanConnections[#CleanConnections + 1] = UIS.InputBegan:Connect(function(Input, GME)
 		if not GME and Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Key and not Selecting then
 			task.spawn(function()
-				Callback(Enum.KeyCode[Key.Name])
+				InteractablesInfo[Holder].Callback(Enum.KeyCode[Key.Name])
 			end)
 		end
 	end)
@@ -991,7 +1029,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 		end
 	end)
 
-	return Holder
+	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
 function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment, Callback)	
@@ -1013,6 +1051,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Size = UDim2.new(0.950, 0, 0, 50),
 		ZIndex = 2,
 	})
+	
+	InteractablesInfo[Holder] = {Callback = Callback}
 
 	self:Resize()
 
@@ -1177,7 +1217,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
-			Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))		
+			InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))		
 
 			repeat task.wait() until not dragging
 
@@ -1213,7 +1253,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 			local Num = UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment)
 
 			if Num ~= Old then
-				Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
+				InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
 			end
 
 			Old = Num
@@ -1248,11 +1288,11 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 				Box.Text = Num > Max and Max or Num < Min and Min or Box.Text
 			end
 
-			Callback(UpdateSlider(Bar, Box.Text, Min, Max, FixValues, Decimal, Increment))
+			InteractablesInfo[Holder].Callback(UpdateSlider(Bar, Box.Text, Min, Max, FixValues, Decimal, Increment))
 		end
 	end)
 
-	return Holder
+	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
 function Sections:AddDropdown(Name, Entries, Callback)
@@ -1286,6 +1326,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Position = UDim2.fromOffset(0.02, 0),
 		ZIndex = 3,
 	})
+	
+	InteractablesInfo[Holder2] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder2,
@@ -1369,7 +1411,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					end
 
 					task.spawn(function()
-						Callback(v)
+						InteractablesInfo[Holder2].Callback(v)
 					end)
 
 					Dont = true
@@ -1753,7 +1795,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Dropping = false
 	end)
 
-	return Holder
+	return setmetatable({instance = Holder, Interactable = Holder2, Section = self.Section}, Interactables)
 end
 
 function Sections:AddLabel(FrameProperties, LabelProperties)
@@ -1985,7 +2027,7 @@ function Pages:AddSearchBar()
 						continue
 					end
 
-					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame.TextLabel
+					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame:FindFirstChildOfClass("TextLabel")
 
 
 					if Label then
