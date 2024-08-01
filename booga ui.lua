@@ -454,7 +454,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Text = Name,
 		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
-		TextTransparency = 0.1,
+		TextTransparency = 0.150,
 		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 
@@ -540,7 +540,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	Toggle.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
-		TS:Create(Toggle.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		
+		if not Toggled.Value then
+			TS:Create(Toggle.Title, TweenInfo.new(0.15), {TextTransparency = 0.15, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		end
 	end)
 
 	Button.MouseButton1Click:Connect(function()
@@ -559,12 +562,10 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		}
 
 		local value = Toggled.Value and "Out" or "In"
+		
+		TS:Create(Toggle.Title, TweenInfo.new(0.2), {TextColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(230, 230, 230), TextTransparency = value == "Out" and 0 or 0.1}):Play()
 
 		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value], BackgroundColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)}):Play()
-
-		task.wait(0.1)
-
-		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value]}):Play()
 	end)
 
 	return setmetatable({instance = Toggle, Interactable = Toggle, Section = self.Section}, Interactables)
