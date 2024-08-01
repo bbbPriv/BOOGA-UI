@@ -2150,8 +2150,8 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	local Pages = Utility.Create("ImageLabel", {
 		["Parent"] = MainLabel,
 		["Name"] = "Pages",
-		["Size"] = UDim2.fromScale(0.220, 0.68),
-		["Position"] = UDim2.new(0, 0, 0.128, 0),
+		["Size"] = UDim2.fromScale(0.220, 0.69),
+		["Position"] = UDim2.new(0, 0, 0.115, 0),
 		["BorderSizePixel"] = 0,
 		["ImageColor3"] = Color3.fromRGB(27, 27, 27),
 		["Image"] = "rbxassetid://5012534273",
@@ -2366,7 +2366,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	local Top = Utility.Create("Frame", {
 		["Parent"] = MainLabel,
 		["Name"] = "TitleHolder",
-		["Size"] = UDim2.fromScale(1, 0.128),
+		["Size"] = UDim2.fromScale(1, 0.115),
 		["BackgroundColor3"] = Color3.fromRGB(27, 27, 27),
 		["BorderSizePixel"] = 0,
 	})
@@ -2595,7 +2595,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		["Parent"] = self.MainLabel,
 		["Name"] = Title,
 		["BackgroundTransparency"] = 1,
-		["Position"] = UDim2.new(0.252, 1.5, 0.14, 0),
+		["Position"] = UDim2.new(0.252, 1.5, 0.135, 0),
 		["Size"] = UDim2.new(0.973, -142, 1, -56),
 		["ScrollBarThickness"] = 3,
 		["ScrollBarImageColor3"] = Color3.fromRGB(0, 0, 0),
@@ -2611,7 +2611,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 			Parent = Page,
 			ZIndex = 2,
 			Size = UDim2.new(0.965, 0, 0, 35),
-			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
 			Visible = false
 		}),
 
