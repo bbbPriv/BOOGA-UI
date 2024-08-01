@@ -1152,7 +1152,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Parent = Fill,
 		Name = "Circle",
 		ImageTransparency = 1,
-		Size = UDim2.fromOffset(13, 11),
+		Size = UDim2.fromOffset(12, 11),
 		Position = UDim2.fromScale(-0.5, 0),
 		ZIndex = 2,
 		BackgroundTransparency = 1,
@@ -3296,6 +3296,8 @@ function BoogaUI:Toggle()
 
 		self.MainLabel.TitleHolder.ZIndex = 4
 		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = self.MainLabel.Size}):Play()
+		
+		self.MainLabel.Parent.Glow.Visible = false
 
 		task.wait(0.5)
 
@@ -3314,14 +3316,15 @@ function BoogaUI:Toggle()
 		self.Toggling = true
 
 		self.MainLabel.ClipsDescendants = false		
-		self.MainLabel.Parent.Glow.Visible = false
 
-		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.fromOffset(self.MainLabel.TitleHolder.Size.X.Offset, 428)}):Play()
+		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.fromOffset(self.MainLabel.TitleHolder.Size.X.Offset, 450)}):Play()
 
 		task.wait(0.5)
+		
+		self.MainLabel.Parent.Glow.Visible = true
 
-		self.MainLabel.Size = UDim2.fromOffset(self.MainLabel.Size.X.Offset, 428)
-		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.128, 0)}):Play()
+		self.MainLabel.Size = UDim2.fromOffset(self.MainLabel.Size.X.Offset, 450)
+		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.115, 0)}):Play()
 
 		for _,v in pairs(self.Instances) do
 			if v.instance.ClassName == "TextLabel" then
@@ -3377,8 +3380,6 @@ function BoogaUI:Toggle()
 				TS:Create(PageTitle, TweenInfo.new(0.250), {ImageTransparency = 0.4}):Play()
 			end
 		end
-
-		self.MainLabel.Parent.Glow.Visible = true
 
 		self.MainLabel.TitleHolder.ZIndex = 1
 		self.MainLabel.TitleHolder.Title.ZIndex = 1
