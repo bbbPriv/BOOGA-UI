@@ -2109,16 +2109,23 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
 		["Name"] = Name,
 	})
-
-	local MainLabel = Utility.Create("Frame", {
+	
+	local Fake = Utility.Create("Frame", {
 		["Parent"] = SG,
-		["Name"] = "MainLabel",
+		["Name"] = "Fake",
 		["Size"] = UDim2.fromOffset(600, 450),
 		["Position"] = UDim2.new(0.171, 354, 0.133, -24),
+		["BackgroundTransparency"] = 1,
+	})
+	
+	local MainLabel = Utility.Create("Frame", {
+		["Parent"] = Fake,
+		["Name"] = "MainLabel",
+		["Size"] = UDim2.fromOffset(600, 450),
 		["BackgroundTransparency"] = 0,
 		["BackgroundColor3"] = Color3.fromRGB(42, 42, 42),
 		["ClipsDescendants"] = true
-	})
+	}) 
 
 	BoogaUI.MainLabel = MainLabel
 
@@ -2128,11 +2135,11 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	})
 
 	Utility.Create("ImageLabel", {
-		Parent = MainLabel,
+		Parent = Fake,
 		Name = "Glow",
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, -15, 0, -15),
-		Size = UDim2.new(1, 30, 1, 28),
+		Size = UDim2.new(1, 30, 1, 30),
 		ZIndex = 0,
 		Image = "rbxassetid://5028857084",
 		ImageColor3 = Color3.fromRGB(0, 0, 0),
@@ -2390,7 +2397,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 			mousePos = input.Position
-			framePos = MainLabel.Position
+			framePos = Fake.Position
 
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
@@ -2410,7 +2417,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 			mousePos = input.Position
-			framePos = MainLabel.Position
+			framePos = Fake.Position
 
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
@@ -2429,7 +2436,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	UIS.InputChanged:Connect(function(input)
 		if input == dragInput and dragging then
 			local delta = input.Position - mousePos
-			TS:Create(MainLabel, TweenInfo.new(0.090, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0), {Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)}):Play()
+			TS:Create(Fake, TweenInfo.new(0.090, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0), {Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)}):Play()
 		end
 	end)
 
@@ -3307,7 +3314,7 @@ function BoogaUI:Toggle()
 		self.Toggling = true
 
 		self.MainLabel.ClipsDescendants = false		
-		self.MainLabel.Glow.Visible = false
+		self.MainLabel.Parent.Glow.Visible = false
 
 		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.fromOffset(self.MainLabel.TitleHolder.Size.X.Offset, 428)}):Play()
 
@@ -3371,7 +3378,7 @@ function BoogaUI:Toggle()
 			end
 		end
 
-		self.MainLabel.Glow.Visible = true
+		self.MainLabel.Parent.Glow.Visible = true
 
 		self.MainLabel.TitleHolder.ZIndex = 1
 		self.MainLabel.TitleHolder.Title.ZIndex = 1
