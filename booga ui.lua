@@ -1049,7 +1049,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
 		Position = UDim2.new(1, -50, 0.5, -8),
-		Size = UDim2.new(0.950, 0, 0, 50),
+		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
 	
@@ -1077,14 +1077,15 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Parent = Holder,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0.02, 0, 0.280, 0),
+		Position = UDim2.new(0.02, 0, 0.5, 0),
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = Name,
+		TextWrapped = true,
 		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
-		TextTransparency = 0.10000000149012,
+		TextTransparency = 0.1,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
@@ -1094,11 +1095,12 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Font = Enum.Font.Arial,
 		ZIndex = 2,
 		BackgroundTransparency = 1,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		TextColor3 = Color3.fromRGB(230, 230, 230),
 		TextSize = 14,
+		TextTransparency = 0.07,
 		Text = Value,
 		Size = UDim2.fromScale(0.1, 0.6),
-		Position = UDim2.fromScale(0.88, 0),
+		Position = UDim2.fromScale(0.42, 0.2),
 		TextXAlignment = Enum.TextXAlignment.Right
 	})
 
@@ -1107,8 +1109,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Name = "Bar",
 		ZIndex = 2,
 		BackgroundColor3 = Color3.fromRGB(45, 45, 45),
-		Size = UDim2.fromScale(0.633, 0.22),
-		Position = UDim2.fromScale(0.205, 0.550)
+		Size = UDim2.fromScale(0.4, 0.22),
+		Position = UDim2.fromScale(0.550, 0.43)
 	})
 
 	Utility.Create("UIStroke", {
@@ -1150,7 +1152,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Parent = Fill,
 		Name = "Circle",
 		ImageTransparency = 1,
-		Size = UDim2.fromOffset(19, 15),
+		Size = UDim2.fromOffset(13, 11),
 		Position = UDim2.fromScale(-0.5, 0),
 		ZIndex = 2,
 		BackgroundTransparency = 1,
@@ -1165,7 +1167,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 	Holder.MouseEnter:Connect(function()
 		Hovering = true
-		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 49)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(Holder.TextBox, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
@@ -1199,13 +1202,14 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Hovering = false
 
 		if not dragging then
-			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 50)}):Play()
+			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 		else
 			repeat task.wait() until not dragging
 
-			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 50)}):Play()
+			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 		end
 		
+		TS:Create(Holder.TextBox, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.1, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
 	end)
 
@@ -1214,7 +1218,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
 
-			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 15, 0, -2)}):Play()
+			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 5, 0, -2)}):Play()
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
@@ -1247,7 +1251,7 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 			Hovering = false
 			Time = tick()
 
-			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 15, 0, -2)}):Play()
+			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 5, 0, -2)}):Play()
 
 			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 
