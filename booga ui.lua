@@ -2719,38 +2719,6 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		self.ChangingPage = true
 		
 		self.PagesLastPos[Page] = Page.CanvasPosition
-		
-		local PageLabel = self.MainLabel.TextLabel
-		
-		local Tween = TS:Create(PageLabel, TweenInfo.new(0.03 * PageLabel.Text:len()), {TextTransparency = 1})
-		Tween:Play()
-		
-		task.spawn(function()
-			local Text = PageLabel.Text:match("<b>(.+)</b>")
-
-			for i = Text:len(), 1, -1 do
-				PageLabel.Text = "<b>" .. Text:gsub(Text:sub(i, i) .. "?$", "", 1) .. "</b>"
-				Text = Text:gsub(Text:sub(i, i) .. "?$", "", 1)
-
-				task.wait(0.03)
-			end
-			
-			TS:Create(PageLabel, TweenInfo.new(0.1), {TextTransparency = 0.1}):Play()
-			
-			task.wait(0.1)
-
-			Text = PageTitle.Text:match("<b>(.+)</b>")
-
-			for i = 1, Text:len() do
-				PageLabel.Text = "<b>" .. Text:sub(1, i) .. "</b>"
-				
-				local Len = Text:len()
-				
-				PageLabel.Position = UDim2.fromScale(0.250 + (0.0055 * Len), 0.1)
-
-				task.wait(0.03)
-			end
-		end)
 
 		if self.SelectorMovement then
 			TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * 1.385)}):Play()
@@ -2783,6 +2751,38 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 			self.ChangingPage = false
 			return
 		end
+		
+		local PageLabel = self.MainLabel.TextLabel
+
+		local Tween = TS:Create(PageLabel, TweenInfo.new(0.03 * PageLabel.Text:len()), {TextTransparency = 1})
+		Tween:Play()
+
+		task.spawn(function()
+			local Text = PageLabel.Text:match("<b>(.+)</b>")
+
+			for i = Text:len(), 1, -1 do
+				PageLabel.Text = "<b>" .. Text:gsub(Text:sub(i, i) .. "?$", "", 1) .. "</b>"
+				Text = Text:gsub(Text:sub(i, i) .. "?$", "", 1)
+
+				task.wait(0.03)
+			end
+
+			TS:Create(PageLabel, TweenInfo.new(0.1), {TextTransparency = 0.1}):Play()
+
+			task.wait(0.1)
+
+			Text = PageTitle.Text:match("<b>(.+)</b>")
+
+			for i = 1, Text:len() do
+				PageLabel.Text = "<b>" .. Text:sub(1, i) .. "</b>"
+
+				local Len = Text:len()
+
+				PageLabel.Position = UDim2.fromScale(0.250 + (0.0055 * Len), 0.1)
+
+				task.wait(0.03)
+			end
+		end)
 
 		local OldBackgroundTransparency
 		local OldTextTransparency
