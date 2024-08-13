@@ -2168,7 +2168,7 @@ function BoogaUI.New(Parameters)
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
-		["Name"] = Name,
+		["Name"] = Parameters.Name or "Booga UI Lib",
 	})
 	
 	local Fake = Utility.Create("Frame", {
