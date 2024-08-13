@@ -2243,7 +2243,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		RichText = true,
 		TextWrapped = true,
 		TextSize = 9,
-		Text = "<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>",
+		Text = "<b>" .. "[SUMMER!] Booga Booga" .. "</b>",
 	})
 
 	Profile["Game Name"].Position = UDim2.fromScale(0.050, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 16 and 0.1 or 0.14)
@@ -2252,7 +2252,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Parent = Profile,
 		Name = "Player Name",
 		Size = UDim2.fromScale(0.1, 0.1),
-		Position = UDim2.fromScale(0.45, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.280 or 0.350),
+		Position = UDim2.fromScale(0.45, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.280 or 0.4),
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
@@ -2263,7 +2263,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Parent = Profile,
 		Name = "FPS Image",
 		Size = UDim2.fromScale(0.120, 0.205),
-		Position = UDim2.fromScale(0.240, 0.510),
+		Position = UDim2.fromScale(0.240, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.510 or 0.540),
 		BackgroundTransparency = 1,
 		Image = "http://www.roblox.com/asset/?id=18797095927",
 	})
@@ -2272,7 +2272,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Parent = Profile,
 		Name = "FPS",
 		Size = UDim2.fromScale(0.1, 0.1),
-		Position = UDim2.fromScale(0.51, 0.550),
+		Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6),
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
@@ -2292,9 +2292,9 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 			FPS = math.floor(FrameCount / (currentTime - LastTime))
 			
 			if FPS > 99 then
-				Profile.FPS.Position = UDim2.fromScale(0.53, 0.550)
+				Profile.FPS.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6)
 			else
-				Profile.FPS.Position = UDim2.fromScale(0.51, 0.550)
+				Profile.FPS.Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6)
 			end
 
 			Profile.FPS.Text = "FPS : " .. FPS
@@ -2308,7 +2308,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Parent = Profile,
 		Name = "Ping Image",
 		Size = UDim2.fromScale(0.1, 0.160),
-		Position = UDim2.fromScale(0.250, 0.720),
+		Position = UDim2.fromScale(0.250, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.720 or 0.740),
 		BackgroundTransparency = 1,
 		Image = "http://www.roblox.com/asset/?id=18797246498",
 	})
@@ -2317,7 +2317,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Parent = Profile,
 		Name = "Ping",
 		Size = UDim2.fromScale(0.1, 0.1),
-		Position = UDim2.fromScale(0.513, 0.750),
+		Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770),
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
@@ -2331,9 +2331,9 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 			local Ping = math.random(50, 60)
 
 			if Ping > 99 then
-				Profile.Ping.Position = UDim2.fromScale(0.53, 0.750)
+				Profile.Ping.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770)
 			else
-				Profile.Ping.Position = UDim2.fromScale(0.513, 0.750)
+				Profile.Ping.Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770)
 			end
 
 			Profile.Ping.Text = "Ping : " .. Ping
@@ -2345,7 +2345,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 	local Separator = Utility.Create("Frame", {
 		Parent = Profile,
 		Name = "Profile Separator",
-		Size = UDim2.fromScale(0.9, 0.023),
+		Size = UDim2.fromScale(0.9, 0.025),
 		Position = UDim2.fromScale(0.05, 0),
 		BorderSizePixel = 0,
 		BackgroundTransparency = 0.750
