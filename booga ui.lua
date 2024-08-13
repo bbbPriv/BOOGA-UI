@@ -2291,6 +2291,10 @@ function BoogaUI.New(Parameters)
 		if currentTime - LastTime >= 1 then
 			FPS = math.floor(FrameCount / (currentTime - LastTime))
 			
+			if FPS == 59 then
+				FPS = 60
+			end
+			
 			if FPS > 99 then
 				Profile.FPS.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6)
 			else
@@ -2328,7 +2332,7 @@ function BoogaUI.New(Parameters)
 		local Stats = game:GetService("Stats")
 
 		while true do
-			local Ping = math.random(50, 60)
+			local Ping = math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
 
 			if Ping > 99 then
 				Profile.Ping.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770)
@@ -2338,7 +2342,7 @@ function BoogaUI.New(Parameters)
 
 			Profile.Ping.Text = "Ping : " .. Ping
 			
-			task.wait(0.5)
+			task.wait(0.2)
 		end
 	end)
 
