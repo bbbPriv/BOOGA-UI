@@ -2412,7 +2412,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		TextTransparency = 0.1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		Size = UDim2.fromScale(0.03, 0.03),
-		Position = UDim2.fromScale(0.270, 0.1)
+		Position = UDim2.fromScale(0.250, 0.1)
 	})
 
 	local dragging = false
@@ -2560,7 +2560,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 
 	if not self.FocusedPage then
 		self.MainLabel.TextLabel.Text = "<b>" .. Title .. "</b>"
-		self.MainLabel.TextLabel.Position = UDim2.fromScale(0.260 + (0.0055 * Title:len()), 0.1)
+		self.MainLabel.TextLabel.Position = UDim2.fromScale(0.250 + (0.0055 * Title:len()), 0.1)
 		
 		self.Selected = Selected
 	end
@@ -2742,7 +2742,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 				
 				local Len = Text:len()
 				
-				PageLabel.Position = UDim2.fromScale(0.260 + (0.0055 * Len), 0.1)
+				PageLabel.Position = UDim2.fromScale(0.250 + (0.0055 * Len), 0.1)
 
 				task.wait(0.03)
 			end
