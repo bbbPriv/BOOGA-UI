@@ -2138,7 +2138,7 @@ function Pages:AddSearchBar()
 	return self
 end
 
-function BoogaUI.New(Name, TogglePages, SelectorMovement)
+function BoogaUI.New(Parameters)
 
 	BoogaUI.Toggled = false
 
@@ -2146,13 +2146,13 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 
 	BoogaUI.Instances = {}
 
-	BoogaUI.Name = Name
+	BoogaUI.Name = Parameters.Name
 
 	BoogaUI.Pages = {}
 
 	BoogaUI.Orders = {}
 
-	BoogaUI.SelectorMovement = SelectorMovement
+	BoogaUI.SelectorMovement = Parameters.SelectorMovement
 
 	BoogaUI.LastPageButton = false
 
@@ -2243,7 +2243,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		RichText = true,
 		TextWrapped = true,
 		TextSize = 9,
-		Text = "<b>" .. "[SUMMER!] Booga Booga" .. "</b>",
+		Text = "<b>" .. Parameters.CustomName or game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>",
 	})
 
 	Profile["Game Name"].Position = UDim2.fromScale(0.050, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 16 and 0.1 or 0.14)
@@ -2398,7 +2398,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		Size = UDim2.new(1, -46, 0, 16),
 		Font = Enum.Font.GothamBold,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		Text = Name or "Booga UI Lib",
+		Text = Parameters.Name or "Booga UI Lib",
 		TextSize = 22,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
@@ -2465,7 +2465,7 @@ function BoogaUI.New(Name, TogglePages, SelectorMovement)
 		end
 	end)
 
-	if TogglePages then
+	if Parameters.TogglePages then
 		local Hidden = false
 
 		local Button = Utility.Create("TextButton", {
