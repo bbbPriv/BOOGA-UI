@@ -29,6 +29,19 @@ local function isPointInBounds(point, gui)
 		point.Y >= guiPosition.Y and point.Y <= guiPosition.Y + guiSize.Y)
 end
 
+local function isDescendantOfByName(child, parentName)
+	local current = child
+
+	while current do
+		if current.Name == parentName then
+			return true
+		end
+		current = current.Parent
+	end
+
+	return false
+end
+
 local function Pop(instance, Offset)
 	local Clone = instance:Clone()
 	Clone:ClearAllChildren()
@@ -74,6 +87,13 @@ local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
 	end
 
 	percent = math.clamp(percent, 0, 1)
+	
+	if percent == 0 then
+		TS:Create(Bar.Fill.Circle, TweenInfo.new(0.2), {ImageTransparency = 1, Size = UDim2.fromOffset()}):Play()
+	elseif Bar.Fill.Circle.ImageTransparency == 1 then
+		TS:Create(Bar.Fill.Circle, TweenInfo.new(0.2), {ImageTransparency = 0, Size = UDim2.fromOffset(12, 11)}):Play()
+	end
+	
 	Value = Min + (Max - Min) * percent
 
 	if Increment then
@@ -85,7 +105,8 @@ local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
 
 	Bar.Parent.TextBox.Text = Value
 	BoogaUI.Instances[Bar.Fill].Size = UDim2.new(percent, 0, 1 ,0)
-	TS:Create(Bar.Fill, TweenInfo.new(0.1), {Size = UDim2.new(percent, 0, 1 ,0)}):Play()
+	TS:Create(Bar.Fill, TweenInfo.new(0.150), {Size = UDim2.new(percent, 0, 1 ,0)}):Play()
+	TS:Create(Bar.Fill.Circle, TweenInfo.new(0.15), {Position = UDim2.new(0, math.clamp(percent * Bar.AbsoluteSize.X, 0, Bar.AbsoluteSize.X) - 5, 0, -2)}):Play()
 
 	return Value
 end
@@ -165,6 +186,60 @@ local function TypeCheck(Check, Callback, Default)
 	end
 
 	return Check, Callback
+end
+
+local function ColorPickerClose(ColorPicker)
+	local Tween = TS:Create(ColorPicker.Gui:FindFirstChildOfClass("Frame"), TweenInfo.new(0.250), {Size = UDim2.fromScale(0, 0)})
+	Tween:Play()
+
+	Tween.Completed:Connect(function()
+		ColorPicker:Destroy()
+		ColorPicker.Gui:Destroy()
+	end)
+end
+
+local function InformationInteractable(self, Holder, Holder2, Information)
+	TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.930, 0, 0, 70)}):Play()
+	TS:Create(self.Section, TweenInfo.new(0.3), {Size = self.Section.Size + UDim2.fromOffset(0, 43)}):Play()
+
+	local Separator = Utility.Create("Frame", {
+		Parent = Holder2,
+		Size = UDim2.new(0.850, 0, 0, 4),
+		Position = UDim2.fromScale(0, 1.05),
+		BorderSizePixel = 0,
+		BackgroundTransparency = 1,
+		ZIndex = 3
+	})
+
+	Utility.Create("UICorner", {
+		Parent = Separator,
+		CornerRadius = UDim.new(0, 12)
+	})
+
+	local InformationLabel = Utility.Create("TextLabel", {
+		Name = "Title",
+		Parent = Holder2,
+		AnchorPoint = Vector2.new(0, 0.5),
+		BackgroundTransparency = 1,
+		Position = UDim2.fromScale(0, 1.5),
+		Size = UDim2.new(0.850, 0, 0, 5),
+		ZIndex = 3,
+		Font = Enum.Font.Arial,
+		Text = Information,
+		TextColor3 = Color3.fromRGB(220, 220, 220),
+		TextSize = 14,
+		TextTransparency = 1,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	})
+
+	TS:Create(Separator, TweenInfo.new(0.250), {BackgroundTransparency = 0.750, Position = UDim2.fromScale(0.07, 1.05)}):Play()
+	TS:Create(InformationLabel, TweenInfo.new(0.250), {TextTransparency = 0.07, Position = UDim2.fromScale(0.07, 1.5)}):Play()
+	
+	task.delay(0.3, function()
+		self:ResizePage()
+	end)
+	
+	return Separator, InformationLabel
 end
 
 local Properties = {
@@ -267,29 +342,25 @@ function Sections:Resize(Section)
 	return Size
 end
 
-function Sections:AddButton(Name, Callback)
-	Callback = Callback or function() end
+function Sections:AddButton(Settings)
+	local Callback = Settings.Callback or function() end
+	
 	local Hovering
-
 	local Time = 0
-
-	local Button = Utility.Create("TextButton", {
+	
+	local GoingSmaller = false
+	
+	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
+		Name = "Button",
 		ZIndex = 2,
-		Text = Name,
-		TextSize = 17,
-		Font = Enum.Font.Arial,
 		Size = UDim2.new(0.950, 0, 0, 31),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
-		TextColor3 = Color3.fromRGB(230, 230, 230),
-		TextTransparency = 0.07,
-		AutoButtonColor = false
+		BorderSizePixel = 0
 	})
 	
-	InteractablesInfo[Button] = {Callback = Callback}
-
 	Utility.Create("UIStroke", {
-		Parent = Button,
+		Parent = Holder,
 		Name = "StrokeBorder",
 		Thickness = 1,
 		Color = Color3.fromRGB(55, 55, 55),
@@ -297,9 +368,52 @@ function Sections:AddButton(Name, Callback)
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Enabled = true
 	})
+	
+	Utility.Create("UICorner", {
+		Parent = Holder,
+		CornerRadius = UDim.new(0, 4)
+	})
+
+	local Button = Utility.Create("TextButton", {
+		Parent = Holder,
+		ZIndex = 3,
+		Text = Settings.Name or "Button",
+		TextSize = 17,
+		Font = Enum.Font.Arial,
+		Size = UDim2.new(1, 0, 0, 31),
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+		TextColor3 = Color3.fromRGB(220, 220, 220),
+		TextTransparency = 0.07,
+		AutoButtonColor = false
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Button,
+		CornerRadius = UDim.new(0, 4)
+	})
+	
+	InteractablesInfo[Button] = {Callback = Callback}
+	
+	local UnderButton = Utility.Create("TextButton", {
+		Parent = Button,
+		Name = "Under",
+		ZIndex = 2,
+		Text = "",
+		TextSize = 0,
+		Font = Enum.Font.Arial,
+		Size = UDim2.new(1, 0, 0, 31),
+		BackgroundTransparency = 1,
+		TextTransparency = 1,
+		AutoButtonColor = false
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = UnderButton,
+		CornerRadius = UDim.new(0, 4)
+	})
 
 	Utility.Create("ImageLabel", {
-		Parent = Button,
+		Parent = UnderButton,
 		BackgroundTransparency = 1,
 		BorderColor3 = Color3.fromRGB(27, 42, 53),
 		Size = UDim2.fromScale(0.06, 0.68),
@@ -308,25 +422,22 @@ function Sections:AddButton(Name, Callback)
 		ImageTransparency = 0.05,
 		ImageRectOffset = Vector2.new(84, 204),
 		ImageRectSize = Vector2.new(36, 36),
-		ZIndex = 2
+		ZIndex = 3
 	})
 
 	self:Resize()
 
 	self:ResizePage()
 
-	self:AddInstances({Button, Button.Size, Button.ImageLabel, Button.ImageLabel.Size})
+	self:AddInstances({Holder, Holder.Size, Button, Button.Size, UnderButton.ImageLabel, UnderButton.ImageLabel.Size})
 
-	Utility.Create("UICorner", {
-		Parent = Button,
-		CornerRadius = UDim.new(0, 4)
-	})
-
-	Button.MouseEnter:Connect(function()
+	Holder.MouseEnter:Connect(function()
 		Hovering = true
 
-		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
-		TS:Create(Button, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.2), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 30)}):Play()
+		TS:Create(Button, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 30)}):Play()
 
 		Time = tick()
 
@@ -334,23 +445,64 @@ function Sections:AddButton(Name, Callback)
 			task.wait()
 
 			if tick() - Time > self.StrokeBordersDelay then
-				local StrokeTween = TS:Create(Button.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				
+				local Old
+				local Separator
+				local InformationLabel
+
+				if not GoingSmaller then
+					GoingSmaller = true
+
+					Old = self.Section.Size
+
+					Separator, InformationLabel = InformationInteractable(self, Holder, Button, Settings.Information or "No information for this button was provided.")
+				end
+				
+				local StrokeTween = TS:Create(Holder.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
+				
+				if GoingSmaller then
+					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
+						Old = self.Section.Size - UDim2.fromOffset(0, 43)
+					end
 
-				TS:Create(Button.StrokeBorder, TweenInfo.new(0.2), {Color = Color3.fromRGB(55, 55, 55), Thickness = 1, Transparency = 0}):Play()
+					TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.930, 0, 0, 31)}):Play()
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
+					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
+					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
+					
+					task.delay(0.3, function()
+						GoingSmaller = false
+
+						Separator:Destroy()
+						InformationLabel:Destroy()
+
+						self:ResizePage()
+
+						if Holder.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+							Holder.StrokeBorder.Enabled = false
+						end
+					end)
+				end
+
+				TS:Create(Holder.StrokeBorder, TweenInfo.new(0.2), {Color = Color3.fromRGB(55, 55, 55), Thickness = 1, Transparency = 0}):Play()
 			end
 		end
 	end)
 
-	Button.MouseLeave:Connect(function()
+	Holder.MouseLeave:Connect(function()
 		Hovering = false
+		
+		task.wait()
 
-		TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
-		TS:Create(Button, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+		TS:Create(Button, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+		TS:Create(UnderButton, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 31)}):Play()
 
 		if Button.TextSize == 10 then
 			TS:Create(Button, TweenInfo.new(0.1), {TextSize = 16}):Play()
@@ -358,7 +510,9 @@ function Sections:AddButton(Name, Callback)
 	end)
 
 	Button.MouseButton1Down:Connect(function()
-		TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.900, 0, 0, 27)}):Play()
+		TS:Create(Holder, TweenInfo.new(0.1), {Size = UDim2.new(0.900, 0, 0, 27)}):Play()
+		TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 27)}):Play()
+		TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 27)}):Play()
 
 		TS:Create(Button, TweenInfo.new(0.1), {TextSize = 14}):Play()
 	end)
@@ -369,19 +523,28 @@ function Sections:AddButton(Name, Callback)
 
 		task.spawn(InteractablesInfo[Button].Callback)
 
-		local Tween = TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 25)})
+		local Tween = TS:Create(Holder, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 25)})
 		Tween:Play()
+		
+		TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 25)})
+		TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 25)})
 
 		Tween.Completed:Connect(function()
 			if Hovering then
-				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 34)}):Play()
+				TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 34)}):Play()
+				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 34)}):Play()
+				TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 34)}):Play()
 			else
-				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.970, 0, 0, 35)}):Play()
+				TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.970, 0, 0, 35)}):Play()
+				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 35)}):Play()
+				TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 35)}):Play()
 			end
 			
 			task.wait(0.15)
 
-			TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+			TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+			TS:Create(UnderButton, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
 		end)
 
 		Button.TextSize = 0
@@ -397,12 +560,14 @@ function Sections:AddButton(Name, Callback)
 	return setmetatable({instance = Button, Interactable = Button, Section = self.Section}, Interactables)
 end
 
-function Sections:AddToggle(Name, IsEnabled, Callback)
-	Callback = Callback or function() end
+function Sections:AddToggle(Settings)
+	local Callback = Settings.Callback or function() end
 
 	local Hovering = false
 
 	local Time = 0
+	
+	local GoingSmaller = false
 
 	local Toggle = Utility.Create("Frame", {
 		Name = "Toggle1",
@@ -413,13 +578,6 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		ZIndex = 2,
 	})
 	
-	InteractablesInfo[Toggle] = {Callback = Callback}
-
-	local Toggled = Utility.Create("BoolValue", {
-		Parent = Toggle,
-		Name = "Toggled"
-	})
-
 	Utility.Create("UIStroke", {
 		Parent = Toggle,
 		Name = "StrokeBorder2",
@@ -432,8 +590,24 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		Parent = Toggle,
 		CornerRadius = UDim.new(0, 4)
 	})
+	
+	InteractablesInfo[Toggle] = {Callback = Callback}
 
-	if IsEnabled then
+	local Toggled = Utility.Create("BoolValue", {
+		Parent = Toggle,
+		Name = "Toggled"
+	})
+	
+	local ToggleUnder = Utility.Create("Frame", {
+		Name = "Under",
+		Parent = Toggle,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 31),
+		ZIndex = 2,
+	})
+
+	if Settings.IsEnabled then
 
 		Toggled.Value = true
 
@@ -448,15 +622,15 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
-		Parent = Toggle,
+		Parent = ToggleUnder,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 10, 0.5, 1),
 		Size = UDim2.fromScale(0.5, 1),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Name,
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		Text = Settings.Name or "Toggle",
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.120,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -464,7 +638,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 	Utility.Create("UICorner", {
 		Parent = Utility.Create("Frame", {
-			Parent = Toggle,
+			Parent = ToggleUnder,
 			Name = "ToggleBase",
 			BackgroundTransparency = 0.9,
 			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -477,7 +651,7 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 	})
 
 	Utility.Create("UIStroke", {
-		Parent = Toggle.ToggleBase,
+		Parent = ToggleUnder.ToggleBase,
 		Name = "StrokeBorder",
 		Thickness = 0,
 		Color = Color3.fromRGB(15, 15, 15),
@@ -487,11 +661,11 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 	Utility.Create("UICorner", {
 		Parent = Utility.Create("Frame", {
-			Parent = Toggle.ToggleBase,
+			Parent = ToggleUnder.ToggleBase,
 			Name = "ToggleCircle",
 			BackgroundTransparency = 0.1,
-			BackgroundColor3 = Toggled.Value and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180),
-			Position = not IsEnabled and UDim2.new(0, 2, 0.5, -6) or UDim2.new(0, 20, 0.5, -6),
+			BackgroundColor3 = Toggled.Value and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(170, 170, 170),
+			Position = not Settings.IsEnabled and UDim2.new(0, 2, 0.5, -6) or UDim2.new(0, 20, 0.5, -6),
 			Size = UDim2.new(1, -22, 1, -4),
 			ZIndex = 2,
 		}),
@@ -507,12 +681,15 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 		BackgroundTransparency = 1
 	})
 
-	self:AddInstances({Toggle, Toggle.Size, Toggle.Title, Toggle.Title.Size, Toggle.ToggleBase, Toggle.ToggleBase.Size, Toggle.ToggleBase.ToggleCircle, Toggle.ToggleBase.ToggleCircle.Size})
+	self:AddInstances({Toggle, Toggle.Size, ToggleUnder.Title, ToggleUnder.Title.Size, ToggleUnder.ToggleBase, ToggleUnder.ToggleBase.Size, ToggleUnder.ToggleBase.ToggleCircle, ToggleUnder.ToggleBase.ToggleCircle.Size})
 
 	Toggle.MouseEnter:Connect(function()
 		Hovering = true
-		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
-		TS:Create(Toggle.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+
+		TS:Create(Toggle, TweenInfo.new(0.2), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(ToggleUnder, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 30)}):Play()
+		TS:Create(ToggleUnder.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -520,21 +697,51 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 			task.wait()
 
 			if tick() - Time > self.StrokeBordersDelay then
-				Toggle.ToggleBase.StrokeBorder.Enabled = true
+				ToggleUnder.ToggleBase.StrokeBorder.Enabled = true
+				
+				local Old
+				local Separator
+				local InformationLabel
+				
+				if not GoingSmaller then
+					GoingSmaller = true
+					
+					Old = self.Section.Size
 
-				local StrokeTween = TS:Create(Toggle.ToggleBase.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+					Separator, InformationLabel = InformationInteractable(self, Toggle, ToggleUnder, Settings.Information or "No information for this toggle was provided.")
+				end
+
+				local StrokeTween = TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
+				
+				if GoingSmaller then
+					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
+						Old = self.Section.Size - UDim2.fromOffset(0, 43)
+					end
+					
+					TS:Create(Toggle, TweenInfo.new(0.3), {Size = UDim2.new(0.930, 0, 0, 31)}):Play()
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
+					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
+					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
+				end
 
-				local Tween = TS:Create(Toggle.ToggleBase.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				local Tween = TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
 				Tween:Play()
 
 				Tween.Completed:Connect(function()
-					if Toggle.ToggleBase.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
-						Toggle.ToggleBase.StrokeBorder.Enabled = false
+					GoingSmaller = false
+
+					Separator:Destroy()
+					InformationLabel:Destroy()
+
+					self:ResizePage()
+					
+					if ToggleUnder.ToggleBase.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
+						ToggleUnder.ToggleBase.StrokeBorder.Enabled = false
 					end
 				end)
 			end
@@ -543,10 +750,15 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 	Toggle.MouseLeave:Connect(function()
 		Hovering = false
-		TS:Create(Toggle, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 		
+		task.wait()
+		
+		TS:Create(Toggle, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(ToggleUnder, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+
 		if not Toggled.Value then
-			TS:Create(Toggle.Title, TweenInfo.new(0.15), {TextTransparency = 0.120, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+			TS:Create(ToggleUnder.Title, TweenInfo.new(0.2), {TextTransparency = 0.12, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+			TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(170, 170, 170)}):Play()
 		end
 	end)
 
@@ -567,30 +779,30 @@ function Sections:AddToggle(Name, IsEnabled, Callback)
 
 		local value = Toggled.Value and "Out" or "In"
 		
-		TS:Create(Toggle.Title, TweenInfo.new(0.2), {TextColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(230, 230, 230), TextTransparency = value == "Out" and 0 or 0.1}):Play()
+		TS:Create(ToggleUnder.Title, TweenInfo.new(0.2), {TextColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(220, 220, 220), TextTransparency = value == "Out" and 0 or 0.1}):Play()
 
-		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value] + UDim2.new(0, 0, 0, 2.2), Size = UDim2.new(1, -22, 1, -8), BackgroundColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)}):Play()
+		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value] + UDim2.new(0, 0, 0, 2.2), Size = UDim2.new(1, -22, 1, -8), BackgroundColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(170, 170, 170)}):Play()
 		
 		task.wait(0.1)
 		
-		TS:Create(Toggle.ToggleBase.ToggleCircle, TweenInfo.new(0.1), {Position = position[value], Size = UDim2.new(1, -22, 1, -4)}):Play()
+		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.1), {Position = position[value], Size = UDim2.new(1, -22, 1, -4)}):Play()
 	end)
 
 	return setmetatable({instance = Toggle, Interactable = Toggle, Section = self.Section}, Interactables)
 end
 
-function Sections:AddTextBox(Name, Text, Callback)
-	Callback = Callback or function() end
-
-	Text, Callback = TypeCheck(Text, Callback, Name)
+function Sections:AddTextBox(Settings)
+	local Callback = Settings.Callback or function() end
+	
+	Settings.DefaultText = Settings.DefaultText or Settings.Name
 
 	local DoubleClick = 0
-
 	local DoubleClicked = false
 
 	local Hovering = false
-
 	local Time = 0
+	
+	local GoingSmaller = false
 
 	local Holder = Utility.Create("Frame", {
 		Name = "TextBox",
@@ -615,6 +827,15 @@ function Sections:AddTextBox(Name, Text, Callback)
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
+	
+	local UnderHolder = Utility.Create("Frame", {
+		Name = "Under",
+		Parent = Holder,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 31),
+		ZIndex = 2,
+	})
 
 	self:Resize()
 
@@ -622,22 +843,22 @@ function Sections:AddTextBox(Name, Text, Callback)
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
-		Parent = Holder,
+		Parent = UnderHolder,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 10, 0.5, 1),
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Name,
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		Text = Settings.Name or "TextBox",
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
 	local Label = Utility.Create("Frame", {
-		Parent = Holder,
+		Parent = UnderHolder,
 		BackgroundColor3 = Color3.fromRGB(30, 30, 30),
 		BackgroundTransparency = 0,
 		BorderSizePixel = 0,
@@ -659,10 +880,9 @@ function Sections:AddTextBox(Name, Text, Callback)
 	Utility.Create("UIStroke", {
 		Parent = Label,
 		Name = "StrokeBorder",
-		Thickness = 0,
-		Color = Color3.fromRGB(15, 15, 15),
-		Transparency = 0.5,
-		Enabled = false
+		Thickness = 1.5,
+		Color = Color3.fromRGB(67, 67, 67),
+		Transparency = 0.15,
 	})
 
 	local TextBox = Utility.Create("TextBox", {
@@ -673,30 +893,32 @@ function Sections:AddTextBox(Name, Text, Callback)
 		Size = UDim2.new(1, -10, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Text ~= Name and Text or "",
+		Text = Settings.DefaultText ~= Settings.Name and Settings.DefaultText or "",
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 12
 	})
 
-	if Text ~= Name then
-		InteractablesInfo[Holder].Callback(Text, true)
+	if Settings.DefaultText ~= Settings.Name then
+		InteractablesInfo[Holder].Callback(Settings.DefaultText, true)
 	end
 
 	local Button = Utility.Create("ImageButton", {
-		Parent = Holder,
+		Parent = UnderHolder,
 		ZIndex = 2,
-		Size = Holder.Size,
+		Size = UnderHolder.Size,
 		ImageTransparency = 1,
 		BackgroundTransparency = 1
 	})
 
-	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
+	self:AddInstances({Holder, Holder.Size, UnderHolder.Title, UnderHolder.Title.Size, Label, Label.Size, TextBox, TextBox.Size})
 
 	Button.MouseEnter:Connect(function()
 		Hovering = true
 
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
-		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 30)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+
 		Time = tick()
 
 		while self.StrokeBorders and Hovering do
@@ -704,21 +926,47 @@ function Sections:AddTextBox(Name, Text, Callback)
 
 			if not TextBox:IsFocused() and tick() - Time > self.StrokeBordersDelay then
 				Label.StrokeBorder.Enabled = true
+				
+				local Old
+				local Separator
+				local InformationLabel
 
-				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				if not GoingSmaller then
+					GoingSmaller = true
+
+					Old = self.Section.Size
+
+					Separator, InformationLabel = InformationInteractable(self, Holder, UnderHolder, Settings.Information or "No information for this textbox was provided.")
+				end
+
+				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 2, Transparency = 0.1})
 				StrokeTween:Play()
 
 				repeat task.wait() until not Hovering or TextBox:IsFocused() or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
-
-				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
-				Tween:Play()
-
-				Tween.Completed:Connect(function()
-					if Label.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
-						Label.StrokeBorder.Enabled = false
+				
+				if GoingSmaller then
+					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
+						Old = self.Section.Size - UDim2.fromOffset(0, 43)
 					end
+
+					TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
+					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
+					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
+				end
+				
+				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(67, 67, 67), Transparency = 0.15, Thickness = 1.5})
+				Tween:Play()
+				
+				Tween.Completed:Connect(function()
+					GoingSmaller = false
+
+					Separator:Destroy()
+					InformationLabel:Destroy()
+					
+					self:ResizePage()
 				end)
 			end
 		end
@@ -727,7 +975,8 @@ function Sections:AddTextBox(Name, Text, Callback)
 	Button.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
-		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 	end)
 
 	Button.MouseButton1Click:Connect(function()
@@ -804,23 +1053,31 @@ function Sections:AddTextBox(Name, Text, Callback)
 	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
-function Sections:AddKeybind(Name, Key, Callback)
-	Callback = Callback or function() end
+function Sections:AddKeybind(Settings, Name, Key, Information, Callback)
+	local Callback = Settings.Callback or function() end
+	local Key = Settings.Key or "None"
+	
+	local Old
 
-	local Old = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()].Name or (Key and Key.Name or "None")
-	Key = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()] or (Key and Key.Name or "None")
+	if Key ~= "None" then
+		Old = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()].Name or (Key and Key.Name or "None")
+		Key = typeof(Key) == "string" and Enum.KeyCode[Key:sub(2) ~= "" and Key:sub(1,1):upper() .. Key:sub(2):lower() or Key:upper()] or (Key and Key.Name or "None")
+	else
+		Old = "None"
+		Key = "None"
+	end
 
-	if typeof(Key) == "string" then
+	if typeof(Key) == "string" and Key ~= "None" then
 		Key = Enum.KeyCode[Key]
 	end
 
 	local Selecting = false
-
 	local Stop = false
 
 	local Hovering = false
-
 	local Time = 0
+	
+	local GoingSmaller = false
 
 	local Holder = Utility.Create("Frame", {
 		Name = "Toggle",
@@ -845,6 +1102,15 @@ function Sections:AddKeybind(Name, Key, Callback)
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
+	
+	local UnderHolder = Utility.Create("Frame", {
+		Name = "Under",
+		Parent = Holder,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 31),
+		ZIndex = 2,
+	})
 
 	self:Resize()
 
@@ -852,22 +1118,22 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
-		Parent = Holder,
+		Parent = UnderHolder,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0, 10, 0.5, 1),
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Name,
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		Text = Settings.Name,
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
 	local Label = Utility.Create("Frame", {
-		Parent = Holder,
+		Parent = UnderHolder,
 		BackgroundColor3 = Color3.fromRGB(30, 30, 30),
 		BackgroundTransparency = 0,
 		Position = UDim2.new(1, -55, 0.5, -8),
@@ -878,10 +1144,9 @@ function Sections:AddKeybind(Name, Key, Callback)
 	Utility.Create("UIStroke", {
 		Parent = Label,
 		Name = "StrokeBorder",
-		Thickness = 0,
-		Color = Color3.fromRGB(15, 15, 15),
-		Transparency = 0.5,
-		Enabled = false
+		Thickness = 1.5,
+		Color = Color3.fromRGB(67, 67, 67),
+		Transparency = 0.15,
 	})
 
 	Utility.Create("UICorner", {
@@ -896,14 +1161,14 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 	self:AddInstances({Label, Label.Size})
 
-	SetKeybindSize(self, Key, Label, 0.3)
+	SetKeybindSize(self, Key ~= "None" and Key or {Name = Key}, Label, 0.3)
 
 	local KeyLabel = Utility.Create("TextLabel", {
 		Name = "KeyLabel",
 		BackgroundTransparency = 1,
 		Parent = Label,
 		TextTruncate = Enum.TextTruncate.AtEnd,
-		Position = UDim2.new(0, 5, 0, 1),
+		Position = UDim2.new(0, 5, 0, 0),
 		Size = UDim2.new(1, -10, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
@@ -913,19 +1178,20 @@ function Sections:AddKeybind(Name, Key, Callback)
 	})
 
 	local Button = Utility.Create("ImageButton", {
-		Parent = Holder,
+		Parent = UnderHolder,
 		ZIndex = 2,
 		Size = Holder.Size,
 		ImageTransparency = 1,
 		BackgroundTransparency = 1
 	})
 
-	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, KeyLabel, KeyLabel.Size})
+	self:AddInstances({Holder, Holder.Size, UnderHolder.Title, UnderHolder.Title.Size, KeyLabel, KeyLabel.Size})
 
 	Button.MouseEnter:Connect(function()
 		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
-		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 30)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -934,6 +1200,18 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 			if tick() - Time > self.StrokeBordersDelay then
 				Label.StrokeBorder.Enabled = true
+				
+				local Old
+				local Separator
+				local InformationLabel
+
+				if not GoingSmaller then
+					GoingSmaller = true
+
+					Old = self.Section.Size
+
+					Separator, InformationLabel = InformationInteractable(self, Holder, UnderHolder, Settings.Information or "No information for this keybind was provided.")
+				end
 
 				local StrokeTween = TS:Create(Label.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
@@ -942,13 +1220,27 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 				StrokeTween:Cancel()
 
-				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				if GoingSmaller then
+					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
+						Old = self.Section.Size - UDim2.fromOffset(0, 43)
+					end
+
+					TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
+					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
+					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
+				end
+
+				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(67, 67, 67), Transparency = 0.15, Thickness = 1.5})
 				Tween:Play()
 
 				Tween.Completed:Connect(function()
-					if Label.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
-						Label.StrokeBorder.Enabled = false
-					end
+					GoingSmaller = false
+
+					Separator:Destroy()
+					InformationLabel:Destroy()
+
+					self:ResizePage()
 				end)
 			end
 		end
@@ -957,7 +1249,8 @@ function Sections:AddKeybind(Name, Key, Callback)
 	Button.MouseLeave:Connect(function()
 		Hovering = false
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
-		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 	end)
 
 	CleanConnections[#CleanConnections + 1] = UIS.InputBegan:Connect(function(Input, GME)
@@ -990,7 +1283,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 			task.wait()
 
 			if not Selecting then
-				Key = Enum.KeyCode[Old]
+				Key = Old ~= "None" and Enum.KeyCode[Old] or {Name = Old}
 				KeyLabel.Text = Key.Name
 
 				SetKeybindSize(self, typeof(Key) == "Instance" and Key.KeyCode or Key, Label, 0.3)
@@ -1033,7 +1326,7 @@ function Sections:AddKeybind(Name, Key, Callback)
 
 				KeyLabel.Text = Old
 
-				SetKeybindSize(self, Enum.KeyCode[Old], Label, 0.3)
+				SetKeybindSize(self, Old ~= "None" and Enum.KeyCode[Old] or {Name = Old}, Label, 0.3)
 			end
 		end
 	end)
@@ -1041,15 +1334,20 @@ function Sections:AddKeybind(Name, Key, Callback)
 	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
-function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment, Callback)	
+function Sections:AddSlider(Settings)	
+	local Value = Settings.Value or 5
+	local Min = Settings.Min or 0
+	local Max = Settings.Max or 10
 
-	FixValues, Callback = TypeCheck(FixValues, Callback, false)
-	Decimal, Callback = TypeCheck(Decimal, Callback, {false, 1})
-	Increment, Callback = TypeCheck(Increment, Callback, 1)
+	local FixValues = Settings.FixValues or false
+	local Decimal = Settings.Decimal or {false, 1}
+	local Increment = Settings.Increment or 1
+	
+	local Callback = Settings.Callback or function() end
 
 	local Hovering = false
-
 	local Time = 0
+	local GoingSmaller = false
 
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -1061,12 +1359,6 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		ZIndex = 2,
 	})
 	
-	InteractablesInfo[Holder] = {Callback = Callback}
-
-	self:Resize()
-
-	self:ResizePage()
-
 	Utility.Create("UIStroke", {
 		Parent = Holder,
 		Name = "StrokeBorder2",
@@ -1079,41 +1371,56 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
+	
+	local UnderHolder = Utility.Create("Frame", {
+		Parent = Holder,
+		Name = "Under",
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 31),
+		ZIndex = 2,
+	}) 
+	
+	InteractablesInfo[Holder] = {Callback = Callback}
+
+	self:Resize()
+
+	self:ResizePage()
 
 	Utility.Create("TextLabel", {
 		Name = "Title",
-		Parent = Holder,
+		Parent = UnderHolder,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0.02, 0, 0.5, 0),
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Name,
+		Text = Settings.Name or "Slider",
 		TextWrapped = true,
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
 
 	local Box = Utility.Create("TextBox", {
-		Parent = Holder,
+		Parent = UnderHolder,
 		BorderSizePixel = 0,
 		Font = Enum.Font.Arial,
 		ZIndex = 2,
 		BackgroundTransparency = 1,
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
-		Text = Value,
+		Text = Settings.Value or 5,
 		Size = UDim2.fromScale(0.1, 0.6),
 		Position = UDim2.fromScale(0.42, 0.2),
 		TextXAlignment = Enum.TextXAlignment.Right
 	})
 
 	local Bar = Utility.Create("Frame", {
-		Parent = Holder,
+		Parent = UnderHolder,
 		Name = "Bar",
 		ZIndex = 2,
 		BackgroundColor3 = Color3.fromRGB(45, 45, 45),
@@ -1144,8 +1451,6 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Name = "AddIndex"
 	})
 
-	self:AddInstances({Holder, Holder.Size, Holder.Title, Holder.Title.Size, Box, Box.Size, Bar, Bar.Size, Fill, Fill.Size})
-
 	Utility.Create("UICorner", {
 		Parent = Bar,
 		CornerRadius = UDim.new(0, 8)
@@ -1160,11 +1465,22 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 		Parent = Fill,
 		Name = "Circle",
 		ImageTransparency = 1,
+		ImageColor3 = Color3.fromRGB(190, 190, 190),
 		Position = UDim2.fromScale(-0.5, 0),
+		Size = UDim2.fromOffset(12, 11),
 		ZIndex = 2,
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://4608020054",
 	})
+	
+	Utility.Create("UICorner", {
+		Parent = Circle,
+		CornerRadius = UDim.new(0, 2)
+	})
+	
+	self:AddInstances({Holder, Holder.Size, UnderHolder.Title, UnderHolder.Title.Size, Box, Box.Size, Bar, Bar.Size, Fill, Fill.Size, Circle, Circle.Size})
+	
+	Circle.Size = UDim2.fromOffset()
 
 	local Old
 
@@ -1175,8 +1491,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	Holder.MouseEnter:Connect(function()
 		Hovering = true
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
-		TS:Create(Holder.TextBox, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 30)}):Play()
+		TS:Create(UnderHolder.TextBox, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -1185,6 +1502,18 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 			if self.StrokeBorders and tick() - Time > self.StrokeBordersDelay then
 				Bar.StrokeBorder.Enabled = true
+				
+				local Old
+				local Separator
+				local InformationLabel
+
+				if not GoingSmaller then
+					GoingSmaller = true
+
+					Old = self.Section.Size
+
+					Separator, InformationLabel = InformationInteractable(self, Holder, UnderHolder, Settings.Information or "No information for this slider was provided.")
+				end
 
 				local StrokeTween = TS:Create(Bar.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1, Transparency = 0.1})
 				StrokeTween:Play()
@@ -1192,11 +1521,29 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or Box:IsFocused() or not self.StrokeBorders
 
 				StrokeTween:Cancel()
+				
+				if GoingSmaller then
+					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
+						Old = self.Section.Size - UDim2.fromOffset(0, 43)
+					end
+
+					TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
+					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
+					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
+				end
 
 				local Tween = TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
 				Tween:Play()
 
 				Tween.Completed:Connect(function()
+					GoingSmaller = false
+
+					Separator:Destroy()
+					InformationLabel:Destroy()
+
+					self:ResizePage()
+					
 					if Bar.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
 						Bar.StrokeBorder.Enabled = false
 					end
@@ -1216,20 +1563,18 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 		end
 		
-		TS:Create(Holder.TextBox, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
-		TS:Create(Holder.Title, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+		
+		TS:Create(UnderHolder.TextBox, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 	end)
 
 	Bar.InputBegan:Connect(function(input)
 
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
-
-			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 5, 0, -2)}):Play()
-
-			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 			
-			if Circle.Size == UDim2.fromOffset() then
+			if Circle.Size.X.Offset == 0 then
 				TS:Create(Circle, TweenInfo.new(0.2), {Size = UDim2.fromOffset(12, 11)}):Play()
 			end
 
@@ -1242,12 +1587,6 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 			if dragging then
 				return
 			end
-
-			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
-
-			task.wait(0.2)
-			
-			Circle.Size = UDim2.fromOffset()
 
 		end
 	end)
@@ -1263,12 +1602,8 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 
 			Hovering = false
 			Time = tick()
-
-			TS:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(0, math.clamp(input.Position.X - Bar.AbsolutePosition.X, 0, Bar.AbsoluteSize.X) - 5, 0, -2)}):Play()
-
-			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
 			
-			if Circle.Size == UDim2.fromOffset() then
+			if Circle.Size.X.Offset == 0 then
 				TS:Create(Circle, TweenInfo.new(0.2), {Size = UDim2.fromOffset(12, 11)}):Play()
 			end
 
@@ -1287,12 +1622,6 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 			if dragging then
 				return
 			end
-
-			TS:Create(Circle, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
-
-			task.wait(0.2)
-			
-			Circle.Size = UDim2.fromOffset()
 
 		end
 	end)
@@ -1319,8 +1648,9 @@ function Sections:AddSlider(Name, Value, Min, Max, FixValues, Decimal, Increment
 	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
-function Sections:AddDropdown(Name, Entries, Callback)
-	Callback = Callback or function() end
+function Sections:AddDropdown(Settings)
+	local Callback = Settings.Callback or function() end
+	local Entries = Settings.Entries or {"Option 1", "Option 2", "Option 3"}
 	
 	for k,v in pairs(Entries) do
 		for k2, v2 in pairs(Entries) do
@@ -1418,7 +1748,7 @@ function Sections:AddDropdown(Name, Entries, Callback)
 					TextSize = 16,
 					TextWrapped = true,
 					Font = Enum.Font.Arial,
-					TextColor3 = Color3.fromRGB(230, 230, 230),
+					TextColor3 = Color3.fromRGB(220, 220, 220),
 					TextTransparency = 0.1,
 					Size = UDim2.fromScale(0.950, 0),
 					Position = UDim2.fromScale(0.025, 0.22),
@@ -1600,8 +1930,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Size = UDim2.new(0.3, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Name,
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		Text = Settings.Name or "Dropdown",
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
@@ -1616,9 +1946,9 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
 		Text = "",
-		TextColor3 = Color3.fromRGB(230, 230, 230),
+		TextColor3 = Color3.fromRGB(220, 220, 220),
 		PlaceholderText = "None Selected",
-		PlaceholderColor3 = Color3.fromRGB(230, 230, 230),
+		PlaceholderColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
@@ -1630,8 +1960,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Hovering = true
 		
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 163 or 30)}):Play()
-		TS:Create(Holder2.Title, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-		TS:Create(TextBox, TweenInfo.new(0.15), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255), PlaceholderColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(Holder2.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(TextBox, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255), PlaceholderColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 
 		Time = tick()
 
@@ -1654,8 +1984,8 @@ function Sections:AddDropdown(Name, Entries, Callback)
 		Hovering = false
 		
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and Open and #Entries == 1 and 64 or Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 163 or 31)}):Play()
-		TS:Create(Holder2.Title, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
-		TS:Create(TextBox, TweenInfo.new(0.15), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(230, 230, 230), PlaceholderColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+		TS:Create(Holder2.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+		TS:Create(TextBox, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220), PlaceholderColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 	end)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -1841,6 +2171,607 @@ function Sections:AddDropdown(Name, Entries, Callback)
 	return setmetatable({instance = Holder, Interactable = Holder2, Section = self.Section}, Interactables)
 end
 
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TS = game:GetService("TweenService")
+
+local Color = {}
+Color.__index = Color
+
+export type ParameterStyle = {
+	Color: Color3?,
+	Transparency: number?,
+}
+
+export type Parameters = {
+	Position: UDim2?,
+	RoundedCorners: number?,
+	Draggable: boolean?,
+	ZIndex: number?,
+	Size: number?,
+
+	Primary: ParameterStyle?,
+	Secondary: ParameterStyle?,
+	Topbar: ParameterStyle?,
+	Text: ParameterStyle?,
+}
+
+function toPolar(v)
+	return math.atan2(v.Y,v.X),v.Magnitude
+end
+
+function radToDeg(x)
+	return ((x + math.pi) / (2 * math.pi)) * 360
+end
+
+function getScreenGuiWorldDetails(gui)
+	local part = gui.Parent
+	if gui.Face == Enum.NormalId.Front then
+		return part.Position + part.CFrame.LookVector * part.Size.Z / 2,part.CFrame.LookVector
+	elseif gui.Face == Enum.NormalId.Back then
+		return part.Position + part.CFrame.LookVector * -part.Size.Z / 2,-part.CFrame.LookVector
+	elseif gui.Face == Enum.NormalId.Right then
+		return part.Position + part.CFrame.RightVector * part.Size.X / 2,part.CFrame.RightVector
+	elseif gui.Face == Enum.NormalId.Left then
+		return part.Position + part.CFrame.RightVector * -part.Size.X / 2,-part.CFrame.RightVector
+	elseif gui.Face == Enum.NormalId.Top then
+		return part.Position + part.CFrame.UpVector * part.Size.Y / 2,part.CFrame.UpVector
+	elseif gui.Face == Enum.NormalId.Bottom then
+		return part.Position + part.CFrame.UpVector * -part.Size.Y / 2,-part.CFrame.UpVector
+	end
+end
+
+function template(tab,t)
+	tab = (tab and (typeof(tab) == "table")) and tab or {}
+	for i,v in pairs(t) do
+		if tab[i] == nil or (typeof(v) == "table") then
+			tab[i] = (typeof(v) == "table") and template(tab[i] or {},v) or v
+		end
+	end
+
+	return tab
+end
+
+function roundToHundredths(num)
+	return math.round(num * 100) / 100
+end
+
+script = workspace.Color
+
+function Color.New(gui : LayerCollector,params : Parameters?)
+	if gui:IsA("SurfaceGui") then
+		assert(gui.Face == Enum.NormalId.Front,"Color Picker - SurfaceGui must have it's Face property set to 'Front' to work properly")
+	end
+
+	local defaultPos = gui:IsA("ScreenGui") and (UserInputService:GetMouseLocation() + Vector2.new(16,-20)) or Vector2.zero
+	params = template(params,{
+		Name = "Color Picker",
+		Position = UDim2.fromOffset(defaultPos.X,defaultPos.Y),
+		RoundedCorners = true,
+		Draggable = true,
+		ZIndex = 1,
+		Size = 0.4,
+
+		Primary = {Color = Color3.fromRGB(26,26,36),Transparency = 0},
+		Secondary = {Color = Color3.fromRGB(36,36,46),Transparency = 0},
+		Topbar = {Color = Color3.fromRGB(21,21,31),Transparency = 0},
+		Text = {Color = Color3.fromRGB(255,255,255),Transparency = 0}
+	})
+
+	local self = setmetatable({},Color)
+	self.Params = params
+	self.Gui = gui
+
+	self.Connections = {}
+
+	self:Create(params.Name)
+	self:SetColor(Color3.fromRGB(255,255,255))
+
+	return self
+end
+
+function Color:Create()
+	local sample = script.ColorWindow:Clone()
+	sample.Position = self.Params.Position
+	sample.Size = UDim2.fromScale(self.Params.Size,self.Params.Size)
+	sample.ZIndex = self.Params.ZIndex
+	sample.Parent = self.Gui
+	sample.Visible = true
+	
+	sample.Topbar.Title.Text = self.Params.Name
+
+	if self.Params.Draggable then
+		sample.Topbar.Button.MouseButton1Down:Connect(function()
+			local startMousePos = self:GetMousePos() or Vector2.zero
+			local startWindowPos = self.Instance.Position
+			self._dragFunc = RunService.Heartbeat:Connect(function()
+				local pos = ((self:GetMousePos() or Vector2.zero) - startMousePos)
+				TS:Create(self.Instance, TweenInfo.new(0.090, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0), {Position = startWindowPos + UDim2.fromOffset(pos.X,pos.Y)}):Play()
+			end)
+		end)
+	end
+
+	self.Updated = sample.UpdateEvent.Event
+	self.Finished = sample.FinishedEvent.Event
+
+	self.Canceled = sample.CanceledEvent.Event
+	self.Cancelled = sample.CanceledEvent.Event
+
+	local function _updateVisual(tab,params)
+		for i,v in pairs(tab) do
+			for q,e in pairs(params) do
+				v[q] = e
+			end
+		end
+	end
+
+	_updateVisual(
+		{sample.Content.Background.Top,sample.Content.Background.Bottom.Frame,sample.Properties},
+		{BackgroundColor3 = self.Params.Primary.Color,BackgroundTransparency = self.Params.Primary.Transparency}
+	)
+
+	_updateVisual(
+		{sample.Properties.Line,sample.Content.Bottom.Hex.Frame},
+		{BackgroundColor3 = self.Params.Secondary.Color,BackgroundTransparency = self.Params.Secondary.Transparency}
+	)
+
+	_updateVisual(
+		{sample.Topbar.Frame,sample.Topbar.Top.Frame},
+		{BackgroundColor3 = self.Params.Topbar.Color,BackgroundTransparency = self.Params.Topbar.Transparency}
+	)
+
+	for i,v in pairs({sample.Properties.HSV,sample.Properties.RGB}) do
+		for q,e in pairs(v:GetChildren()) do
+			if e:IsA("Frame") then
+				e.Frame.BackgroundColor3 = self.Params.Secondary.Color
+				e.Frame.BackgroundTransparency = self.Params.Secondary.Transparency
+			end
+		end
+	end
+
+	for i,v in pairs(sample:GetDescendants()) do
+		if not self.Params.RoundedCorners and v:IsA("UICorner") and v.Parent.Name ~= "Select" then
+			v:Destroy()
+		end
+
+		if v:IsA("TextLabel") or v:IsA("TextBox") or v:IsA("ImageButton") then
+			v[(v:IsA("TextLabel") or v:IsA("TextBox")) and "TextColor3" or "ImageColor3"] = self.Params.Text.Color
+			v[(v:IsA("TextLabel") or v:IsA("TextBox")) and "TextTransparency" or "ImageTransparency"] = self.Params.Text.Transparency
+		end
+	end
+
+	local wheel = sample.Content.Wheel
+	self.Connections.wheelMainUpdate = wheel.Button.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if self.Gui:IsA("PluginGui") then sample.Button.Visible = true end
+			self.Connections.wheelReposition = RunService.Heartbeat:Connect(function(dt)
+				local mousePos = self:GetMousePos()
+				if mousePos and wheel and wheel:FindFirstChild("Image") and wheel.Image:FindFirstChild("Select") then
+					local wheelMid = wheel.Image.AbsolutePosition + wheel.Image.AbsoluteSize / 2
+					local toWheelMid = (mousePos - wheelMid) / wheel.Image.AbsoluteSize
+					if toWheelMid.Magnitude > 0.5 then
+						toWheelMid = toWheelMid.Unit / 2
+					end
+
+					wheel.Image.Select.Position = UDim2.fromScale(0.5 + toWheelMid.X,0.5 + toWheelMid.Y)
+
+					local phi,len = toPolar(toWheelMid * Vector2.new(1,-1))
+					local hue,saturation = math.clamp(radToDeg(phi) / 360,0,1),math.clamp(len * 2,0,1)
+
+					self.Saturation = saturation
+					self.Hue = hue
+
+					self:UpdateColorVisual()
+				end
+			end)
+		end
+	end)
+
+	local valueSlider = sample.Content.Right.Value
+	self.Connections.valueMainUpdate = valueSlider.Button.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if self.Gui:IsA("PluginGui") then sample.Button.Visible = true end
+			self.Connections.valueReposition = RunService.Heartbeat:Connect(function(dt)
+				local mousePos = self:GetMousePos()
+				if mousePos and valueSlider and valueSlider:FindFirstChild("Select") then
+					local valueTop = valueSlider.AbsolutePosition
+
+					local v = 1 - math.clamp((mousePos.Y - valueTop.Y) / valueSlider.AbsoluteSize.Y,0,1)
+					self.Value = v
+
+					valueSlider.Select.Position = UDim2.fromScale(0,1 - v)
+					self:UpdateColorVisual()
+				end
+			end)
+		end
+	end)
+
+	local function _mouseUpEvent()
+		sample.Button.Visible = false
+		if self.Connections.wheelReposition then
+			self.Connections.wheelReposition:Disconnect()
+			self.Connections.wheelReposition = nil
+		end
+
+		if self.Connections.valueReposition then
+			self.Connections.valueReposition:Disconnect()
+			self.Connections.valueReposition = nil
+		end
+
+		if self._dragFunc then
+			self._dragFunc:Disconnect()
+			self._dragFunc = nil
+		end
+	end
+
+	if not self.Gui:IsA("PluginGui") then
+		self.Connections.inputEnded = UserInputService.InputEnded:Connect(function(input,typing)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				_mouseUpEvent()
+			end
+		end)
+	else
+		self.Connections.inputEnded = sample.Button.MouseButton1Up:Connect(_mouseUpEvent)
+		self.Connections.inputEnded2 = self.Gui.WindowFocusReleased:Connect(_mouseUpEvent)
+	end
+
+	sample.Content.Bottom.Hex.Frame.TextBox.FocusLost:Connect(function()
+		local hexText = sample.Content.Bottom.Hex.Frame.TextBox.Text
+		local success,color = pcall(function() return Color3.fromHex(hexText) end)
+		sample.Content.Bottom.Hex.Frame.InvalidStroke.Enabled = not success
+
+		if not success then
+			warn(string.format("%s is not a valid hex color.",hexText))
+			return
+		end
+
+		self:SetColor(color)
+	end)
+
+	for i,v in pairs(sample.Properties.RGB:GetChildren()) do
+		if v:IsA("Frame") then
+			v.Frame.TextBox.FocusLost:Connect(function()
+				self:SetColor(Color3.fromRGB(
+					math.clamp(tonumber(sample.Properties.RGB.R.Frame.TextBox.Text) or 255,0,255),
+					math.clamp(tonumber(sample.Properties.RGB.G.Frame.TextBox.Text) or 255,0,255),
+					math.clamp(tonumber(sample.Properties.RGB.B.Frame.TextBox.Text) or 255,0,255)
+					))
+			end)
+		end
+	end
+
+	for i,v in pairs(sample.Properties.HSV:GetChildren()) do
+		if v:IsA("Frame") then
+			v.Frame.TextBox.FocusLost:Connect(function()
+				self:SetColor(Color3.fromHSV(
+					math.clamp(tonumber(sample.Properties.HSV.H.Frame.TextBox.Text) or 0,0,360) / 360,
+					math.clamp(tonumber(sample.Properties.HSV.S.Frame.TextBox.Text) or 1,0,1),
+					math.clamp(tonumber(sample.Properties.HSV.V.Frame.TextBox.Text) or 1,0,1)
+					))
+			end)
+		end
+	end
+
+	sample.Content.Bottom.Buttons.Confirm.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			sample.FinishedEvent:Fire(Color3.fromHSV(self.Hue,self.Saturation,self.Value))
+		end
+	end)
+
+	sample.Content.Bottom.Buttons.Cancel.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			sample.CanceledEvent:Fire()
+		end
+	end)
+
+	self.Instance = sample
+	
+	TS:Create(sample, TweenInfo.new(0.3), {Size = UDim2.fromScale(self.Params.FinalSize, self.Params.FinalSize)}):Play()
+	
+	return sample
+end
+
+function Color:GetMousePos()
+	local mousePos = UserInputService:GetMouseLocation()
+	if self.Gui:IsA("ScreenGui") then
+		return mousePos - Vector2.new(0,36)
+	elseif self.Gui:IsA("PluginGui") then
+		return self.Gui:GetRelativeMousePosition()
+	else
+		local ray = game.Workspace.CurrentCamera:ViewportPointToRay(mousePos.X,mousePos.Y)
+		local planePoint,planeNormal = getScreenGuiWorldDetails(self.Gui)
+
+		local p = -((ray.Origin - planePoint):Dot(planeNormal)) / (ray.Direction:Dot(planeNormal))
+		local mouseHit = ray.Origin + ray.Direction * p
+
+		local relative = (-self.Gui.Parent.CFrame:PointToObjectSpace(mouseHit) + self.Gui.Parent.Size / 2) * self.Gui.PixelsPerStud
+		return Vector2.new(relative.X,relative.Y)
+	end
+end
+
+function Color:UpdateColorVisual()
+	if self.Instance then
+		local color = Color3.fromHSV(self.Hue,self.Saturation,self.Value)
+		self.Instance.UpdateEvent:Fire(color)
+
+		self.Instance.Content.Right.Value.UIGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0,Color3.fromHSV(self.Hue,self.Saturation,1)),
+			ColorSequenceKeypoint.new(1,Color3.fromRGB(0,0,0))
+		})
+
+		self.Instance.Content.Bottom.Color.Frame.BackgroundColor3 = color
+		self.Instance.Content.Bottom.Hex.Frame.TextBox.Text = string.format("#%s",color:ToHex())
+
+		self.Instance.Properties.RGB.R.Frame.TextBox.Text = math.floor(color.R * 255)
+		self.Instance.Properties.RGB.G.Frame.TextBox.Text = math.floor(color.G * 255)
+		self.Instance.Properties.RGB.B.Frame.TextBox.Text = math.floor(color.B * 255)
+
+		self.Instance.Properties.HSV.H.Frame.TextBox.Text = math.floor(self.Hue * 360)
+		self.Instance.Properties.HSV.S.Frame.TextBox.Text = roundToHundredths(self.Saturation)
+		self.Instance.Properties.HSV.V.Frame.TextBox.Text = roundToHundredths(self.Value)
+
+		self.Instance.Content.Bottom.Hex.Frame.InvalidStroke.Enabled = false
+	end
+end
+
+function Color:SetColor(c : Color3)
+	if self.Instance then
+		local h,s,v = c:ToHSV()
+		self.Saturation = s
+		self.Value = v
+		self.Hue = h
+
+		local h2 = h * math.pi * 2
+		local wv = Vector2.new(-math.cos(h2) / 2 * s,math.sin(h2) / 2 * s)
+		self.Instance.Content.Wheel.Image.Select.Position = UDim2.fromScale(0.5 + wv.X,0.5 + wv.Y)
+		self.Instance.Content.Right.Value.Select.Position = UDim2.fromScale(0,1 - v)
+
+		self:UpdateColorVisual()
+	end
+end
+
+function Color:Destroy()
+	for i,v in pairs(self.Connections) do
+		if typeof(v) == "RBXScriptConnection" then
+			v:Disconnect()
+		end
+	end
+
+	if self._dragFunc then
+		self._dragFunc:Disconnect()
+		self._dragFunc = nil
+	end
+
+	if self.Instance then
+		self.Instance:Destroy()
+		self.Instance = nil
+	end
+end
+
+function Sections:AddColorPicker(Settings)
+	local Callback = Settings.Callback or function() end
+
+	local Hovering = false
+	local Time = 0
+	
+	local ColorPicker
+	local GoingSmaller = false
+	
+	local OldColor = Settings.DefaultColor or Color3.fromRGB(255, 255, 255)
+	
+	local Holder = Utility.Create("Frame", {
+		Name = "ColorPicker",
+		Parent = self.Section.Frame,
+		BackgroundTransparency = 0.1,
+		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+		BorderSizePixel = 0,
+		Position = UDim2.new(1, -50, 0.5, -8),
+		Size = UDim2.new(0.950, 0, 0, 31),
+		ZIndex = 2,
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Holder,
+		Name = "StrokeBorder",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 1,
+		Color = Color3.fromRGB(55, 55, 55)
+	})
+
+	Utility.Create("UICorner", {
+		Parent = Holder,
+		CornerRadius = UDim.new(0, 4)
+	})
+	
+	local UnderHolder = Utility.Create("Frame", {
+		Name = "Under",
+		Parent = Holder,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		Size = UDim2.new(1, 0, 0, 31),
+		ZIndex = 2,
+	})
+	
+	local Button = Utility.Create("ImageButton", {
+		Parent = UnderHolder,
+		ZIndex = 2,
+		Size = UDim2.fromScale(1, 1),
+		ImageTransparency = 1,
+		BackgroundTransparency = 1
+	})
+	
+	Utility.Create("TextLabel", {
+		Name = "Title",
+		Parent = UnderHolder,
+		AnchorPoint = Vector2.new(0, 0.5),
+		BackgroundTransparency = 1,
+		Position = UDim2.new(0.02, 0, 0.5, 0),
+		Size = UDim2.new(0.5, 0, 1, 0),
+		ZIndex = 3,
+		Font = Enum.Font.Arial,
+		Text = Settings.Name or "ColorPicker",
+		TextWrapped = true,
+		TextColor3 = Color3.fromRGB(220, 220, 220),
+		TextSize = 14,
+		TextTransparency = 0.07,
+		TextXAlignment = Enum.TextXAlignment.Left
+	})
+	
+	local Preview = Utility.Create("Frame", {
+		Name = "Preview",
+		Parent = UnderHolder,
+		BackgroundColor3 = Settings.DefaultColor or Color3.fromRGB(255, 255, 255),
+		Position = UDim2.fromScale(0.84, 0.250),
+		Size = UDim2.fromScale(0.130, 0.550),
+		ZIndex = 2,
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Preview,
+		Name = "StrokeBorder2",
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Thickness = 2,
+		Color = Color3.fromRGB(68, 68, 68)
+	})
+	
+	Utility.Create("UICorner", {
+		Parent = Preview,
+		CornerRadius = UDim.new(0, 3)
+	})
+	
+	self:Resize()
+	self:ResizePage()
+	
+	self:AddInstances({Holder, Holder.Size, UnderHolder.Title, UnderHolder.Title.Size, Preview, Preview.Size})
+	
+	Holder.MouseEnter:Connect(function()
+		Hovering = true
+
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 30)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+
+		Time = tick()
+
+		while self.StrokeBorders and Hovering do
+			task.wait()
+
+			if tick() - Time > self.StrokeBordersDelay then
+				local StrokeTween = TS:Create(Holder.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
+				StrokeTween:Play()
+				
+				local Old
+				local Separator
+				local InformationLabel
+
+				if not GoingSmaller then
+					GoingSmaller = true
+
+					Old = self.Section.Size
+
+					Separator, InformationLabel = InformationInteractable(self, Holder, UnderHolder, Settings.Information or "No information for this colorpicker was provided.")
+				end
+
+				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
+
+				StrokeTween:Cancel()
+				
+				if GoingSmaller then
+					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
+						Old = self.Section.Size - UDim2.fromOffset(0, 43)
+					end
+
+					TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
+					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
+					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
+					
+					task.delay(0.3, function()
+						GoingSmaller = false
+
+						Separator:Destroy()
+						InformationLabel:Destroy()
+
+						self:ResizePage()
+					end)
+				end
+
+				TS:Create(Holder.StrokeBorder, TweenInfo.new(0.2), {Color = Color3.fromRGB(55, 55, 55), Thickness = 1, Transparency = 0}):Play()
+			end
+		end
+	end)
+
+	Holder.MouseLeave:Connect(function()
+		Hovering = false
+
+		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
+		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
+		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
+		TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.130, 0.550), Position = UDim2.fromScale(0.84, 0.250)}):Play()
+	end)
+	
+	Button.MouseButton1Down:Connect(function()
+		TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.120, 0.4), Position = UDim2.fromScale(0.85, 0.3)}):Play()
+	end)
+	
+	Button.MouseButton1Click:Connect(function()
+		Hovering = false
+
+		local Tween = TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.110, 0.250), Position = UDim2.fromScale(0.855, 0.320)})
+		Tween:Play()
+		
+		Tween.Completed:Connect(function()
+			TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.130, 0.550), Position = UDim2.fromScale(0.84, 0.250)}):Play()
+		end)
+
+		if ColorPicker then
+			ColorPickerClose(ColorPicker)
+			ColorPicker = nil
+			return
+		end
+
+		local PickerSC = Utility.Create("ScreenGui", {
+			Parent = Holder,
+			ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		})
+		
+		ColorPicker = Color.New(PickerSC, {
+			Name = Settings.Name or "ColorPicker",
+			Position = self.MainLabel.Parent.Position + UDim2.fromScale(0.375, 0.134),
+			RoundedCorners = true,
+			Draggable = true,
+			ZIndex = 1,
+			Size = 0,
+			FinalSize = 0.270,
+			Primary = {Color = Color3.fromRGB(34, 34, 34), Transparency = 0},
+			Secondary = {Color = Color3.fromRGB(70, 70, 70), Transparency = 0},
+			Topbar = {Color = Color3.fromRGB(22, 22, 22), Transparency = 0},
+			Text = {Color = Color3.fromRGB(220, 220, 220), Transparency = 0.07}
+		})
+		
+		ColorPicker:SetColor(Preview.BackgroundColor3)
+		
+		ColorPicker.Updated:Connect(function(Color)
+			Preview.BackgroundColor3 = Color
+			Callback(Color)
+		end)
+		
+		ColorPicker.Finished:Connect(function()
+			OldColor = Preview.BackgroundColor3
+
+			ColorPickerClose(ColorPicker)
+			ColorPicker = nil
+		end)
+		
+		ColorPicker.Canceled:Connect(function()
+			TS:Create(Preview, TweenInfo.new(0.3), {BackgroundColor3 = OldColor}):Play()
+
+			ColorPickerClose(ColorPicker)
+			ColorPicker = nil
+		end)
+	end)
+end
+
 function Sections:AddLabel(FrameProperties, LabelProperties)
 	local Frame = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
@@ -1909,7 +2840,7 @@ function Sections:AddLine(YOffset)
 	
 	Utility.Create("UICorner", {
 		Parent = Separator,
-		CornerRadius = UDim.new(0, 4)
+		CornerRadius = UDim.new(0, 5)
 	})
 	
 	self:Resize()
@@ -1990,9 +2921,10 @@ function Pages:AddSection(Name)
 		["Size"] = UDim2.new(1, 0, 0, 20),
 		["ZIndex"] = 2,
 		["Font"] = Enum.Font.GothamSemibold,
-		["Text"] = Name or "Section",
+		["RichText"] = true,
+		["Text"] = Name and "<b>" .. Name .. "</b>" or "Section",
 		["TextColor3"] = Color3.fromRGB(255, 255, 255),
-		["TextSize"] = 18,
+		["TextSize"] = 17.5,
 		["TextXAlignment"] = Enum.TextXAlignment.Center,
 		["TextYAlignment"] = Enum.TextYAlignment.Bottom
 	})
@@ -2093,8 +3025,7 @@ function Pages:AddSearchBar()
 						continue
 					end
 
-					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2.ClassName == "TextButton" and v2) or v2.Name == "Dropdown" and v2.Frame:FindFirstChildOfClass("TextLabel")
-
+					local Label = v2:FindFirstChildOfClass("TextLabel") or (v2:FindFirstChild("Under") and v2.Under:FindFirstChildOfClass("TextLabel")) or (v2.Name == "Button" and v2.TextButton) or v2.Name == "Dropdown" and v2.Frame:FindFirstChildOfClass("TextLabel")
 
 					if Label then
 						if Label.ClassName == "TextLabel" then
@@ -2102,11 +3033,15 @@ function Pages:AddSearchBar()
 							if Label.Parent.Parent.Name == "Dropdown" then
 								Label.Parent.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 							else
-								Label.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
+								if Label.Parent.Name == "Under" then
+									Label.Parent.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
+								else
+									Label.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
+								end
 							end
 
 						else
-							Label.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
+							Label.Parent.Visible = Label.Text:lower():find(self.Page["Search Bar"].TextBox.Text:lower()) or false
 						end
 					end
 
@@ -2145,6 +3080,8 @@ function BoogaUI.New(Parameters)
 	BoogaUI.Toggling = false
 
 	BoogaUI.Instances = {}
+	
+	BoogaUI.OldValues = {}
 
 	BoogaUI.Name = Parameters.Name
 
@@ -2165,6 +3102,8 @@ function BoogaUI.New(Parameters)
 	BoogaUI.StrokeBorders = true
 
 	BoogaUI.StrokeBordersDelay = 0.5
+	
+	BoogaUI.FirstCategoryCreated = false
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
@@ -2246,13 +3185,13 @@ function BoogaUI.New(Parameters)
 		Text = "<b>" .. Parameters.CustomName .. "</b>" or "<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>",
 	})
 
-	Profile["Game Name"].Position = UDim2.fromScale(0.050, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 16 and 0.1 or 0.14)
+	Profile["Game Name"].Position = UDim2.fromScale(0.050, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.1 or 0.14)
 
 	Utility.Create("TextLabel", {
 		Parent = Profile,
 		Name = "Player Name",
 		Size = UDim2.fromScale(0.1, 0.1),
-		Position = UDim2.fromScale(0.45, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.280 or 0.4),
+		Position = UDim2.fromScale(0.45, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.280 or 0.4),
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
@@ -2263,7 +3202,7 @@ function BoogaUI.New(Parameters)
 		Parent = Profile,
 		Name = "FPS Image",
 		Size = UDim2.fromScale(0.120, 0.205),
-		Position = UDim2.fromScale(0.240, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.510 or 0.540),
+		Position = UDim2.fromScale(0.230, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.520 or 0.550),
 		BackgroundTransparency = 1,
 		Image = "http://www.roblox.com/asset/?id=18797095927",
 	})
@@ -2272,7 +3211,7 @@ function BoogaUI.New(Parameters)
 		Parent = Profile,
 		Name = "FPS",
 		Size = UDim2.fromScale(0.1, 0.1),
-		Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6),
+		Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.550 or 0.6),
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
@@ -2296,9 +3235,9 @@ function BoogaUI.New(Parameters)
 			end
 			
 			if FPS > 99 then
-				Profile.FPS.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6)
+				Profile.FPS.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.550 or 0.6)
 			else
-				Profile.FPS.Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.550 or 0.6)
+				Profile.FPS.Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.550 or 0.6)
 			end
 
 			Profile.FPS.Text = "FPS : " .. FPS
@@ -2312,7 +3251,7 @@ function BoogaUI.New(Parameters)
 		Parent = Profile,
 		Name = "Ping Image",
 		Size = UDim2.fromScale(0.1, 0.160),
-		Position = UDim2.fromScale(0.250, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.720 or 0.740),
+		Position = UDim2.fromScale(0.240, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.720 or 0.740),
 		BackgroundTransparency = 1,
 		Image = "http://www.roblox.com/asset/?id=18797246498",
 	})
@@ -2321,7 +3260,7 @@ function BoogaUI.New(Parameters)
 		Parent = Profile,
 		Name = "Ping",
 		Size = UDim2.fromScale(0.1, 0.1),
-		Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770),
+		Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.750 or 0.770),
 		BackgroundTransparency = 1,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 9,
@@ -2332,12 +3271,12 @@ function BoogaUI.New(Parameters)
 		local Stats = game:GetService("Stats")
 
 		while true do
-			local Ping = math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+			local Ping =  math.random(60,120) --math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
 
 			if Ping > 99 then
-				Profile.Ping.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770)
+				Profile.Ping.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.750 or 0.770)
 			else
-				Profile.Ping.Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 14 and 0.750 or 0.770)
+				Profile.Ping.Position = UDim2.fromScale(0.51, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.750 or 0.770)
 			end
 
 			Profile.Ping.Text = "Ping : " .. Ping
@@ -2413,7 +3352,7 @@ function BoogaUI.New(Parameters)
 		RichText = true,
 		Text = "",
 		TextSize = 10,
-		TextTransparency = 0.1,
+		TextTransparency = 0.15,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		Size = UDim2.fromScale(0.03, 0.03),
 		Position = UDim2.fromScale(0.250, 0.1)
@@ -2474,22 +3413,64 @@ function BoogaUI.New(Parameters)
 
 		local Button = Utility.Create("TextButton", {
 			Parent = MainLabel,
-			BackgroundTransparency = 1,
+			BackgroundTransparency = 0.550,
 			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 			BorderSizePixel = 0,
-			Size = UDim2.new(0.03, 0,1, 0),
-			Position = UDim2.fromScale(0.19, 0.127),
+			Size = UDim2.new(0, 4, 0.250, 0),
+			Position = UDim2.fromScale(0.208, 0.4),
 			ZIndex = 3,
 			AutoButtonColor = false,
 			Text = "",
 		})
+		
+		Utility.Create("UICorner", {
+			Parent = Button,
+			CornerRadius = UDim.new(0, 20)
+		})
 
 		Button.MouseButton1Click:Connect(function()
 			Hidden = not Hidden
+			
+			local PageLabel = MainLabel.TextLabel
+			
+			local ActivePage
+			
+			for _, Object in pairs(MainLabel:GetChildren()) do
+				if Object.ClassName == "ScrollingFrame" and Object.Visible then
+					ActivePage = Object
+				end
+			end
 
 			if Hidden then
 				TS:Create(Pages, TweenInfo.new(0.2), {Size = UDim2.fromScale(0, 0.871)}):Play()
-				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.fromScale(0.02, 1), Position = UDim2.fromScale(0, 0.127)}):Play()
+				TS:Create(Profile, TweenInfo.new(0.3), {Size = UDim2.fromScale(0, 0.17)}):Play()
+				
+				Profile["Game Name"].TextWrapped = false
+				
+				for _, Object in pairs(Profile:GetDescendants()) do
+					if Object.ClassName == "TextLabel" or Object.ClassName == "TextButton" then
+						TS:Create(Object, TweenInfo.new(0.1), {TextTransparency = 1}):Play()
+					elseif Object.ClassName == "ImageLabel" or Object.ClassName == "ImageButton" then
+						TS:Create(Object, TweenInfo.new(0.1), {ImageTransparency = 1}):Play()
+					end
+				end
+				
+				for _, Object in pairs(ActivePage:GetChildren()) do
+					if Object.ClassName == "ImageLabel" then
+						for _, ObjectInUI in Object.Frame:GetChildren() do
+							if ObjectInUI.ClassName == "TextButton" then
+								ObjectInUI.ImageLabel.Size = UDim2.fromScale(0.047, 0.68)
+								ObjectInUI.ImageLabel.Position = UDim2.fromScale(0.948, 0.12)
+							end
+						end
+					elseif Object.ClassName == "Frame" then
+						Object.ImageButton.Size = UDim2.fromScale(0.058, 0.787)
+						Object.ImageButton.Position = UDim2.fromScale(0.93, 0.1)
+					end
+				end
+				
+				TS:Create(Button, TweenInfo.new(0.195), {Size = UDim2.new(0, 3, 0.250, 0), Position = UDim2.fromScale(0, 0.4)}):Play()
+				TS:Create(PageLabel, TweenInfo.new(0.2), {Position = UDim2.fromScale(0.007 + (0.0034 * string.len(PageLabel.Text)), 0.1)}):Play()
 
 				for _,v in pairs(PagesScrolling:GetDescendants()) do
 					if v.ClassName == "TextLabel" then
@@ -2506,7 +3487,34 @@ function BoogaUI.New(Parameters)
 				end
 			else
 				TS:Create(Pages, TweenInfo.new(0.3), {Size = UDim2.fromScale(0.22, 0.871)}):Play()
-				TS:Create(Button, TweenInfo.new(0.2), {Size = UDim2.fromScale(0.03, 1), Position = UDim2.fromScale(0.19, 0.127)}):Play()
+				TS:Create(Profile, TweenInfo.new(0.3), {Size = UDim2.fromScale(0.22, 0.17)}):Play()
+				
+				Profile["Game Name"].TextWrapped = true
+				
+				for _, Object in pairs(Profile:GetDescendants()) do
+					if Object.ClassName == "TextLabel" or Object.ClassName == "TextButton" then
+						TS:Create(Object, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+					elseif Object.ClassName == "ImageLabel" or Object.ClassName == "ImageButton" then
+						TS:Create(Object, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+					end
+				end
+				
+				for _, Object in pairs(ActivePage:GetChildren()) do
+					if Object.ClassName == "ImageLabel" then
+						for _, ObjectInUI in pairs(Object.Frame:GetChildren()) do
+							if ObjectInUI.ClassName == "TextButton" then
+								ObjectInUI.ImageLabel.Size = UDim2.fromScale(0.06, 0.68)
+								ObjectInUI.ImageLabel.Position = UDim2.fromScale(0.93, 0.12)
+							end
+						end
+					elseif Object.ClassName == "Frame" then
+						Object.ImageButton.Size = UDim2.fromScale(0.07, 0.787)
+						Object.ImageButton.Position = UDim2.fromScale(0.91, 0.1)
+					end
+				end
+				
+				TS:Create(Button, TweenInfo.new(0.3), {Size = UDim2.new(0, 4, 0.250, 0), Position = UDim2.fromScale(0.208, 0.4)}):Play()
+				TS:Create(PageLabel, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.21 + (0.0055 * string.len(PageLabel.Text)), 0.1)}):Play()
 
 				for _,v in pairs(PagesScrolling:GetDescendants()) do
 					if v.ClassName == "TextLabel" then
@@ -2559,7 +3567,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		Size = UDim2.fromScale(0.91, 1),
 		Position = UDim2.fromScale(0.03, 0.04),
 		BackgroundColor3 = Color3.fromRGB(85, 85, 85),
-		BackgroundTransparency = (not self.FocusedPage and self.SelectorMovement) and 0.8 or 1,
+		BackgroundTransparency = (not self.FocusedPage) and 0.7 or 1,
 	})
 
 	if not self.FocusedPage then
@@ -2656,13 +3664,13 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		ImageTransparency = 0.250,
 		BackgroundTransparency = 1,
 		Size = UDim2.fromScale(0.070, 0.787),
-		Position = UDim2.fromScale(0.9, 0.1),
+		Position = UDim2.fromScale(0.91, 0.1),
 		ZIndex = 2
 	})
 
 	Utility.Create("TextBox", {
 		Parent = Page["Search Bar"],
-		Size = UDim2.fromScale(0.930, 0.9),
+		Size = UDim2.fromScale(0.895, 0.9),
 		Position = UDim2.fromScale(0.02, 0),
 		BackgroundTransparency = 1,
 		Text = "",
@@ -2721,12 +3729,26 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		self.PagesLastPos[Page] = Page.CanvasPosition
 
 		if self.SelectorMovement then
-			TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * 1.385)}):Play()
-		else
-			TS:Create(self.Selected.UIStroke, TweenInfo.new(0.5), {Thickness = 0, Transparency = 1}):Play()
-			TS:Create(Button.Selector.UIStroke, TweenInfo.new(0.5), {Thickness = 1.5, Transparency = 0}):Play()
+			local Multiply = 1.385
 
+			for k,v in pairs(self.Orders) do
+				if k == "Separator" and v < self.Orders[Button] then
+					Multiply = 1.230 + (0.017 + (0.00001 * (self.Orders[Button] - v)) * (self.Orders[Button] - v))
+					break
+				end
+			end
+			
+			print(Multiply)
+			
+			TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * Multiply)}):Play()
+		else
+			TS:Create(self.Selected, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+			TS:Create(self.Selected.UIStroke, TweenInfo.new(0.4), {Thickness = 0, Transparency = 1}):Play()
+			
 			self.Selected = Selected
+			
+			TS:Create(Button.Selector, TweenInfo.new(0.4), {BackgroundTransparency = 0.7}):Play()
+			TS:Create(Button.Selector.UIStroke, TweenInfo.new(0.4), {Thickness = 1.5, Transparency = 0}):Play()
 		end
 
 		if self.LastPageButton then 
@@ -2843,10 +3865,14 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), ImageTransparency = 1}):Play()
 					end
+					
+					if isDescendantOfByName(instance, "ColorPicker") then
+						continue
+					end
 
 					for _,instance in pairs(instance:GetDescendants()) do
 
-						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "Circle" or instance.Name == "ToggleBase" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" then
+						if instance.ClassName == "UICorner" or instance.ClassName == "ScrollingFrame" or instance.ClassName == "UIListLayout" or instance.ClassName == "BoolValue" or instance.Name == "ToggleBase" or instance.Name == "Under" or instance.Name == "ToggleCircle" or instance.Name == "AddIndex" or instance.Name == "Dropdown Option" or instance.ClassName == "ScreenGui" then
 							continue
 						end
 
@@ -2939,11 +3965,49 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 end
 
 function BoogaUI:AddPageCategory(Title)
+	local Condition = self.PagesScrolling:FindFirstChildOfClass("TextButton") or self.PagesScrolling:FindFirstChildOfClass("Frame")
+
+	if not self.FirstCategoryCreated then
+		self.FirstCategoryCreated = true
+	else
+		
+		local Base = Utility.Create("Frame", {
+			Parent = self.PagesScrolling,
+			Size = UDim2.new(0.950, 0, 0, 2),
+			BorderSizePixel = 0,
+			BackgroundTransparency = 1,
+			ZIndex = 2
+		})
+
+		
+		local Separator = Utility.Create("Frame", {
+			Parent = Base,
+			Size = UDim2.new(0.950, 0, 0, 2),
+			Position = UDim2.fromScale(0.05, 0),
+			BorderSizePixel = 0,
+			BackgroundTransparency = 0.7,
+			ZIndex = 2
+		})
+
+		Utility.Create("UICorner", {
+			Parent = Separator,
+			CornerRadius = UDim.new(0, 5)
+		})
+		
+		local Size = 1
+		
+		for _,v in pairs(self.Orders) do
+			Size += 1
+		end
+
+		self.Orders["Separator"] = Size
+	end
+	
 	local Holder = Utility.Create("Frame", {
 		Parent = self.PagesScrolling,
 		Name = Title,
 		BackgroundTransparency = 1,
-		Size = UDim2.new(0.950, 0, 0, 10),
+		Size = UDim2.new(0.950, 0, 0, Condition and 2 or 10),
 	})
 	
 	Utility.Create("TextLabel", {
@@ -2954,10 +4018,10 @@ function BoogaUI:AddPageCategory(Title)
 		TextSize = 16,
 		Font = Enum.Font.Gotham,
 		BackgroundTransparency = 1,
-		Size = UDim2.new(0.950, 0, 0, 10),
+		Size = UDim2.new(0.950, 0, 0, Condition and 2 or 10),
 	})
 	
-	Holder[Title].Position = UDim2.fromScale(-0.420 + (Holder[Title].Text:len() * 30 / 1000), self.PagesScrolling:FindFirstChildOfClass("TextButton") and 0 or 0.3)
+	Holder[Title].Position = UDim2.fromScale(-0.4 + (Holder[Title].Text:len() * 30 / (Holder[Title].Text:len() <= 5 and 1000 or 900)), Condition and -0.3 or 0.3)
 end
 
 function BoogaUI:AddSeparator(YOffset)
@@ -3323,7 +4387,7 @@ function BoogaUI:Toggle()
 
 		for _, Page in pairs(self.MainLabel:GetChildren()) do
 			if Page.ClassName == "ScrollingFrame" then
-				for _, Section in Page:GetChildren() do
+				for _, Section in pairs(Page:GetChildren()) do
 					if Section.ClassName == "ImageLabel" then
 						TS:Create(Section.Frame.Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
 					end
@@ -3353,6 +4417,10 @@ function BoogaUI:Toggle()
 			end
 			
 			local Stroke = v:FindFirstChildOfClass("UIStroke")
+			
+			if Stroke and not self.OldValues[Stroke] then
+				self.OldValues[Stroke] = Stroke.Thickness
+			end
 			
 			if Stroke and Stroke.Thickness > 0 then
 				TS:Create(Stroke, TweenInfo.new(0.5), {Thickness = 0}):Play()
@@ -3405,20 +4473,22 @@ function BoogaUI:Toggle()
 		self.MainLabel.Parent.Glow.Visible = true
 
 		self.MainLabel.Size = UDim2.fromOffset(self.MainLabel.Size.X.Offset, 450)
-		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.115, 0)}):Play()
+		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.095, 0)}):Play()
 
 		for _,v in pairs(self.Instances) do
 			
 			if not v.instance:IsDescendantOf(self.FocusedPage) and v.instance.Parent and v.instance.Parent.Name ~= "Profile" then
 				continue	
 			end
+			
+			local Stroke = v.instance:FindFirstChildOfClass("UIStroke")
 
-			if v.instance:FindFirstChildOfClass("UIStroke") then
-				TS:Create(v.instance:FindFirstChildOfClass("UIStroke"), TweenInfo.new(0.3), {Thickness = 1}):Play()
+			if Stroke then
+				TS:Create(Stroke, TweenInfo.new(0.3), {Thickness = self.OldValues[Stroke] or (v.instance.Name == "Preview" and 2) or 1}):Play()
 			end
 			
 			if v.instance.ClassName == "TextLabel" then
-				TS:Create(v.instance, TweenInfo.new(0.8), {TextTransparency = v.instance.Name == "Title" and 0.1 or 0}):Play()
+				TS:Create(v.instance, TweenInfo.new(0.8), {TextTransparency = v.instance.Parent.Parent.Name == "Dropdown" and 0.07 or (v.instance.Parent:FindFirstChild("Toggled") and v.instance.Parent.Toggled.Value and 0 or v.instance.Parent:FindFirstChild("Toggled") and 0.12) or v.instance.Name == "Title" and 0.07 or 0}):Play()
 			elseif v.instance.ClassName == "TextBox" then
 				TS:Create(v.instance, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
 			elseif v.instance.Name == "Dropdown Arrow" then
@@ -3446,7 +4516,7 @@ function BoogaUI:Toggle()
 		task.delay(0.2, function()
 			for _, Page in pairs(self.MainLabel:GetChildren()) do
 				if Page.ClassName == "ScrollingFrame" then
-					for _, Section in Page:GetChildren() do
+					for _, Section in pairs(Page:GetChildren()) do
 						if Section.ClassName == "ImageLabel" then
 							TS:Create(Section.Frame.Title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 						end
