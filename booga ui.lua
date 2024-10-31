@@ -1053,7 +1053,7 @@ function Sections:AddTextBox(Settings)
 	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
-function Sections:AddKeybind(Settings, Name, Key, Information, Callback)
+function Sections:AddKeybind(Settings)
 	local Callback = Settings.Callback or function() end
 	local Key = Settings.Key or "None"
 	
@@ -2271,7 +2271,7 @@ function Color.New(gui : LayerCollector,params : Parameters?)
 end
 
 function Color:Create()
-	local sample = script.ColorWindow:Clone()
+	local sample = self.Gui.ColorWindow
 	sample.Position = self.Params.Position
 	sample.Size = UDim2.fromScale(self.Params.Size,self.Params.Size)
 	sample.ZIndex = self.Params.ZIndex
@@ -2735,6 +2735,900 @@ function Sections:AddColorPicker(Settings)
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		})
 		
+		local ColorWindow = Utility.Create("Frame", {
+			Parent = PickerSC,
+			Name = "ColorWindow",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(26, 26, 36),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 0,
+			Position = UDim2.new(0.546, 533, 0.267, -32),
+			Size = UDim2.fromScale(0.27, 0.27),
+			Visible = false
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = ColorWindow,
+			AspectRatio = 1.1,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		for _, v in {"CanceledEvent", "FinishedEvent", "UpdateEvent"} do
+		
+			Utility.Create("BindableEvent", {
+				Parent = ColorWindow,
+				Name = v
+			})
+		end
+			
+		local Content = Utility.Create("Frame", {
+			Parent = ColorWindow,
+			Name = "Content",
+			AnchorPoint = Vector2.new(0, 1),
+			BackgroundColor3 = Color3.fromRGB(26, 26, 36),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(0, 0, 0),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.fromScale(1, 0.9)
+		})
+		
+		local Background = Utility.Create("Folder", {
+			Parent = Content,
+			Name = "Background",
+		})
+		
+		local BottomBackground = Utility.Create("Frame", {
+			Parent = Background,
+			Name = "Bottom",
+			BackgroundColor3 = Color3.fromRGB(26, 26, 36),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(0, 0, 0),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(1, 0.5),
+			ZIndex = 0,
+			ClipsDescendants = true
+		})
+		
+		local FrameBottomBackground = Utility.Create("Frame", {
+			Parent = BottomBackground,
+			AnchorPoint = Vector2.new(0, 1),
+			BackgroundColor3 = Color3.fromRGB(34, 34, 34),
+			BorderColor3 = Color3.fromRGB(0, 0, 0),
+			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.fromScale(1, 2)
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = FrameBottomBackground,
+			CornerRadius = UDim.new(0.05, 0)
+		})
+		
+		Utility.Create("Frame", {
+			Parent = Background,
+			Name = "Top",
+			BackgroundColor3 = Color3.fromRGB(34, 34, 34),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(0, 0, 0),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 0.5),
+			ZIndex = 0
+		})
+		
+		local Bottom = Utility.Create("Frame", {
+			Parent = Content,
+			Name = "Bottom",
+			AnchorPoint = Vector2.new(0, 1),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.fromScale(1, 0.15)
+		})
+		
+		local Buttons = Utility.Create("Frame", {
+			Parent = Bottom,
+			Name = "Buttons",
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0.2, 0.5),
+			Size = UDim2.fromScale(0.3, 0.8)
+		})
+		
+		local Cancel = Utility.Create("ImageButton", {
+			Parent = Buttons,
+			Name = "Cancel",
+			AnchorPoint = Vector2.new(1, 0),
+			AutoButtonColor = true,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(1, 0),
+			Size = UDim2.fromScale(1, 1),
+			Image = "rbxassetid://3192543734",
+			ImageColor3 = Color3.fromRGB(220, 220, 220),
+			ImageTransparency = 0.07,
+			ScaleType = Enum.ScaleType.Stretch
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = Cancel,
+			AspectRatio = 1,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		local Confirm = Utility.Create("ImageButton", {
+			Parent = Buttons,
+			Name = "Confirm",
+			AnchorPoint = Vector2.new(0, 0),
+			AutoButtonColor = true,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1),
+			Image = "rbxassetid://4510424237",
+			ImageColor3 = Color3.fromRGB(220, 220, 220),
+			ImageTransparency = 0.07,
+			ScaleType = Enum.ScaleType.Stretch
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = Confirm,
+			AspectRatio = 1,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		local ColorFrame = Utility.Create("Frame", {
+			Parent = Bottom,
+			Name = "Color",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1)
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = ColorFrame,
+			AspectRatio = 1,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		local Frame = Utility.Create("Frame", {
+			Parent = ColorFrame,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.8, 0.8)
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = Frame,
+			CornerRadius = UDim.new(0.35, 0)
+		})
+		
+		local Hex = Utility.Create("Frame", {
+			Parent = Bottom,
+			Name = "Hex",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0.55, 0),
+			Size = UDim2.fromScale(0.4, 1)
+		})
+		
+		local Frame2 = Utility.Create("Frame", {
+			Parent = Hex,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.8, 0.6)
+		})
+		
+		Utility.Create("UIStroke", {
+			Parent = Frame2,
+			Name = "InvalidStroke",
+			Color = Color3.fromRGB(255, 75, 75),
+			LineJoinMode = Enum.LineJoinMode.Round,
+			Thickness = 2,
+			Enabled = false
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = Frame2,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+		
+		Utility.Create("TextBox", {
+			Parent = Frame2,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = ""
+		})
+		
+		local Right = Utility.Create("Frame", {
+			Parent = Content,
+			Name = "Right",
+			AnchorPoint = Vector2.new(1, 0),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(1, 0),
+			Size = UDim2.fromScale(0.3, 0.85)
+		})
+		
+		local Value = Utility.Create("Frame", {
+			Parent = Right,
+			Name = "Value",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0.25, 0.5),
+			Size = UDim2.fromScale(0.8, 0.8)
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = Value,
+			AspectRatio = 0.1,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		Utility.Create("UIGradient", {
+			Parent = Value,
+			Offset = Vector2.new(0, 0),
+			Rotation = 90,
+			Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+			})
+		})
+		
+		local Select = Utility.Create("Frame", {
+			Parent = Value,
+			Name = "Select",
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1)
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = Select,
+			AspectRatio = 4,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		local Select2 = Utility.Create("Frame", {
+			Parent = Select,
+			Name = "Select",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1.5, 1.5)
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = Select2,
+			CornerRadius = UDim.new(0.5, 0)
+		})
+		
+		Utility.Create("UIStroke", {
+			Parent = Select2,
+			Color = Color3.fromRGB(255, 255, 255),
+			LineJoinMode = Enum.LineJoinMode.Round,
+			Thickness = 2
+		})
+		
+		Utility.Create("TextButton", {
+			Parent = Value,
+			Name = "Button",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 99,
+			Text = ""
+		})
+		
+		local Wheel = Utility.Create("Frame", {
+			Parent = Content,
+			Name = "Wheel",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(0.85, 0.85)
+		})
+		
+		Utility.Create("UIAspectRatioConstraint", {
+			Parent = Wheel,
+			AspectRatio = 1,
+			AspectType = Enum.AspectType.FitWithinMaxSize,
+			DominantAxis = Enum.DominantAxis.Width
+		})
+		
+		Utility.Create("TextButton", {
+			Parent = Wheel,
+			Name = "Button",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 99,
+			Text = ""
+		})
+		
+		local Image = Utility.Create("ImageLabel", {
+			Parent = Wheel,
+			Name = "Image",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.8, 0.8),
+			Image = "rbxassetid://2849458409",
+			ImageColor3 = Color3.fromRGB(255, 255, 255),
+			ScaleType = Enum.ScaleType.Stretch
+		})
+		
+		local ImageSelect = Utility.Create("Frame", {
+			Parent = Image,
+			Name = "Select",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(0.06, 0.06)
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = ImageSelect,
+			CornerRadius = UDim.new(0.5, 0)
+		})
+		
+		Utility.Create("UIStroke", {
+			Parent = ImageSelect,
+			Color = Color3.fromRGB(0, 0, 0),
+			LineJoinMode = Enum.LineJoinMode.Round,
+			Thickness = 2
+		})
+		
+		local Properties = Utility.Create("Frame", {
+			Parent = ColorWindow,
+			Name = "Properties",
+			BackgroundColor3 = Color3.fromRGB(34, 34, 34),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0, 1.01),
+			Size = UDim2.fromScale(1, 0.3),
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = Properties,
+			CornerRadius = UDim.new(0.165, 0)
+		})
+		
+		local HSV = Utility.Create("Frame", {
+			Parent = Properties,
+			Name = "HSV",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(1, 0.5)
+		})
+		
+		Utility.Create("UIListLayout", {
+			Parent = HSV,
+			Padding = UDim.new(0, 0),
+			FillDirection = Enum.FillDirection.Horizontal,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Wraps = false,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			ItemLineAlignment = Enum.ItemLineAlignment.Automatic,
+			VerticalAlignment = Enum.VerticalAlignment.Top
+		})
+		
+		local H = Utility.Create("Frame", {
+			Parent = HSV,
+			Name = "H",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Size = UDim2.fromScale(0.3, 1)
+		})
+		
+		local FrameH = Utility.Create("Frame", {
+			Parent = H,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.3, 0.5),
+			Size = UDim2.fromScale(0.6, 0.6)
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = FrameH,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+		
+		Utility.Create("TextBox", {
+			Parent = FrameH,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		Utility.Create("TextLabel", {
+			Parent = H,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(0.2, 0.4),
+			Text = "H",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		local S = Utility.Create("Frame", {
+			Parent = HSV,
+			Name = "S",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Size = UDim2.fromScale(0.3, 1)
+		})
+
+		local FrameS = Utility.Create("Frame", {
+			Parent = S,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.3, 0.5),
+			Size = UDim2.fromScale(0.6, 0.6)
+		})
+
+		Utility.Create("UICorner", {
+			Parent = FrameS,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+
+		Utility.Create("TextBox", {
+			Parent = FrameS,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+
+		Utility.Create("TextLabel", {
+			Parent = S,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(0.2, 0.4),
+			Text = "S",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		local V = Utility.Create("Frame", {
+			Parent = HSV,
+			Name = "V",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Size = UDim2.fromScale(0.3, 1)
+		})
+
+		local FrameV = Utility.Create("Frame", {
+			Parent = V,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.3, 0.5),
+			Size = UDim2.fromScale(0.6, 0.6)
+		})
+
+		Utility.Create("UICorner", {
+			Parent = FrameV,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+
+		Utility.Create("TextBox", {
+			Parent = FrameV,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+
+		Utility.Create("TextLabel", {
+			Parent = V,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(0.2, 0.4),
+			Text = "V",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		Utility.Create("Frame", {
+			Parent = Properties,
+			Name = "Line",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.new(0.95, 0, 0, 2)
+		})
+		
+		local RGB = Utility.Create("Frame", {
+			Parent = Properties,
+			Name = "RGB",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 0.5),
+		})
+		
+		Utility.Create("UIListLayout", {
+			Parent = RGB,
+			Padding = UDim.new(0, 0),
+			FillDirection = Enum.FillDirection.Horizontal,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Wraps = false,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			ItemLineAlignment = Enum.ItemLineAlignment.Automatic,
+			VerticalAlignment = Enum.VerticalAlignment.Top
+		})
+		
+		local R = Utility.Create("Frame", {
+			Parent = RGB,
+			Name = "R",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Size = UDim2.fromScale(0.3, 1)
+		})
+
+		local FrameR = Utility.Create("Frame", {
+			Parent = R,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.3, 0.5),
+			Size = UDim2.fromScale(0.6, 0.6)
+		})
+
+		Utility.Create("UICorner", {
+			Parent = FrameR,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+
+		Utility.Create("TextBox", {
+			Parent = FrameR,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+
+		Utility.Create("TextLabel", {
+			Parent = R,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(0.2, 0.4),
+			Text = "R",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		local G = Utility.Create("Frame", {
+			Parent = RGB,
+			Name = "G",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Size = UDim2.fromScale(0.3, 1)
+		})
+
+		local FrameG = Utility.Create("Frame", {
+			Parent = G,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.3, 0.5),
+			Size = UDim2.fromScale(0.6, 0.6)
+		})
+
+		Utility.Create("UICorner", {
+			Parent = FrameG,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+
+		Utility.Create("TextBox", {
+			Parent = FrameG,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+
+		Utility.Create("TextLabel", {
+			Parent = G,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(0.2, 0.4),
+			Text = "G",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		local B = Utility.Create("Frame", {
+			Parent = RGB,
+			Name = "B",
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Size = UDim2.fromScale(0.3, 1)
+		})
+
+		local FrameB = Utility.Create("Frame", {
+			Parent = B,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0.3, 0.5),
+			Size = UDim2.fromScale(0.6, 0.6)
+		})
+
+		Utility.Create("UICorner", {
+			Parent = FrameB,
+			CornerRadius = UDim.new(0.3, 0)
+		})
+
+		Utility.Create("TextBox", {
+			Parent = FrameB,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			ClearTextOnFocus = false,
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromScale(1, 0.6),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+
+		Utility.Create("TextLabel", {
+			Parent = B,
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0.5),
+			Size = UDim2.fromScale(0.2, 0.4),
+			Text = "B",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextScaled = true
+		})
+		
+		local TopBar = Utility.Create("Frame", {
+			Parent = ColorWindow,
+			Name = "Topbar",
+			BackgroundColor3 = Color3.fromRGB(21, 21, 31),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 0.1)
+		})
+		
+		local TopFrame = Utility.Create("Frame", {
+			Parent = TopBar,
+			AnchorPoint = Vector2.new(0, 1),
+			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.fromScale(1, 0.5)
+		})
+		
+		local Top = Utility.Create("Frame", {
+			Parent = TopBar,
+			Name = "Top",
+			BackgroundColor3 = Color3.fromRGB(21, 21, 31),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 0.5),
+			ZIndex = 0,
+			ClipsDescendants = true
+		})
+		
+		local TopFrame2 = Utility.Create("Frame", {
+			Parent = Top,
+			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 2),
+			ZIndex = 0
+		})
+		
+		Utility.Create("UICorner", {
+			Parent = TopFrame2,
+			CornerRadius = UDim.new(0.38, 0)
+		})
+		
+		Utility.Create("TextButton", {
+			Parent = TopBar,
+			Name = "Button",
+			AutoButtonColor = true,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1),
+			Text = ""
+		})
+		
+		Utility.Create("TextLabel", {
+			Parent = TopBar,
+			Name = "Title",
+			AnchorPoint = Vector2.new(0, 0.5),
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(27, 42, 53),
+			BorderSizePixel = 1,
+			Position = UDim2.fromScale(0.02, 0.5),
+			Size = UDim2.fromScale(0.8, 0.7),
+			Text = "",
+			TextColor3 = Color3.fromRGB(220, 220, 220),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextWrapped = true,
+			TextScaled = true
+		})
+		
+		Utility.Create("TextButton", {
+			Parent = ColorWindow,
+			Name = "Button",
+			AutoButtonColor = true,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			BorderColor3 = Color3.fromRGB(0, 0, 0),
+			BorderSizePixel = 0,
+			Position = UDim2.fromScale(0, 0),
+			Size = UDim2.fromScale(1, 1),
+			Visible = false,
+			ZIndex = 9,
+			Text = ""
+		})
+		
+		ColorWindow.Visible = true
+		
 		ColorPicker = Color.New(PickerSC, {
 			Name = Settings.Name or "ColorPicker",
 			Position = self.MainLabel.Parent.Position + UDim2.fromScale(0.375, 0.134),
@@ -2772,7 +3666,7 @@ function Sections:AddColorPicker(Settings)
 	end)
 end
 
-function Sections:AddLabel(FrameProperties, LabelProperties)
+function Sections:AddLabel(Settings)
 	local Frame = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
@@ -2781,8 +3675,8 @@ function Sections:AddLabel(FrameProperties, LabelProperties)
 		Size = UDim2.new(0.950, 0, 0, 35),
 	})
 	
-	if FrameProperties then
-		for k, v in pairs(FrameProperties) do
+	if Settings.FrameProperties then
+		for k, v in pairs(Settings.FrameProperties) do
 			Frame[k] = v
 		end
 	end
@@ -2818,8 +3712,8 @@ function Sections:AddLabel(FrameProperties, LabelProperties)
 		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 
-	if LabelProperties then
-		for k, v in pairs(LabelProperties) do
+	if Settings.LabelProperties then
+		for k, v in pairs(Settings.LabelProperties) do
 			Frame.Title[k] = v
 		end
 	end
@@ -2829,10 +3723,10 @@ function Sections:AddLabel(FrameProperties, LabelProperties)
 	return Frame.Title
 end
 
-function Sections:AddLine(YOffset)
+function Sections:AddLine(Settings)
 	local Separator = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
-		Size = UDim2.new(0.950, 0, 0, YOffset),
+		Size = UDim2.new(0.950, 0, 0, Settings.YOffset),
 		BorderSizePixel = 0,
 		BackgroundTransparency = 0.750,
 		ZIndex = 2
@@ -2850,11 +3744,11 @@ function Sections:AddLine(YOffset)
 	return Separator
 end
 
-function Sections:AddSeparator(YOffset)
+function Sections:AddSeparator(Settings)
 	local Separator = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
 		ZIndex = 2,
-		Size = UDim2.new(0.950, 0, 0, YOffset),
+		Size = UDim2.new(0.950, 0, 0, Settings.YOffset),
 		BackgroundTransparency = 1
 	})
 
