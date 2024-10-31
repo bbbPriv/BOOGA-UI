@@ -221,19 +221,21 @@ local function InformationInteractable(self, Holder, Holder2, Information)
 		Parent = Holder2,
 		AnchorPoint = Vector2.new(0, 0.5),
 		BackgroundTransparency = 1,
-		Position = UDim2.fromScale(0, 1.5),
-		Size = UDim2.new(0.850, 0, 0, 5),
+		Position = UDim2.fromScale(0, 1.7),
+		Size = UDim2.new(0.850, 0, 0, 15),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Information,
+		RichText = true,
+		Text = "<b>" .. Information .. "</b>",
+		TextWrapped = true,
 		TextColor3 = Color3.fromRGB(220, 220, 220),
-		TextSize = 14,
+		TextSize = 13,
 		TextTransparency = 1,
 		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 
 	TS:Create(Separator, TweenInfo.new(0.250), {BackgroundTransparency = 0.750, Position = UDim2.fromScale(0.07, 1.05)}):Play()
-	TS:Create(InformationLabel, TweenInfo.new(0.250), {TextTransparency = 0.07, Position = UDim2.fromScale(0.07, 1.5)}):Play()
+	TS:Create(InformationLabel, TweenInfo.new(0.250), {TextTransparency = 0.07, Position = UDim2.fromScale(0.07, 1.7)}):Play()
 	
 	task.delay(0.3, function()
 		self:ResizePage()
@@ -377,7 +379,8 @@ function Sections:AddButton(Settings)
 	local Button = Utility.Create("TextButton", {
 		Parent = Holder,
 		ZIndex = 3,
-		Text = Settings.Name or "Button",
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "Button",
 		TextSize = 17,
 		Font = Enum.Font.Arial,
 		Size = UDim2.new(1, 0, 0, 31),
@@ -629,7 +632,8 @@ function Sections:AddToggle(Settings)
 		Size = UDim2.fromScale(0.5, 1),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Settings.Name or "Toggle",
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "Toggle",
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.120,
@@ -653,10 +657,9 @@ function Sections:AddToggle(Settings)
 	Utility.Create("UIStroke", {
 		Parent = ToggleUnder.ToggleBase,
 		Name = "StrokeBorder",
-		Thickness = 0,
-		Color = Color3.fromRGB(15, 15, 15),
-		Transparency = 0.5,
-		Enabled = false
+		Thickness = 1.1,
+		Color = Color3.fromRGB(110, 110, 110),
+		Transparency = 0,
 	})
 
 	Utility.Create("UICorner", {
@@ -689,7 +692,7 @@ function Sections:AddToggle(Settings)
 		TS:Create(Toggle, TweenInfo.new(0.2), {Size = UDim2.new(0.930, 0, 0, 30)}):Play()
 		TS:Create(ToggleUnder, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 30)}):Play()
 		TS:Create(ToggleUnder.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(240, 240, 240)}):Play()
 
 		Time = tick()
 
@@ -710,6 +713,8 @@ function Sections:AddToggle(Settings)
 
 					Separator, InformationLabel = InformationInteractable(self, Toggle, ToggleUnder, Settings.Information or "No information for this toggle was provided.")
 				end
+				
+				ToggleUnder.ToggleBase.StrokeBorder.Color = Color3.fromRGB(95, 95, 95)
 
 				local StrokeTween = TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
@@ -729,7 +734,7 @@ function Sections:AddToggle(Settings)
 					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
 				end
 
-				local Tween = TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				local Tween = TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(110, 110, 110), Transparency = 0, Thickness = 1.1})
 				Tween:Play()
 
 				Tween.Completed:Connect(function()
@@ -850,7 +855,8 @@ function Sections:AddTextBox(Settings)
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Settings.Name or "TextBox",
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "TextBox",
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
@@ -1053,7 +1059,7 @@ function Sections:AddTextBox(Settings)
 	return setmetatable({instance = Holder, Interactable = Holder, Section = self.Section}, Interactables)
 end
 
-function Sections:AddKeybind(Settings)
+function Sections:AddKeyBind(Settings)
 	local Callback = Settings.Callback or function() end
 	local Key = Settings.Key or "None"
 	
@@ -1125,7 +1131,8 @@ function Sections:AddKeybind(Settings)
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Settings.Name,
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "KeyBind",
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
@@ -1396,7 +1403,8 @@ function Sections:AddSlider(Settings)
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Settings.Name or "Slider",
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "Slider",
 		TextWrapped = true,
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
@@ -1930,7 +1938,8 @@ function Sections:AddDropdown(Settings)
 		Size = UDim2.new(0.3, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Settings.Name or "Dropdown",
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "Dropdown",
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
@@ -2607,7 +2616,8 @@ function Sections:AddColorPicker(Settings)
 		Size = UDim2.new(0.5, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = Settings.Name or "ColorPicker",
+		RichText = true,
+		Text = "<b>" .. Settings.Name .. "</b>" or "ColorPicker",
 		TextWrapped = true,
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
@@ -3670,7 +3680,7 @@ function Sections:AddLabel(Settings)
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0,
 		ZIndex = 2,
-		Size = UDim2.new(0.950, 0, 0, 35),
+		Size = UDim2.new(0.950, 0, 0, 31),
 	})
 	
 	if Settings.FrameProperties then
@@ -3702,21 +3712,29 @@ function Sections:AddLabel(Settings)
 		Size = UDim2.fromScale(0.950, 1),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
-		Text = "Label",
+		RichText = true,
+		Text = "<b>" .. "Label".. "</b>",
 		TextWrapped = true,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextSize = 16,
-		TextTransparency = 0.1,
+		TextColor3 = Color3.fromRGB(220, 220, 220),
+		TextSize = 14,
+		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left,
 	})
 
 	if Settings.LabelProperties then
 		for k, v in pairs(Settings.LabelProperties) do
+			if k == "Text" then
+				v = "<b>" .. v .. "</b>"
+			end
+
 			Frame.Title[k] = v
 		end
 	end
 
 	self:AddInstances({Frame, Frame.Size, Frame.Title, Frame.Title.Size})
+	
+	self:Resize()
+	self:ResizePage()
 	
 	return Frame.Title
 end
@@ -3816,7 +3834,7 @@ function Pages:AddSection(Name)
 		["RichText"] = true,
 		["Text"] = Name and "<b>" .. Name .. "</b>" or "Section",
 		["TextColor3"] = Color3.fromRGB(255, 255, 255),
-		["TextSize"] = 17.5,
+		["TextSize"] = 18,
 		["TextXAlignment"] = Enum.TextXAlignment.Center,
 		["TextYAlignment"] = Enum.TextYAlignment.Bottom
 	})
@@ -4074,7 +4092,7 @@ function BoogaUI.New(Parameters)
 		RichText = true,
 		TextWrapped = true,
 		TextSize = 9,
-		Text = Parameters.CustomName and ("<b>" .. Parameters.CustomName .. "</b>") or ("<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>"),
+		Text = "<b>" .. Parameters.CustomName .. "</b>" or "<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>",
 	})
 
 	Profile["Game Name"].Position = UDim2.fromScale(0.050, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.1 or 0.14)
@@ -4543,7 +4561,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 			Parent = Page,
 			ZIndex = 2,
 			Size = UDim2.new(0.965, 0, 0, 35),
-			BackgroundColor3 = Color3.fromRGB(24, 24, 24),
+			BackgroundColor3 = Color3.fromRGB(25, 25, 25),
 			Visible = false
 		}),
 
