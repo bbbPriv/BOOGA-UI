@@ -2236,8 +2236,6 @@ function roundToHundredths(num)
 	return math.round(num * 100) / 100
 end
 
-script = workspace.Color
-
 function Color.New(gui : LayerCollector,params : Parameters?)
 	if gui:IsA("SurfaceGui") then
 		assert(gui.Face == Enum.NormalId.Front,"Color Picker - SurfaceGui must have it's Face property set to 'Front' to work properly")
