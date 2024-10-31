@@ -4074,7 +4074,7 @@ function BoogaUI.New(Parameters)
 		RichText = true,
 		TextWrapped = true,
 		TextSize = 9,
-		Text = "<b>" .. Parameters.CustomName .. "</b>" or "<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>",
+		Text = Parameters.CustomName and ("<b>" .. Parameters.CustomName .. "</b>") or ("<b>" .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name .. "</b>"),
 	})
 
 	Profile["Game Name"].Position = UDim2.fromScale(0.050, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.1 or 0.14)
