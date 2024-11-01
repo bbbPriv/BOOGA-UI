@@ -772,6 +772,8 @@ function Sections:AddToggle(Settings)
 		Hovering = false
 
 		Toggled.Value = not Toggled.Value
+		
+		TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(0.2), {Color = Toggled.Value and Color3.fromRGB(145, 145, 145) or Color3.fromRGB(110, 110, 110)}):Play()
 
 		task.spawn(function()
 			InteractablesInfo[Toggle].Callback(Toggled)
@@ -1439,11 +1441,9 @@ function Sections:AddSlider(Settings)
 	Utility.Create("UIStroke", {
 		Parent = Bar,
 		Name = "StrokeBorder",
-		Thickness = 0,
-		Color = Color3.fromRGB(15, 15, 15),
-		Transparency = 0.5,
+		Thickness = 1.1,
+		Color = Color3.fromRGB(81, 81, 81),
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Enabled = false
 	})
 
 	local Fill = Utility.Create("Frame", {
@@ -1541,7 +1541,7 @@ function Sections:AddSlider(Settings)
 					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
 				end
 
-				local Tween = TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0.5, Thickness = 0})
+				local Tween = TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(81, 81, 81), Transparency = 0, Thickness = 1.1})
 				Tween:Play()
 
 				Tween.Completed:Connect(function()
@@ -1586,16 +1586,15 @@ function Sections:AddSlider(Settings)
 				TS:Create(Circle, TweenInfo.new(0.2), {Size = UDim2.fromOffset(12, 11)}):Play()
 			end
 
-			InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))		
+			task.spawn(function()
+				InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
+			end)
+			
+			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(170, 170, 170), Transparency = 0, Thickness = 1.1}):Play()
 
 			repeat task.wait() until not dragging
-
-			task.wait(0.5)
-
-			if dragging then
-				return
-			end
-
+			
+			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(81, 81, 81), Transparency = 0, Thickness = 1.1}):Play()
 		end
 	end)
 
@@ -1618,19 +1617,18 @@ function Sections:AddSlider(Settings)
 			local Num = UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment)
 
 			if Num ~= Old then
-				InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
+				task.spawn(function()
+					InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
+				end)
 			end
 
 			Old = Num
+			
+			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(170, 170, 170), Transparency = 0, Thickness = 1.1}):Play()
 
 			repeat task.wait() until not dragging
 
-			task.wait(0.5)
-
-			if dragging then
-				return
-			end
-
+			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(81, 81, 81), Transparency = 0, Thickness = 1.1}):Play()
 		end
 	end)
 
@@ -1752,7 +1750,8 @@ function Sections:AddDropdown(Settings)
 				local Button = Utility.Create("TextButton", {
 					Parent = ScrollingFrame,
 					Name = "Dropdown Option",
-					Text = v,
+					RichText = true,
+					Text = "<b>" .. v .. "</b>",
 					TextSize = 16,
 					TextWrapped = true,
 					Font = Enum.Font.Arial,
@@ -1766,11 +1765,25 @@ function Sections:AddDropdown(Settings)
 					BackgroundTransparency = 0.1
 				})
 				
+				Utility.Create("ImageLabel", {
+					Parent = Button,
+					BackgroundTransparency = 1,
+					BorderColor3 = Color3.fromRGB(27, 42, 53),
+					Size = UDim2.fromScale(0.06, 0.68),
+					Position = UDim2.fromScale(0.93, 0.12),
+					Image = "rbxassetid://3926305904",
+					ImageTransparency = 0.05,
+					ImageRectOffset = Vector2.new(84, 204),
+					ImageRectSize = Vector2.new(36, 36),
+					ZIndex = 3
+				})
+				
 				Utility.Create("UIStroke", {
 					Parent = Button,
 					Name = "StrokeBorder",
 					Color = LastPicked ~= v and Color3.fromRGB(0, 0, 0) or Color3.fromRGB(180, 180, 180),
 					Transparency = LastPicked ~= v and 0 or 0.1,
+					Thickness = 1.3,
 					ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 				})
 
@@ -1778,6 +1791,16 @@ function Sections:AddDropdown(Settings)
 					Parent = Button,
 					Name = "AddIndex"
 				})
+				
+				if Settings.Default then
+					for _,v in pairs(ScrollingFrame:GetChildren()) do
+						if v.ClassName == "TextButton" and v.Text == "<b>" .. Settings.Default .. "</b>" then
+							LastPicked = v
+							Holder2.TextBox.Text = v.Text:gsub("<b>(.-)</b>", "")
+							v.StrokeBorder.Color = Color3.fromRGB(180, 180, 180)
+						end
+					end
+				end
 
 				self:AddInstances({Button, UDim2.new(0.950, 0, 0, #Entries > 1 and 30 or 26)})
 
@@ -1800,6 +1823,10 @@ function Sections:AddDropdown(Settings)
 				end)
 
 				Button.MouseButton1Click:Connect(function()
+					
+					if Button.Text ~= Settings.Default then
+						Settings.Default = nil
+					end
 					
 					LastPicked = v
 					
@@ -1954,6 +1981,7 @@ function Sections:AddDropdown(Settings)
 		Size = UDim2.new(0.27, 0, 1, 0),
 		ZIndex = 3,
 		Font = Enum.Font.Arial,
+		RichText = true,
 		Text = "",
 		TextColor3 = Color3.fromRGB(220, 220, 220),
 		PlaceholderText = "None Selected",
@@ -1962,6 +1990,12 @@ function Sections:AddDropdown(Settings)
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
+	
+	for _, EntryName in pairs(Entries) do
+		if Settings.Default == EntryName then
+			TextBox.Text = Settings.Default
+		end
+	end
 
 	self:AddInstances({Holder2, Holder2.Size, Holder2.Title, Holder2.Title.Size, TextBox, TextBox.Size})
 
@@ -3666,7 +3700,7 @@ function Sections:AddColorPicker(Settings)
 		end)
 		
 		ColorPicker.Canceled:Connect(function()
-			TS:Create(Preview, TweenInfo.new(0.3), {BackgroundColor3 = OldColor}):Play()
+			TS:Create(Preview, TweenInfo.new(0.4), {BackgroundColor3 = OldColor}):Play()
 
 			ColorPickerClose(ColorPicker)
 			ColorPicker = nil
@@ -3828,13 +3862,13 @@ function Pages:AddSection(Name)
 		["Parent"] = self.Page[Name].Frame,
 		["Name"] = "Title",
 		["BackgroundTransparency"] = 1,
-		["Size"] = UDim2.new(1, 0, 0, 20),
+		["Size"] = UDim2.new(1, 0, 0, 22),
 		["ZIndex"] = 2,
 		["Font"] = Enum.Font.GothamSemibold,
 		["RichText"] = true,
 		["Text"] = Name and "<b>" .. Name .. "</b>" or "Section",
 		["TextColor3"] = Color3.fromRGB(255, 255, 255),
-		["TextSize"] = 18,
+		["TextSize"] = 19,
 		["TextXAlignment"] = Enum.TextXAlignment.Center,
 		["TextYAlignment"] = Enum.TextYAlignment.Bottom
 	})
@@ -4545,7 +4579,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		["Parent"] = self.MainLabel,
 		["Name"] = Title,
 		["BackgroundTransparency"] = 1,
-		["Position"] = UDim2.new(0.252, 1.5, 0.135, 0),
+		["Position"] = UDim2.new(0.25, 1.5, 0.135, 0),
 		["Size"] = UDim2.new(0.973, -142, 1, -56),
 		["ScrollBarThickness"] = 3,
 		["ScrollBarImageColor3"] = Color3.fromRGB(0, 0, 0),
@@ -4554,6 +4588,12 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		["Visible"] = Button == self.FocusedPage and true or false
 
 	})
+	
+	Utility.Create("UIPadding", {
+		Parent = Page,
+		PaddingTop = UDim.new(0, 1),
+		PaddingLeft = UDim.new(0, 1)
+	})
 
 	Utility.Create("UICorner", {
 		Parent = Utility.Create("Frame", {
@@ -4561,11 +4601,19 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 			Parent = Page,
 			ZIndex = 2,
 			Size = UDim2.new(0.965, 0, 0, 35),
-			BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+			BackgroundColor3 = Color3.fromRGB(26, 26, 26),
 			Visible = false
 		}),
 
 		CornerRadius = UDim.new(0, 6)
+	})
+	
+	Utility.Create("UIStroke", {
+		Parent = Page["Search Bar"],
+		Name = "StrokeBorder",
+		Thickness = 1.1,
+		Color = Color3.fromRGB(65, 65, 65),
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 	})
 
 	Utility.Create("ImageButton", {
@@ -4573,23 +4621,46 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		Image = "http://www.roblox.com/asset/?id=11496279085",
 		ImageTransparency = 0.250,
 		BackgroundTransparency = 1,
-		Size = UDim2.fromScale(0.070, 0.787),
-		Position = UDim2.fromScale(0.91, 0.1),
+		Size = UDim2.fromScale(0.066, 0.740),
+		Position = UDim2.fromScale(0.014, 0.115),
 		ZIndex = 2
 	})
+	
+	Utility.Create("ImageButton", {
+		Parent = Page["Search Bar"],
+		Image = "http://www.roblox.com/asset/?id=118963081585407",
+		ImageColor3 = Color3.fromRGB(216, 216, 216),
+		ImageTransparency = 0.250,
+		BackgroundTransparency = 1,
+		Size = UDim2.fromScale(0.033, 0.4),
+		Position = UDim2.fromScale(0.93, 0.290),
+		ZIndex = 2
+	}).MouseButton1Click:Connect(function()
+		local Len = Page["Search Bar"].TextBox.Text:len()
+		local WaitTime = Len <= 5 and 0.032 or (Len >= 6 and Len <= 10 and 0.027) or Len >= 11 and 0.015
+		
+		pcall(function()
+			for i = Page["Search Bar"].TextBox.Text:len(), 1, -1 do
+				Page["Search Bar"].TextBox.Text = Page["Search Bar"].TextBox.Text:gsub(Page["Search Bar"].TextBox.Text:sub(i, i) .. "?$", "", 1)
+
+				task.wait(WaitTime)
+			end
+		end)
+	end)
 
 	Utility.Create("TextBox", {
 		Parent = Page["Search Bar"],
-		Size = UDim2.fromScale(0.895, 0.9),
-		Position = UDim2.fromScale(0.02, 0),
+		Size = UDim2.fromScale(0.8, 0.9),
+		Position = UDim2.fromScale(0.09, 0.02),
 		BackgroundTransparency = 1,
 		Text = "",
 		Font = Enum.Font.Arial,
 		PlaceholderColor3 = Color3.fromRGB(176, 176, 176),
-		PlaceholderText = "Search Something...",
+		PlaceholderText = "Search",
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextSize = 16,
+		ClearTextOnFocus = false,
 		ZIndex = 2
 	})
 	
