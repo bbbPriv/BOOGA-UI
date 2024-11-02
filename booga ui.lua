@@ -1792,14 +1792,9 @@ function Sections:AddDropdown(Settings)
 					Name = "AddIndex"
 				})
 				
-				if Settings.Default then
-					for _,v in pairs(ScrollingFrame:GetChildren()) do
-						if v.ClassName == "TextButton" and v.Text == "<b>" .. Settings.Default .. "</b>" then
-							LastPicked = v
-							Holder2.TextBox.Text = v.Text:gsub("<b>(.-)</b>", "")
-							v.StrokeBorder.Color = Color3.fromRGB(180, 180, 180)
-						end
-					end
+				if Settings.Default and Button.Text == "<b>" .. Settings.Default .. "</b>" then
+					LastPicked = Button
+					Button.StrokeBorder.Color = Color3.fromRGB(180, 180, 180)
 				end
 
 				self:AddInstances({Button, UDim2.new(0.950, 0, 0, #Entries > 1 and 30 or 26)})
@@ -1994,6 +1989,9 @@ function Sections:AddDropdown(Settings)
 	for _, EntryName in pairs(Entries) do
 		if Settings.Default == EntryName then
 			TextBox.Text = Settings.Default
+			InteractablesInfo[Holder2].Callback(Settings.Default)
+
+			break
 		end
 	end
 
@@ -4057,7 +4055,7 @@ function BoogaUI.New(Parameters)
 	local Fake = Utility.Create("Frame", {
 		["Parent"] = SG,
 		["Name"] = "Fake",
-		["Size"] = UDim2.fromOffset(600, 450),
+		["Size"] = Parameters.UISize,
 		["Position"] = UDim2.new(0.171, 354, 0.133, -24),
 		["BackgroundTransparency"] = 1,
 	})
@@ -4065,7 +4063,7 @@ function BoogaUI.New(Parameters)
 	local MainLabel = Utility.Create("Frame", {
 		["Parent"] = Fake,
 		["Name"] = "MainLabel",
-		["Size"] = UDim2.fromOffset(600, 450),
+		["Size"] =  Parameters.UISize,
 		["BackgroundTransparency"] = 0,
 		["BackgroundColor3"] = Color3.fromRGB(42, 42, 42),
 		["ClipsDescendants"] = true
@@ -4306,7 +4304,7 @@ function BoogaUI.New(Parameters)
 	local dragInput, mousePos, framePos
 
 	Top.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			mousePos = input.Position
 			framePos = Fake.Position
@@ -4320,13 +4318,13 @@ function BoogaUI.New(Parameters)
 	end)
 
 	Top.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 			dragInput = input
 		end
 	end)
 
 	Top.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			mousePos = input.Position
 			framePos = Fake.Position
@@ -4340,7 +4338,7 @@ function BoogaUI.New(Parameters)
 	end)
 
 	Top.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 			dragInput = input
 		end
 	end)
