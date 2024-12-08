@@ -87,13 +87,13 @@ local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
 	end
 
 	percent = math.clamp(percent, 0, 1)
-	
+
 	if percent == 0 then
 		TS:Create(Bar.Fill.Circle, TweenInfo.new(0.2), {ImageTransparency = 1, Size = UDim2.fromOffset()}):Play()
 	elseif Bar.Fill.Circle.ImageTransparency == 1 then
 		TS:Create(Bar.Fill.Circle, TweenInfo.new(0.2), {ImageTransparency = 0, Size = UDim2.fromOffset(12, 11)}):Play()
 	end
-	
+
 	Value = Min + (Max - Min) * percent
 
 	if Increment then
@@ -236,11 +236,11 @@ local function InformationInteractable(self, Holder, Holder2, Information)
 
 	TS:Create(Separator, TweenInfo.new(0.250), {BackgroundTransparency = 0.750, Position = UDim2.fromScale(0.07, 1.05)}):Play()
 	TS:Create(InformationLabel, TweenInfo.new(0.250), {TextTransparency = 0.07, Position = UDim2.fromScale(0.07, 1.7)}):Play()
-	
+
 	task.delay(0.3, function()
 		self:ResizePage()
 	end)
-	
+
 	return Separator, InformationLabel
 end
 
@@ -276,7 +276,7 @@ local CleanConnections = {}
 
 function Interactables:Remove()
 	self.Interactable:Destroy()
-	
+
 	local Env = Pages:GetSectionEnv(self.Section)
 	Env:Resize()
 	Env:ResizePage()
@@ -292,11 +292,11 @@ function Interactables:Edit(Properties)
 			Interactable.Text = Properties.Text
 		end
 	end
-	
+
 	if Properties.Callback then
 		InteractablesInfo[Interactable].Callback = Properties.Callback
 	end
-	
+
 	if Properties.InputText then
 		Interactable.Frame.TextBox.Text = Properties.InputText
 	end
@@ -316,17 +316,11 @@ function Sections:Resize(Section)
 	for _,v in pairs(Section and Section:GetChildren() or self.Section.Frame:GetChildren()) do
 		if v.ClassName ~= "UIListLayout" and v.ClassName ~= "TextLabel" and v.Visible then
 
-			if v:FindFirstChild("List") and v.List.ScrollingFrame:FindFirstChildOfClass("TextButton") then
+			if v:FindFirstChild("List") and (InteractablesInfo[v.Frame].Open or InteractablesInfo[v.Frame].DidFirst) then
 
-				local DropdownSize = 0
+				local DropdownSize = v.DropdownSize.Value
 
-				for _,v in pairs(v.List.ScrollingFrame:GetChildren()) do
-					if v.ClassName == "TextButton" or v.Name == "First" then
-						DropdownSize += 1
-					end
-				end
-
-				Size += DropdownSize <= 3 and DropdownSize * 40 + 34 or DropdownSize > 3 and 162 or 154
+				Size += DropdownSize <= 3 and DropdownSize * 40 + 34 or DropdownSize > 3 and 166 or 154
 			else
 				Size += v.AbsoluteSize.Y + 5
 			end
@@ -346,12 +340,12 @@ end
 
 function Sections:AddButton(Settings)
 	local Callback = Settings.Callback or function() end
-	
+
 	local Hovering
 	local Time = 0
-	
+
 	local GoingSmaller = false
-	
+
 	local Holder = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
 		Name = "Button",
@@ -360,7 +354,7 @@ function Sections:AddButton(Settings)
 		BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 		BorderSizePixel = 0
 	})
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Holder,
 		Name = "StrokeBorder",
@@ -370,7 +364,7 @@ function Sections:AddButton(Settings)
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 		Enabled = true
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
@@ -389,14 +383,14 @@ function Sections:AddButton(Settings)
 		TextTransparency = 0.07,
 		AutoButtonColor = false
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Button,
 		CornerRadius = UDim.new(0, 4)
 	})
-	
+
 	InteractablesInfo[Button] = {Callback = Callback}
-	
+
 	local UnderButton = Utility.Create("TextButton", {
 		Parent = Button,
 		Name = "Under",
@@ -409,7 +403,7 @@ function Sections:AddButton(Settings)
 		TextTransparency = 1,
 		AutoButtonColor = false
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = UnderButton,
 		CornerRadius = UDim.new(0, 4)
@@ -448,7 +442,7 @@ function Sections:AddButton(Settings)
 			task.wait()
 
 			if tick() - Time > self.StrokeBordersDelay then
-				
+
 				local Old
 				local Separator
 				local InformationLabel
@@ -460,14 +454,14 @@ function Sections:AddButton(Settings)
 
 					Separator, InformationLabel = InformationInteractable(self, Holder, Button, Settings.Information or "No information for this button was provided.")
 				end
-				
+
 				local StrokeTween = TS:Create(Holder.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
 
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
-				
+
 				if GoingSmaller then
 					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
 						Old = self.Section.Size - UDim2.fromOffset(0, 43)
@@ -477,7 +471,7 @@ function Sections:AddButton(Settings)
 					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
 					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
 					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
-					
+
 					task.delay(0.3, function()
 						GoingSmaller = false
 
@@ -499,7 +493,7 @@ function Sections:AddButton(Settings)
 
 	Holder.MouseLeave:Connect(function()
 		Hovering = false
-		
+
 		task.wait()
 
 		TS:Create(Holder, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
@@ -528,7 +522,7 @@ function Sections:AddButton(Settings)
 
 		local Tween = TS:Create(Holder, TweenInfo.new(0.1), {Size = UDim2.new(0.850, 0, 0, 25)})
 		Tween:Play()
-		
+
 		TS:Create(Button, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 25)})
 		TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 25)})
 
@@ -542,7 +536,7 @@ function Sections:AddButton(Settings)
 				TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 35)}):Play()
 				TS:Create(UnderButton, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 35)}):Play()
 			end
-			
+
 			task.wait(0.15)
 
 			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
@@ -569,7 +563,7 @@ function Sections:AddToggle(Settings)
 	local Hovering = false
 
 	local Time = 0
-	
+
 	local GoingSmaller = false
 
 	local Toggle = Utility.Create("Frame", {
@@ -580,7 +574,7 @@ function Sections:AddToggle(Settings)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Toggle,
 		Name = "StrokeBorder2",
@@ -593,14 +587,14 @@ function Sections:AddToggle(Settings)
 		Parent = Toggle,
 		CornerRadius = UDim.new(0, 4)
 	})
-	
+
 	InteractablesInfo[Toggle] = {Callback = Callback}
 
 	local Toggled = Utility.Create("BoolValue", {
 		Parent = Toggle,
 		Name = "Toggled"
 	})
-	
+
 	local ToggleUnder = Utility.Create("Frame", {
 		Name = "Under",
 		Parent = Toggle,
@@ -701,19 +695,19 @@ function Sections:AddToggle(Settings)
 
 			if tick() - Time > self.StrokeBordersDelay then
 				ToggleUnder.ToggleBase.StrokeBorder.Enabled = true
-				
+
 				local Old
 				local Separator
 				local InformationLabel
-				
+
 				if not GoingSmaller then
 					GoingSmaller = true
-					
+
 					Old = self.Section.Size
 
 					Separator, InformationLabel = InformationInteractable(self, Toggle, ToggleUnder, Settings.Information or "No information for this toggle was provided.")
 				end
-				
+
 				ToggleUnder.ToggleBase.StrokeBorder.Color = Color3.fromRGB(95, 95, 95)
 
 				local StrokeTween = TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
@@ -722,12 +716,12 @@ function Sections:AddToggle(Settings)
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
-				
+
 				if GoingSmaller then
 					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
 						Old = self.Section.Size - UDim2.fromOffset(0, 43)
 					end
-					
+
 					TS:Create(Toggle, TweenInfo.new(0.3), {Size = UDim2.new(0.930, 0, 0, 31)}):Play()
 					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
 					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
@@ -744,7 +738,7 @@ function Sections:AddToggle(Settings)
 					InformationLabel:Destroy()
 
 					self:ResizePage()
-					
+
 					if ToggleUnder.ToggleBase.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
 						ToggleUnder.ToggleBase.StrokeBorder.Enabled = false
 					end
@@ -755,9 +749,9 @@ function Sections:AddToggle(Settings)
 
 	Toggle.MouseLeave:Connect(function()
 		Hovering = false
-		
+
 		task.wait()
-		
+
 		TS:Create(Toggle, TweenInfo.new(0.2), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 		TS:Create(ToggleUnder, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 31)}):Play()
 
@@ -772,7 +766,7 @@ function Sections:AddToggle(Settings)
 		Hovering = false
 
 		Toggled.Value = not Toggled.Value
-		
+
 		TS:Create(ToggleUnder.ToggleBase.StrokeBorder, TweenInfo.new(0.2), {Color = Toggled.Value and Color3.fromRGB(145, 145, 145) or Color3.fromRGB(110, 110, 110)}):Play()
 
 		task.spawn(function()
@@ -785,13 +779,13 @@ function Sections:AddToggle(Settings)
 		}
 
 		local value = Toggled.Value and "Out" or "In"
-		
+
 		TS:Create(ToggleUnder.Title, TweenInfo.new(0.2), {TextColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(220, 220, 220), TextTransparency = value == "Out" and 0 or 0.1}):Play()
 
 		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.2), {Position = position[value] + UDim2.new(0, 0, 0, 2.2), Size = UDim2.new(1, -22, 1, -8), BackgroundColor3 = value == "Out" and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(170, 170, 170)}):Play()
-		
+
 		task.wait(0.1)
-		
+
 		TS:Create(ToggleUnder.ToggleBase.ToggleCircle, TweenInfo.new(0.1), {Position = position[value], Size = UDim2.new(1, -22, 1, -4)}):Play()
 	end)
 
@@ -800,7 +794,7 @@ end
 
 function Sections:AddTextBox(Settings)
 	local Callback = Settings.Callback or function() end
-	
+
 	Settings.DefaultText = Settings.DefaultText or Settings.Name
 
 	local DoubleClick = 0
@@ -808,7 +802,7 @@ function Sections:AddTextBox(Settings)
 
 	local Hovering = false
 	local Time = 0
-	
+
 	local GoingSmaller = false
 
 	local Holder = Utility.Create("Frame", {
@@ -819,7 +813,7 @@ function Sections:AddTextBox(Settings)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
-	
+
 	InteractablesInfo[Holder] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
@@ -834,7 +828,7 @@ function Sections:AddTextBox(Settings)
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
-	
+
 	local UnderHolder = Utility.Create("Frame", {
 		Name = "Under",
 		Parent = Holder,
@@ -934,7 +928,7 @@ function Sections:AddTextBox(Settings)
 
 			if not TextBox:IsFocused() and tick() - Time > self.StrokeBordersDelay then
 				Label.StrokeBorder.Enabled = true
-				
+
 				local Old
 				local Separator
 				local InformationLabel
@@ -953,7 +947,7 @@ function Sections:AddTextBox(Settings)
 				repeat task.wait() until not Hovering or TextBox:IsFocused() or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
-				
+
 				if GoingSmaller then
 					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
 						Old = self.Section.Size - UDim2.fromOffset(0, 43)
@@ -964,16 +958,16 @@ function Sections:AddTextBox(Settings)
 					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
 					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
 				end
-				
+
 				local Tween = TS:Create(Label.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(67, 67, 67), Transparency = 0.15, Thickness = 1.5})
 				Tween:Play()
-				
+
 				Tween.Completed:Connect(function()
 					GoingSmaller = false
 
 					Separator:Destroy()
 					InformationLabel:Destroy()
-					
+
 					self:ResizePage()
 				end)
 			end
@@ -1064,7 +1058,7 @@ end
 function Sections:AddKeyBind(Settings)
 	local Callback = Settings.Callback or function() end
 	local Key = Settings.Key or "None"
-	
+
 	local Old
 
 	if Key ~= "None" then
@@ -1084,7 +1078,7 @@ function Sections:AddKeyBind(Settings)
 
 	local Hovering = false
 	local Time = 0
-	
+
 	local GoingSmaller = false
 
 	local Holder = Utility.Create("Frame", {
@@ -1095,7 +1089,7 @@ function Sections:AddKeyBind(Settings)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
-	
+
 	InteractablesInfo[Holder] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
@@ -1110,7 +1104,7 @@ function Sections:AddKeyBind(Settings)
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
-	
+
 	local UnderHolder = Utility.Create("Frame", {
 		Name = "Under",
 		Parent = Holder,
@@ -1209,7 +1203,7 @@ function Sections:AddKeyBind(Settings)
 
 			if tick() - Time > self.StrokeBordersDelay then
 				Label.StrokeBorder.Enabled = true
-				
+
 				local Old
 				local Separator
 				local InformationLabel
@@ -1351,7 +1345,7 @@ function Sections:AddSlider(Settings)
 	local FixValues = Settings.FixValues or false
 	local Decimal = Settings.Decimal or {false, 1}
 	local Increment = Settings.Increment or 1
-	
+
 	local Callback = Settings.Callback or function() end
 
 	local Hovering = false
@@ -1367,7 +1361,7 @@ function Sections:AddSlider(Settings)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Holder,
 		Name = "StrokeBorder2",
@@ -1380,7 +1374,7 @@ function Sections:AddSlider(Settings)
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
-	
+
 	local UnderHolder = Utility.Create("Frame", {
 		Parent = Holder,
 		Name = "Under",
@@ -1389,7 +1383,7 @@ function Sections:AddSlider(Settings)
 		Size = UDim2.new(1, 0, 0, 31),
 		ZIndex = 2,
 	}) 
-	
+
 	InteractablesInfo[Holder] = {Callback = Callback}
 
 	self:Resize()
@@ -1425,7 +1419,7 @@ function Sections:AddSlider(Settings)
 		TextTransparency = 0.07,
 		Text = Settings.Value or 5,
 		Size = UDim2.fromScale(0.1, 0.6),
-		Position = UDim2.fromScale(0.42, 0.2),
+		Position = UDim2.fromScale(0.42, 0.210),
 		TextXAlignment = Enum.TextXAlignment.Right
 	})
 
@@ -1480,14 +1474,14 @@ function Sections:AddSlider(Settings)
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://4608020054",
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Circle,
 		CornerRadius = UDim.new(0, 2)
 	})
-	
+
 	self:AddInstances({Holder, Holder.Size, UnderHolder.Title, UnderHolder.Title.Size, Box, Box.Size, Bar, Bar.Size, Fill, Fill.Size, Circle, Circle.Size})
-	
+
 	Circle.Size = UDim2.fromOffset()
 
 	local Old
@@ -1510,7 +1504,7 @@ function Sections:AddSlider(Settings)
 
 			if self.StrokeBorders and tick() - Time > self.StrokeBordersDelay then
 				Bar.StrokeBorder.Enabled = true
-				
+
 				local Old
 				local Separator
 				local InformationLabel
@@ -1529,7 +1523,7 @@ function Sections:AddSlider(Settings)
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or Box:IsFocused() or not self.StrokeBorders
 
 				StrokeTween:Cancel()
-				
+
 				if GoingSmaller then
 					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
 						Old = self.Section.Size - UDim2.fromOffset(0, 43)
@@ -1551,7 +1545,7 @@ function Sections:AddSlider(Settings)
 					InformationLabel:Destroy()
 
 					self:ResizePage()
-					
+
 					if Bar.StrokeBorder.Color == Color3.fromRGB(0, 0, 0) then
 						Bar.StrokeBorder.Enabled = false
 					end
@@ -1570,9 +1564,9 @@ function Sections:AddSlider(Settings)
 
 			TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, 31)}):Play()
 		end
-		
+
 		TS:Create(UnderHolder, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 31)}):Play()
-		
+
 		TS:Create(UnderHolder.TextBox, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 	end)
@@ -1581,7 +1575,7 @@ function Sections:AddSlider(Settings)
 
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
-			
+
 			if Circle.Size.X.Offset == 0 then
 				TS:Create(Circle, TweenInfo.new(0.2), {Size = UDim2.fromOffset(12, 11)}):Play()
 			end
@@ -1589,11 +1583,11 @@ function Sections:AddSlider(Settings)
 			task.spawn(function()
 				InteractablesInfo[Holder].Callback(UpdateSlider(Bar, nil, Min, Max, FixValues, Decimal, Increment))
 			end)
-			
+
 			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(170, 170, 170), Transparency = 0, Thickness = 1.1}):Play()
 
 			repeat task.wait() until not dragging
-			
+
 			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(81, 81, 81), Transparency = 0, Thickness = 1.1}):Play()
 		end
 	end)
@@ -1609,7 +1603,7 @@ function Sections:AddSlider(Settings)
 
 			Hovering = false
 			Time = tick()
-			
+
 			if Circle.Size.X.Offset == 0 then
 				TS:Create(Circle, TweenInfo.new(0.2), {Size = UDim2.fromOffset(12, 11)}):Play()
 			end
@@ -1623,7 +1617,7 @@ function Sections:AddSlider(Settings)
 			end
 
 			Old = Num
-			
+
 			TS:Create(Bar.StrokeBorder, TweenInfo.new(0.3), {Color = Color3.fromRGB(170, 170, 170), Transparency = 0, Thickness = 1.1}):Play()
 
 			repeat task.wait() until not dragging
@@ -1656,8 +1650,8 @@ end
 
 function Sections:AddDropdown(Settings)
 	local Callback = Settings.Callback or function() end
-	local Entries = Settings.Entries or {"Option 1", "Option 2", "Option 3"}
-	
+	local Entries = Settings.Values or {"Value 1", "Value 2", "Value 3"}
+
 	for k,v in pairs(Entries) do
 		for k2, v2 in pairs(Entries) do
 			if v == v2 and k ~= k2 then
@@ -1674,10 +1668,10 @@ function Sections:AddDropdown(Settings)
 
 	local Hovering = false
 	local Time = 0
-	
+
 	local Clicked = false
 	local Time2 = 1
-	
+
 	local LastPicked
 
 	local Holder = Utility.Create("Frame", {
@@ -1685,6 +1679,12 @@ function Sections:AddDropdown(Settings)
 		Parent = self.Section.Frame,
 		Size = UDim2.new(0.950, 0, 0, 31),
 		BackgroundTransparency = 1
+	})
+	
+	Utility.Create("IntValue", {
+		Parent = Holder,
+		Name = "DropdownSize",
+		Value = #Entries
 	})
 
 	self:Resize()
@@ -1699,8 +1699,8 @@ function Sections:AddDropdown(Settings)
 		Position = UDim2.fromOffset(0.02, 0),
 		ZIndex = 3,
 	})
-	
-	InteractablesInfo[Holder2] = {Callback = Callback}
+
+	InteractablesInfo[Holder2] = {Callback = Callback, Open = Open, DidFirst = false}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder2,
@@ -1718,7 +1718,7 @@ function Sections:AddDropdown(Settings)
 	local ScrollingFrame
 
 	local function MakeEntries(Optional)
-		
+
 		for _,v in pairs(ScrollingFrame:GetChildren()) do
 			if v.ClassName == "TextButton" then
 				v:Destroy()
@@ -1731,19 +1731,19 @@ function Sections:AddDropdown(Settings)
 				if Holder2.TextBox.Text ~= "" and (Optional and not v:lower():match(Holder2.TextBox.Text:lower())) then
 					continue
 				end
-				
+
 				local Continue = false
-				
+
 				for _,v2 in pairs(ScrollingFrame:GetChildren()) do
 					if v2.ClassName == "TextButton" and v2.Text == v then
 						Continue = true
 					end
 				end
-				
+
 				if Continue then
 					continue
 				end
-				
+
 				local Pressing = false
 				local Hovering = false
 
@@ -1764,7 +1764,7 @@ function Sections:AddDropdown(Settings)
 					BackgroundColor3 = Color3.fromRGB(33, 33, 33),
 					BackgroundTransparency = 0.1
 				})
-				
+
 				Utility.Create("ImageLabel", {
 					Parent = Button,
 					BackgroundTransparency = 1,
@@ -1777,7 +1777,7 @@ function Sections:AddDropdown(Settings)
 					ImageRectSize = Vector2.new(36, 36),
 					ZIndex = 3
 				})
-				
+
 				Utility.Create("UIStroke", {
 					Parent = Button,
 					Name = "StrokeBorder",
@@ -1792,6 +1792,16 @@ function Sections:AddDropdown(Settings)
 					Name = "AddIndex"
 				})
 				
+				local Size = 0
+
+				for _,v in pairs(ScrollingFrame:GetChildren()) do
+					if v.ClassName == "TextButton" or v.Name == "First" then
+						Size += 37
+					end
+				end
+
+				ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, Size)
+
 				if Settings.Default and Button.Text == "<b>" .. Settings.Default .. "</b>" then
 					LastPicked = Button
 					Button.StrokeBorder.Color = Color3.fromRGB(180, 180, 180)
@@ -1818,16 +1828,16 @@ function Sections:AddDropdown(Settings)
 				end)
 
 				Button.MouseButton1Click:Connect(function()
-					
+
 					if Button.Text ~= Settings.Default then
 						Settings.Default = nil
 					end
-					
+
 					LastPicked = v
-					
+
 					Clicked = nil
 					Time2 = tick()
-					
+
 					task.spawn(function()
 						InteractablesInfo[Holder2].Callback(v)
 					end)
@@ -1849,9 +1859,9 @@ function Sections:AddDropdown(Settings)
 								TS:Create(v.StrokeBorder, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 0, 0), Transparency = 0}):Play()
 							end
 						end
-						
+
 						TS:Create(Button.StrokeBorder, TweenInfo.new(0.2), {Color = Color3.fromRGB(180, 180, 180), Transparency = 0.1}):Play()
-						
+
 						if Hovering then
 							TS:Create(Button, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, #Entries == 1 and 25 or 28)}):Play()
 						else
@@ -1875,15 +1885,15 @@ function Sections:AddDropdown(Settings)
 
 					Effect.Completed:Connect(function()
 						TS:Create(Button, TweenInfo.new(0.1), {TextSize = 16}):Play()
-						
+
 						if Dropping then
 							return
 						end
-						
+
 						task.wait(0.350)
-						
+
 						Dropping = true
-						
+
 						Open = false
 
 						for _,v in pairs(ScrollingFrame:GetChildren()) do
@@ -1902,7 +1912,7 @@ function Sections:AddDropdown(Settings)
 						local Size = self:Resize()
 
 						self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)
-						self.Section.Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)
+						TS:Create(self.Section, TweenInfo.new(0.2), {Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)}):Play()
 
 						self:ResizePage()
 
@@ -1915,9 +1925,9 @@ function Sections:AddDropdown(Settings)
 						self.Instances[Holder.List].Size = UDim2.new(0.970, 0, 0, 31)
 
 						TS:Create(ScrollingFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 31)}):Play()
-						
+
 						task.wait(0.3)
-						
+
 						Dropping = false
 					end)
 				end)
@@ -1983,9 +1993,9 @@ function Sections:AddDropdown(Settings)
 		PlaceholderColor3 = Color3.fromRGB(220, 220, 220),
 		TextSize = 14,
 		TextTransparency = 0.07,
-		TextXAlignment = Enum.TextXAlignment.Left
+		TextXAlignment = Enum.TextXAlignment.Center
 	})
-	
+
 	for _, EntryName in pairs(Entries) do
 		if Settings.Default == EntryName then
 			TextBox.Text = Settings.Default
@@ -1999,7 +2009,7 @@ function Sections:AddDropdown(Settings)
 
 	Holder.MouseEnter:Connect(function()
 		Hovering = true
-		
+
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.930, 0, 0, Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 163 or 30)}):Play()
 		TS:Create(Holder2.Title, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 		TS:Create(TextBox, TweenInfo.new(0.2), {TextTransparency = 0, TextColor3 = Color3.fromRGB(255, 255, 255), PlaceholderColor3 = Color3.fromRGB(255, 255, 255)}):Play()
@@ -2023,14 +2033,14 @@ function Sections:AddDropdown(Settings)
 
 	Holder.MouseLeave:Connect(function()
 		Hovering = false
-		
+
 		TS:Create(Holder, TweenInfo.new(0.15), {Size = UDim2.new(0.950, 0, 0, Open and Open and #Entries == 1 and 64 or Open and #Entries <= 3 and #Entries * 40 + 30 or Open and 163 or 31)}):Play()
 		TS:Create(Holder2.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 		TS:Create(TextBox, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220), PlaceholderColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 	end)
 
 	TextBox:GetPropertyChangedSignal("Text"):Connect(function()
-		
+
 		if tick() - Time2 < 0.01 then
 			Clicked = nil
 		else
@@ -2116,7 +2126,7 @@ function Sections:AddDropdown(Settings)
 			SortOrder = Enum.SortOrder.LayoutOrder
 		})
 	end
-	
+
 	local function HandleDropdown()
 		Hovering = false
 		Time = tick()
@@ -2129,6 +2139,7 @@ function Sections:AddDropdown(Settings)
 
 		if Holder2["Dropdown Arrow"].Rotation == 0 then
 			Open = true
+			InteractablesInfo[Holder2].DidFirst = true
 
 			TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(0.3), {Rotation = 180}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {Size = UDim2.new(0.950, 0, 0, #Entries == 1 and 64 or #Entries <= 3 and #Entries * 40 + 30 or 163), BackgroundTransparency = 1}):Play()
@@ -2167,7 +2178,7 @@ function Sections:AddDropdown(Settings)
 			for _,v in pairs(ScrollingFrame:GetChildren()) do
 				if v.ClassName == "TextButton" or v.Name == "First" then
 					TS:Create(v.Name ~= "First" and v.StrokeBorder or v["Dropdown Option"].StrokeBorder, TweenInfo.new(0.2), {Thickness = 0}):Play()
-					
+
 					local Tween = TS:Create(v.Name ~= "First" and v or v["Dropdown Option"], TweenInfo.new(0.2), {Size = UDim2.fromScale(v.Name ~= "First" and 0.950 or 1, 0), TextTransparency = 1, BackgroundTransparency = 1})
 					Tween:Play()
 
@@ -2180,9 +2191,11 @@ function Sections:AddDropdown(Settings)
 			local Size = self:Resize()
 
 			self.Instances[self.Section].Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)
-			self.Section.Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)
+			TS:Create(self.Section, TweenInfo.new(0.2), {Size = UDim2.new(1, -16, 0, Size - tonumber(Holder.AbsoluteSize.Y) + 31)}):Play()
 
-			self:ResizePage()
+			task.delay(0.1, function()
+				self:ResizePage()
+			end)
 
 			TS:Create(Holder2["Dropdown Arrow"], TweenInfo.new(0.3), {Rotation = 0}):Play()
 			TS:Create(Holder, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
@@ -2316,7 +2329,7 @@ function Color:Create()
 	sample.ZIndex = self.Params.ZIndex
 	sample.Parent = self.Gui
 	sample.Visible = true
-	
+
 	sample.Topbar.Title.Text = self.Params.Name
 
 	if self.Params.Draggable then
@@ -2504,9 +2517,9 @@ function Color:Create()
 	end)
 
 	self.Instance = sample
-	
+
 	TS:Create(sample, TweenInfo.new(0.3), {Size = UDim2.fromScale(self.Params.FinalSize, self.Params.FinalSize)}):Play()
-	
+
 	return sample
 end
 
@@ -2592,12 +2605,12 @@ function Sections:AddColorPicker(Settings)
 
 	local Hovering = false
 	local Time = 0
-	
+
 	local ColorPicker
 	local GoingSmaller = false
-	
+
 	local OldColor = Settings.DefaultColor or Color3.fromRGB(255, 255, 255)
-	
+
 	local Holder = Utility.Create("Frame", {
 		Name = "ColorPicker",
 		Parent = self.Section.Frame,
@@ -2608,7 +2621,7 @@ function Sections:AddColorPicker(Settings)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Holder,
 		Name = "StrokeBorder",
@@ -2621,7 +2634,7 @@ function Sections:AddColorPicker(Settings)
 		Parent = Holder,
 		CornerRadius = UDim.new(0, 4)
 	})
-	
+
 	local UnderHolder = Utility.Create("Frame", {
 		Name = "Under",
 		Parent = Holder,
@@ -2630,7 +2643,7 @@ function Sections:AddColorPicker(Settings)
 		Size = UDim2.new(1, 0, 0, 31),
 		ZIndex = 2,
 	})
-	
+
 	local Button = Utility.Create("ImageButton", {
 		Parent = UnderHolder,
 		ZIndex = 2,
@@ -2638,7 +2651,7 @@ function Sections:AddColorPicker(Settings)
 		ImageTransparency = 1,
 		BackgroundTransparency = 1
 	})
-	
+
 	Utility.Create("TextLabel", {
 		Name = "Title",
 		Parent = UnderHolder,
@@ -2656,7 +2669,7 @@ function Sections:AddColorPicker(Settings)
 		TextTransparency = 0.07,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
-	
+
 	local Preview = Utility.Create("Frame", {
 		Name = "Preview",
 		Parent = UnderHolder,
@@ -2665,7 +2678,7 @@ function Sections:AddColorPicker(Settings)
 		Size = UDim2.fromScale(0.130, 0.550),
 		ZIndex = 2,
 	})
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Preview,
 		Name = "StrokeBorder2",
@@ -2673,17 +2686,17 @@ function Sections:AddColorPicker(Settings)
 		Thickness = 2,
 		Color = Color3.fromRGB(68, 68, 68)
 	})
-	
+
 	Utility.Create("UICorner", {
 		Parent = Preview,
 		CornerRadius = UDim.new(0, 3)
 	})
-	
+
 	self:Resize()
 	self:ResizePage()
-	
+
 	self:AddInstances({Holder, Holder.Size, UnderHolder.Title, UnderHolder.Title.Size, Preview, Preview.Size})
-	
+
 	Holder.MouseEnter:Connect(function()
 		Hovering = true
 
@@ -2699,7 +2712,7 @@ function Sections:AddColorPicker(Settings)
 			if tick() - Time > self.StrokeBordersDelay then
 				local StrokeTween = TS:Create(Holder.StrokeBorder, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.In, math.huge, true), {Color = Color3.fromRGB(255, 255, 255), Thickness = 1.2, Transparency = 0.1})
 				StrokeTween:Play()
-				
+
 				local Old
 				local Separator
 				local InformationLabel
@@ -2715,7 +2728,7 @@ function Sections:AddColorPicker(Settings)
 				repeat task.wait() until not Hovering or tick() - Time < self.StrokeBordersDelay or not self.StrokeBorders
 
 				StrokeTween:Cancel()
-				
+
 				if GoingSmaller then
 					if self.Section.Size - UDim2.fromOffset(0, 43) == Old then
 						Old = self.Section.Size - UDim2.fromOffset(0, 43)
@@ -2725,7 +2738,7 @@ function Sections:AddColorPicker(Settings)
 					TS:Create(self.Section, TweenInfo.new(0.3), {Size = Old}):Play()
 					TS:Create(Separator, TweenInfo.new(0.2), {BackgroundTransparency = 1, Position = UDim2.fromScale(0.075, 0.9)}):Play()
 					TS:Create(InformationLabel, TweenInfo.new(0.2), {TextTransparency = 1, Position = UDim2.fromScale(0.075, 1.3)}):Play()
-					
+
 					task.delay(0.3, function()
 						GoingSmaller = false
 
@@ -2749,17 +2762,17 @@ function Sections:AddColorPicker(Settings)
 		TS:Create(UnderHolder.Title, TweenInfo.new(0.2), {TextTransparency = 0.07, TextColor3 = Color3.fromRGB(220, 220, 220)}):Play()
 		TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.130, 0.550), Position = UDim2.fromScale(0.84, 0.250)}):Play()
 	end)
-	
+
 	Button.MouseButton1Down:Connect(function()
 		TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.120, 0.4), Position = UDim2.fromScale(0.85, 0.3)}):Play()
 	end)
-	
+
 	Button.MouseButton1Click:Connect(function()
 		Hovering = false
 
 		local Tween = TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.110, 0.250), Position = UDim2.fromScale(0.855, 0.320)})
 		Tween:Play()
-		
+
 		Tween.Completed:Connect(function()
 			TS:Create(Preview, TweenInfo.new(0.1), {Size = UDim2.fromScale(0.130, 0.550), Position = UDim2.fromScale(0.84, 0.250)}):Play()
 		end)
@@ -2774,7 +2787,7 @@ function Sections:AddColorPicker(Settings)
 			Parent = Holder,
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		})
-		
+
 		local ColorWindow = Utility.Create("Frame", {
 			Parent = PickerSC,
 			Name = "ColorWindow",
@@ -2787,22 +2800,22 @@ function Sections:AddColorPicker(Settings)
 			Size = UDim2.fromScale(0.27, 0.27),
 			Visible = false
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = ColorWindow,
 			AspectRatio = 1.1,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		for _, v in {"CanceledEvent", "FinishedEvent", "UpdateEvent"} do
-		
+
 			Utility.Create("BindableEvent", {
 				Parent = ColorWindow,
 				Name = v
 			})
 		end
-			
+
 		local Content = Utility.Create("Frame", {
 			Parent = ColorWindow,
 			Name = "Content",
@@ -2814,12 +2827,12 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 1),
 			Size = UDim2.fromScale(1, 0.9)
 		})
-		
+
 		local Background = Utility.Create("Folder", {
 			Parent = Content,
 			Name = "Background",
 		})
-		
+
 		local BottomBackground = Utility.Create("Frame", {
 			Parent = Background,
 			Name = "Bottom",
@@ -2832,7 +2845,7 @@ function Sections:AddColorPicker(Settings)
 			ZIndex = 0,
 			ClipsDescendants = true
 		})
-		
+
 		local FrameBottomBackground = Utility.Create("Frame", {
 			Parent = BottomBackground,
 			AnchorPoint = Vector2.new(0, 1),
@@ -2841,12 +2854,12 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 1),
 			Size = UDim2.fromScale(1, 2)
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = FrameBottomBackground,
 			CornerRadius = UDim.new(0.05, 0)
 		})
-		
+
 		Utility.Create("Frame", {
 			Parent = Background,
 			Name = "Top",
@@ -2858,7 +2871,7 @@ function Sections:AddColorPicker(Settings)
 			Size = UDim2.fromScale(1, 0.5),
 			ZIndex = 0
 		})
-		
+
 		local Bottom = Utility.Create("Frame", {
 			Parent = Content,
 			Name = "Bottom",
@@ -2870,7 +2883,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 1),
 			Size = UDim2.fromScale(1, 0.15)
 		})
-		
+
 		local Buttons = Utility.Create("Frame", {
 			Parent = Bottom,
 			Name = "Buttons",
@@ -2882,7 +2895,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.2, 0.5),
 			Size = UDim2.fromScale(0.3, 0.8)
 		})
-		
+
 		local Cancel = Utility.Create("ImageButton", {
 			Parent = Buttons,
 			Name = "Cancel",
@@ -2899,14 +2912,14 @@ function Sections:AddColorPicker(Settings)
 			ImageTransparency = 0.07,
 			ScaleType = Enum.ScaleType.Stretch
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = Cancel,
 			AspectRatio = 1,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		local Confirm = Utility.Create("ImageButton", {
 			Parent = Buttons,
 			Name = "Confirm",
@@ -2923,14 +2936,14 @@ function Sections:AddColorPicker(Settings)
 			ImageTransparency = 0.07,
 			ScaleType = Enum.ScaleType.Stretch
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = Confirm,
 			AspectRatio = 1,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		local ColorFrame = Utility.Create("Frame", {
 			Parent = Bottom,
 			Name = "Color",
@@ -2941,14 +2954,14 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 0),
 			Size = UDim2.fromScale(1, 1)
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = ColorFrame,
 			AspectRatio = 1,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		local Frame = Utility.Create("Frame", {
 			Parent = ColorFrame,
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -2958,12 +2971,12 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromScale(0.8, 0.8)
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = Frame,
 			CornerRadius = UDim.new(0.35, 0)
 		})
-		
+
 		local Hex = Utility.Create("Frame", {
 			Parent = Bottom,
 			Name = "Hex",
@@ -2974,7 +2987,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.55, 0),
 			Size = UDim2.fromScale(0.4, 1)
 		})
-		
+
 		local Frame2 = Utility.Create("Frame", {
 			Parent = Hex,
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -2984,7 +2997,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromScale(0.8, 0.6)
 		})
-		
+
 		Utility.Create("UIStroke", {
 			Parent = Frame2,
 			Name = "InvalidStroke",
@@ -2993,12 +3006,12 @@ function Sections:AddColorPicker(Settings)
 			Thickness = 2,
 			Enabled = false
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = Frame2,
 			CornerRadius = UDim.new(0.3, 0)
 		})
-		
+
 		Utility.Create("TextBox", {
 			Parent = Frame2,
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -3011,7 +3024,7 @@ function Sections:AddColorPicker(Settings)
 			Size = UDim2.fromScale(1, 0.6),
 			Text = ""
 		})
-		
+
 		local Right = Utility.Create("Frame", {
 			Parent = Content,
 			Name = "Right",
@@ -3023,7 +3036,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(1, 0),
 			Size = UDim2.fromScale(0.3, 0.85)
 		})
-		
+
 		local Value = Utility.Create("Frame", {
 			Parent = Right,
 			Name = "Value",
@@ -3035,14 +3048,14 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.25, 0.5),
 			Size = UDim2.fromScale(0.8, 0.8)
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = Value,
 			AspectRatio = 0.1,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		Utility.Create("UIGradient", {
 			Parent = Value,
 			Offset = Vector2.new(0, 0),
@@ -3052,7 +3065,7 @@ function Sections:AddColorPicker(Settings)
 				ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
 			})
 		})
-		
+
 		local Select = Utility.Create("Frame", {
 			Parent = Value,
 			Name = "Select",
@@ -3064,14 +3077,14 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 0),
 			Size = UDim2.fromScale(1, 1)
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = Select,
 			AspectRatio = 4,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		local Select2 = Utility.Create("Frame", {
 			Parent = Select,
 			Name = "Select",
@@ -3082,19 +3095,19 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromScale(1.5, 1.5)
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = Select2,
 			CornerRadius = UDim.new(0.5, 0)
 		})
-		
+
 		Utility.Create("UIStroke", {
 			Parent = Select2,
 			Color = Color3.fromRGB(255, 255, 255),
 			LineJoinMode = Enum.LineJoinMode.Round,
 			Thickness = 2
 		})
-		
+
 		Utility.Create("TextButton", {
 			Parent = Value,
 			Name = "Button",
@@ -3107,7 +3120,7 @@ function Sections:AddColorPicker(Settings)
 			ZIndex = 99,
 			Text = ""
 		})
-		
+
 		local Wheel = Utility.Create("Frame", {
 			Parent = Content,
 			Name = "Wheel",
@@ -3118,14 +3131,14 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 0),
 			Size = UDim2.fromScale(0.85, 0.85)
 		})
-		
+
 		Utility.Create("UIAspectRatioConstraint", {
 			Parent = Wheel,
 			AspectRatio = 1,
 			AspectType = Enum.AspectType.FitWithinMaxSize,
 			DominantAxis = Enum.DominantAxis.Width
 		})
-		
+
 		Utility.Create("TextButton", {
 			Parent = Wheel,
 			Name = "Button",
@@ -3138,7 +3151,7 @@ function Sections:AddColorPicker(Settings)
 			ZIndex = 99,
 			Text = ""
 		})
-		
+
 		local Image = Utility.Create("ImageLabel", {
 			Parent = Wheel,
 			Name = "Image",
@@ -3153,7 +3166,7 @@ function Sections:AddColorPicker(Settings)
 			ImageColor3 = Color3.fromRGB(255, 255, 255),
 			ScaleType = Enum.ScaleType.Stretch
 		})
-		
+
 		local ImageSelect = Utility.Create("Frame", {
 			Parent = Image,
 			Name = "Select",
@@ -3164,19 +3177,19 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.fromScale(0.06, 0.06)
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = ImageSelect,
 			CornerRadius = UDim.new(0.5, 0)
 		})
-		
+
 		Utility.Create("UIStroke", {
 			Parent = ImageSelect,
 			Color = Color3.fromRGB(0, 0, 0),
 			LineJoinMode = Enum.LineJoinMode.Round,
 			Thickness = 2
 		})
-		
+
 		local Properties = Utility.Create("Frame", {
 			Parent = ColorWindow,
 			Name = "Properties",
@@ -3186,12 +3199,12 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 1.01),
 			Size = UDim2.fromScale(1, 0.3),
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = Properties,
 			CornerRadius = UDim.new(0.165, 0)
 		})
-		
+
 		local HSV = Utility.Create("Frame", {
 			Parent = Properties,
 			Name = "HSV",
@@ -3202,7 +3215,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 0.5),
 			Size = UDim2.fromScale(1, 0.5)
 		})
-		
+
 		Utility.Create("UIListLayout", {
 			Parent = HSV,
 			Padding = UDim.new(0, 0),
@@ -3213,7 +3226,7 @@ function Sections:AddColorPicker(Settings)
 			ItemLineAlignment = Enum.ItemLineAlignment.Automatic,
 			VerticalAlignment = Enum.VerticalAlignment.Top
 		})
-		
+
 		local H = Utility.Create("Frame", {
 			Parent = HSV,
 			Name = "H",
@@ -3223,7 +3236,7 @@ function Sections:AddColorPicker(Settings)
 			BorderSizePixel = 1,
 			Size = UDim2.fromScale(0.3, 1)
 		})
-		
+
 		local FrameH = Utility.Create("Frame", {
 			Parent = H,
 			AnchorPoint = Vector2.new(0, 0.5),
@@ -3233,12 +3246,12 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.3, 0.5),
 			Size = UDim2.fromScale(0.6, 0.6)
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = FrameH,
 			CornerRadius = UDim.new(0.3, 0)
 		})
-		
+
 		Utility.Create("TextBox", {
 			Parent = FrameH,
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -3253,7 +3266,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		Utility.Create("TextLabel", {
 			Parent = H,
 			AnchorPoint = Vector2.new(0, 0.5),
@@ -3267,7 +3280,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		local S = Utility.Create("Frame", {
 			Parent = HSV,
 			Name = "S",
@@ -3321,7 +3334,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		local V = Utility.Create("Frame", {
 			Parent = HSV,
 			Name = "V",
@@ -3375,7 +3388,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		Utility.Create("Frame", {
 			Parent = Properties,
 			Name = "Line",
@@ -3387,7 +3400,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0.5, 0.5),
 			Size = UDim2.new(0.95, 0, 0, 2)
 		})
-		
+
 		local RGB = Utility.Create("Frame", {
 			Parent = Properties,
 			Name = "RGB",
@@ -3398,7 +3411,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 0),
 			Size = UDim2.fromScale(1, 0.5),
 		})
-		
+
 		Utility.Create("UIListLayout", {
 			Parent = RGB,
 			Padding = UDim.new(0, 0),
@@ -3409,7 +3422,7 @@ function Sections:AddColorPicker(Settings)
 			ItemLineAlignment = Enum.ItemLineAlignment.Automatic,
 			VerticalAlignment = Enum.VerticalAlignment.Top
 		})
-		
+
 		local R = Utility.Create("Frame", {
 			Parent = RGB,
 			Name = "R",
@@ -3463,7 +3476,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		local G = Utility.Create("Frame", {
 			Parent = RGB,
 			Name = "G",
@@ -3517,7 +3530,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		local B = Utility.Create("Frame", {
 			Parent = RGB,
 			Name = "B",
@@ -3571,7 +3584,7 @@ function Sections:AddColorPicker(Settings)
 			TextColor3 = Color3.fromRGB(220, 220, 220),
 			TextScaled = true
 		})
-		
+
 		local TopBar = Utility.Create("Frame", {
 			Parent = ColorWindow,
 			Name = "Topbar",
@@ -3582,7 +3595,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 0),
 			Size = UDim2.fromScale(1, 0.1)
 		})
-		
+
 		local TopFrame = Utility.Create("Frame", {
 			Parent = TopBar,
 			AnchorPoint = Vector2.new(0, 1),
@@ -3593,7 +3606,7 @@ function Sections:AddColorPicker(Settings)
 			Position = UDim2.fromScale(0, 1),
 			Size = UDim2.fromScale(1, 0.5)
 		})
-		
+
 		local Top = Utility.Create("Frame", {
 			Parent = TopBar,
 			Name = "Top",
@@ -3606,7 +3619,7 @@ function Sections:AddColorPicker(Settings)
 			ZIndex = 0,
 			ClipsDescendants = true
 		})
-		
+
 		local TopFrame2 = Utility.Create("Frame", {
 			Parent = Top,
 			BackgroundColor3 = Color3.fromRGB(22, 22, 22),
@@ -3616,12 +3629,12 @@ function Sections:AddColorPicker(Settings)
 			Size = UDim2.fromScale(1, 2),
 			ZIndex = 0
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = TopFrame2,
 			CornerRadius = UDim.new(0.38, 0)
 		})
-		
+
 		Utility.Create("TextButton", {
 			Parent = TopBar,
 			Name = "Button",
@@ -3634,7 +3647,7 @@ function Sections:AddColorPicker(Settings)
 			Size = UDim2.fromScale(1, 1),
 			Text = ""
 		})
-		
+
 		Utility.Create("TextLabel", {
 			Parent = TopBar,
 			Name = "Title",
@@ -3651,7 +3664,7 @@ function Sections:AddColorPicker(Settings)
 			TextWrapped = true,
 			TextScaled = true
 		})
-		
+
 		Utility.Create("TextButton", {
 			Parent = ColorWindow,
 			Name = "Button",
@@ -3666,9 +3679,9 @@ function Sections:AddColorPicker(Settings)
 			ZIndex = 9,
 			Text = ""
 		})
-		
+
 		ColorWindow.Visible = true
-		
+
 		ColorPicker = Color.New(PickerSC, {
 			Name = Settings.Name or "ColorPicker",
 			Position = self.MainLabel.Parent.Position + UDim2.fromScale(0.375, 0.134),
@@ -3682,21 +3695,21 @@ function Sections:AddColorPicker(Settings)
 			Topbar = {Color = Color3.fromRGB(22, 22, 22), Transparency = 0},
 			Text = {Color = Color3.fromRGB(220, 220, 220), Transparency = 0.07}
 		})
-		
+
 		ColorPicker:SetColor(Preview.BackgroundColor3)
-		
+
 		ColorPicker.Updated:Connect(function(Color)
 			Preview.BackgroundColor3 = Color
 			Callback(Color)
 		end)
-		
+
 		ColorPicker.Finished:Connect(function()
 			OldColor = Preview.BackgroundColor3
 
 			ColorPickerClose(ColorPicker)
 			ColorPicker = nil
 		end)
-		
+
 		ColorPicker.Canceled:Connect(function()
 			TS:Create(Preview, TweenInfo.new(0.4), {BackgroundColor3 = OldColor}):Play()
 
@@ -3714,13 +3727,13 @@ function Sections:AddLabel(Settings)
 		ZIndex = 2,
 		Size = UDim2.new(0.950, 0, 0, 31),
 	})
-	
+
 	if Settings.FrameProperties then
 		for k, v in pairs(Settings.FrameProperties) do
 			Frame[k] = v
 		end
 	end
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Frame,
 		Name = "StrokeBorder",
@@ -3764,44 +3777,60 @@ function Sections:AddLabel(Settings)
 	end
 
 	self:AddInstances({Frame, Frame.Size, Frame.Title, Frame.Title.Size})
-	
+
 	self:Resize()
 	self:ResizePage()
-	
+
 	return Frame.Title
 end
 
-function Sections:AddLine(Settings)
-	local Separator = Utility.Create("Frame", {
+function Sections:AddDivider(Settings)
+	Utility.Create("Frame", {
 		Parent = self.Section.Frame,
-		Size = UDim2.new(0.950, 0, 0, Settings.YOffset),
-		BorderSizePixel = 0,
-		BackgroundTransparency = 0.750,
+		Size = UDim2.new(0.950, 0, 0, Settings.Space),
+		BackgroundTransparency = 1,
 		ZIndex = 2
 	})
-	
+
+	local Divider = Utility.Create("Frame", {
+		Parent = self.Section.Frame,
+		Name = "Divider",
+		Size = UDim2.new(0.950, 0, 0, Settings.Y),
+		BorderSizePixel = 0,
+		BackgroundTransparency = 0.7,
+		ZIndex = 2
+	})
+
+	Utility.Create("Frame", {
+		Parent = self.Section.Frame,
+		Size = UDim2.new(0.950, 0, 0, Settings.Space),
+		BackgroundTransparency = 1,
+		ZIndex = 2
+	})
+
 	Utility.Create("UICorner", {
-		Parent = Separator,
+		Parent = Divider,
 		CornerRadius = UDim.new(0, 5)
 	})
 	
+	self:AddInstances({Divider, Divider.Size})
+
 	self:Resize()
 
 	self:ResizePage()
 
-	return Separator
+	return Divider
 end
 
 function Sections:AddSeparator(Settings)
 	local Separator = Utility.Create("Frame", {
 		Parent = self.Section.Frame,
 		ZIndex = 2,
-		Size = UDim2.new(0.950, 0, 0, Settings.YOffset),
+		Size = UDim2.new(0.950, 0, 0, Settings.Y),
 		BackgroundTransparency = 1
 	})
 
 	self:Resize()
-
 	self:ResizePage()
 
 	return Separator
@@ -3816,17 +3845,27 @@ function Pages:AddSection(Name)
 		["HorizontalAlignment"] = Enum.HorizontalAlignment.Left
 	})
 
-	local Section = Utility.Create("ImageLabel", {
+	local Section = Utility.Create("Frame", {
 		["Name"] = Name,
 		["Parent"] = self.Page,
-		["BackgroundTransparency"] = 1,
+		["BackgroundColor3"] = Color3.fromRGB(28, 28, 28),
+		["BorderSizePixel"] = 0,
 		["Size"] = UDim2.new(1, -16, 0, 28),
 		["ZIndex"] = 2,
-		["Image"] = "rbxassetid://5028857472",
-		["ImageColor3"] = Color3.fromRGB(28, 28, 28),
-		["ScaleType"] = Enum.ScaleType.Slice,
-		["SliceCenter"] = Rect.new(4, 4, 296, 296),
 		["ClipsDescendants"] = true
+	})
+
+	Utility.Create("UICorner", {
+		Parent = Section,
+		CornerRadius = UDim.new(0, 4)
+	})
+
+	Utility.Create("UIStroke", {
+		Parent = Section,
+		Name = "StrokeBorder",
+		Thickness = 1.1,
+		Color = Color3.fromRGB(65, 65, 65),
+		Transparency = 0,
 	})
 
 	self.ResizePage({SectionPage = self.Page, Section = Section})
@@ -3882,7 +3921,7 @@ function Pages:ResizePage(DropdownCall)
 	local Size = self.SectionPage["Search Bar"].Visible and 50 or 0
 
 	for _, section in pairs(self.SectionPage:GetChildren()) do
-		if section.ClassName == "ImageLabel" and section.Visible then
+		if section.ClassName == "Frame" and section:FindFirstChild("Frame") and section.Visible then
 			Size += section.AbsoluteSize.Y + 10
 		end
 	end
@@ -3890,7 +3929,7 @@ function Pages:ResizePage(DropdownCall)
 	self.SectionPage.CanvasSize = UDim2.fromOffset(0, Size)
 
 	if DropdownCall and self.SectionPage.ScrollBarImageTransparency == 1 then
-		TS:Create(self.SectionPage, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, self.SectionPage.CanvasPosition.Y + 60)}):Play()
+		TS:Create(self.SectionPage, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, self.SectionPage.CanvasPosition.Y + 80)}):Play()
 	end
 
 	self.SectionPage.ScrollBarImageTransparency = Size > self.SectionPage.AbsoluteSize.Y and 0 or 1
@@ -3949,7 +3988,7 @@ function Pages:AddSearchBar()
 		end
 
 		for _, v in pairs(self.Page:GetChildren()) do
-			if v.ClassName == "ImageLabel" then
+			if v.ClassName == "Frame" and v:FindFirstChild("UIListLayout") then
 				local Invisible = true
 
 				for _, v2 in pairs(v.Frame:GetChildren()) do
@@ -4016,54 +4055,50 @@ function Pages:AddSearchBar()
 end
 
 function BoogaUI.New(Parameters)
-
+	
+	BoogaUI.Parameters = {}
+	
+	BoogaUI.Parameters["Name"] = Parameters.Name
+	BoogaUI.Parameters["UISize"] = Parameters.UISize
+	BoogaUI.Parameters["SelectorMovement"] = Parameters.SelectorMovement
+	
 	BoogaUI.Toggled = false
-
 	BoogaUI.Toggling = false
 
 	BoogaUI.Instances = {}
-	
 	BoogaUI.OldValues = {}
 
-	BoogaUI.Name = Parameters.Name
-
 	BoogaUI.Pages = {}
-
 	BoogaUI.Orders = {}
-
-	BoogaUI.SelectorMovement = Parameters.SelectorMovement
 
 	BoogaUI.LastPageButton = false
 
 	BoogaUI.LastSelected = false
-
 	BoogaUI.LastButton = false
 
 	BoogaUI.ChangingPage = false
-
 	BoogaUI.StrokeBorders = true
 
 	BoogaUI.StrokeBordersDelay = 0.5
-	
 	BoogaUI.FirstCategoryCreated = false
 
 	local SG = Utility.Create("ScreenGui", {
 		["Parent"] = identifyexecutor and game.CoreGui or Player.PlayerGui,
 		["Name"] = Parameters.Name or "Booga UI Lib",
 	})
-	
+
 	local Fake = Utility.Create("Frame", {
 		["Parent"] = SG,
 		["Name"] = "Fake",
-		["Size"] = Parameters.UISize,
+		["Size"] = BoogaUI.Parameters.UISize,
 		["Position"] = UDim2.new(0.171, 354, 0.133, -24),
 		["BackgroundTransparency"] = 1,
 	})
-	
+
 	local MainLabel = Utility.Create("Frame", {
 		["Parent"] = Fake,
 		["Name"] = "MainLabel",
-		["Size"] =  Parameters.UISize,
+		["Size"] =  BoogaUI.Parameters.UISize,
 		["BackgroundTransparency"] = 0,
 		["BackgroundColor3"] = Color3.fromRGB(42, 42, 42),
 		["ClipsDescendants"] = true
@@ -4073,7 +4108,7 @@ function BoogaUI.New(Parameters)
 
 	Utility.Create("UICorner", {
 		Parent = MainLabel,
-		CornerRadius = UDim.new(0, 4)
+		CornerRadius = UDim.new(0, 5)
 	})
 
 	Utility.Create("ImageLabel", {
@@ -4101,7 +4136,7 @@ function BoogaUI.New(Parameters)
 	})
 
 	BoogaUI.Pages = Pages
-	
+
 	BoogaUI.PagesLastPos = {}
 
 	local Profile = Utility.Create("ImageLabel", {
@@ -4139,7 +4174,7 @@ function BoogaUI.New(Parameters)
 		TextSize = 9,
 		Text = Player.Name
 	})
-	
+
 	Utility.Create("ImageLabel", {
 		Parent = Profile,
 		Name = "FPS Image",
@@ -4171,11 +4206,11 @@ function BoogaUI.New(Parameters)
 
 		if currentTime - LastTime >= 1 then
 			FPS = math.floor(FrameCount / (currentTime - LastTime))
-			
+
 			if FPS == 59 then
 				FPS = 60
 			end
-			
+
 			if FPS > 99 then
 				Profile.FPS.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.550 or 0.6)
 			else
@@ -4188,7 +4223,7 @@ function BoogaUI.New(Parameters)
 			LastTime = currentTime
 		end
 	end)
-	
+
 	Utility.Create("ImageLabel", {
 		Parent = Profile,
 		Name = "Ping Image",
@@ -4197,7 +4232,7 @@ function BoogaUI.New(Parameters)
 		BackgroundTransparency = 1,
 		Image = "http://www.roblox.com/asset/?id=18797246498",
 	})
-	
+
 	Utility.Create("TextLabel", {
 		Parent = Profile,
 		Name = "Ping",
@@ -4208,7 +4243,7 @@ function BoogaUI.New(Parameters)
 		TextSize = 9,
 		Text = "Ping : ",
 	})
-	
+
 	task.spawn(function()
 		local Stats = game:GetService("Stats")
 
@@ -4222,7 +4257,7 @@ function BoogaUI.New(Parameters)
 			end
 
 			Profile.Ping.Text = "Ping : " .. Ping
-			
+
 			task.wait(0.2)
 		end
 	end)
@@ -4235,7 +4270,7 @@ function BoogaUI.New(Parameters)
 		BorderSizePixel = 0,
 		BackgroundTransparency = 0.750
 	})
-	
+
 	BoogaUI:AddInstances({Separator, Separator.Size, Profile["Game Name"], Profile["Game Name"].Size, Profile["Player Name"], Profile["Player Name"].Size, Profile["FPS Image"], Profile["FPS Image"].Size, Profile.FPS, Profile.FPS.Size, Profile["Ping Image"], Profile["Ping Image"].Size, Profile.Ping, Profile.Ping.Size})
 
 	Utility.Create("UICorner", {
@@ -4244,6 +4279,7 @@ function BoogaUI.New(Parameters)
 
 	local PagesScrolling = Utility.Create("ScrollingFrame", {
 		["Parent"] = Pages,
+		["Visible"] = false,
 		["Name"] = "Pages Scrolling",
 		["BackgroundTransparency"] = 1,
 		["Size"] = UDim2.fromScale(0.996, 1),
@@ -4283,11 +4319,11 @@ function BoogaUI.New(Parameters)
 		Size = UDim2.new(1, -46, 0, 16),
 		Font = Enum.Font.GothamBold,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
-		Text = Parameters.Name or "Booga UI Lib",
+		Text = BoogaUI.Parameters.Name or "Booga UI Lib",
 		TextSize = 22,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
-	
+
 	Utility.Create("TextLabel", {
 		Parent = MainLabel,
 		BackgroundTransparency = 1,
@@ -4346,7 +4382,7 @@ function BoogaUI.New(Parameters)
 	UIS.InputChanged:Connect(function(input)
 		if input == dragInput and dragging then
 			local delta = input.Position - mousePos
-			TS:Create(Fake, TweenInfo.new(0.090, Enum.EasingStyle.Linear, Enum.EasingDirection.In, 0, false, 0), {Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)}):Play()
+			TS:Create(Fake, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)}):Play()
 		end
 	end)
 
@@ -4364,7 +4400,7 @@ function BoogaUI.New(Parameters)
 			AutoButtonColor = false,
 			Text = "",
 		})
-		
+
 		Utility.Create("UICorner", {
 			Parent = Button,
 			CornerRadius = UDim.new(0, 20)
@@ -4372,11 +4408,11 @@ function BoogaUI.New(Parameters)
 
 		Button.MouseButton1Click:Connect(function()
 			Hidden = not Hidden
-			
+
 			local PageLabel = MainLabel.TextLabel
-			
+
 			local ActivePage
-			
+
 			for _, Object in pairs(MainLabel:GetChildren()) do
 				if Object.ClassName == "ScrollingFrame" and Object.Visible then
 					ActivePage = Object
@@ -4386,9 +4422,9 @@ function BoogaUI.New(Parameters)
 			if Hidden then
 				TS:Create(Pages, TweenInfo.new(0.2), {Size = UDim2.fromScale(0, 0.871)}):Play()
 				TS:Create(Profile, TweenInfo.new(0.3), {Size = UDim2.fromScale(0, 0.17)}):Play()
-				
+
 				Profile["Game Name"].TextWrapped = false
-				
+
 				for _, Object in pairs(Profile:GetDescendants()) do
 					if Object.ClassName == "TextLabel" or Object.ClassName == "TextButton" then
 						TS:Create(Object, TweenInfo.new(0.1), {TextTransparency = 1}):Play()
@@ -4396,7 +4432,7 @@ function BoogaUI.New(Parameters)
 						TS:Create(Object, TweenInfo.new(0.1), {ImageTransparency = 1}):Play()
 					end
 				end
-				
+
 				for _, Object in pairs(ActivePage:GetChildren()) do
 					if Object.ClassName == "ImageLabel" then
 						for _, ObjectInUI in Object.Frame:GetChildren() do
@@ -4410,7 +4446,7 @@ function BoogaUI.New(Parameters)
 						Object.ImageButton.Position = UDim2.fromScale(0.93, 0.1)
 					end
 				end
-				
+
 				TS:Create(Button, TweenInfo.new(0.195), {Size = UDim2.new(0, 3, 0.250, 0), Position = UDim2.fromScale(0, 0.4)}):Play()
 				TS:Create(PageLabel, TweenInfo.new(0.2), {Position = UDim2.fromScale(0.007 + (0.0034 * string.len(PageLabel.Text)), 0.1)}):Play()
 
@@ -4430,9 +4466,9 @@ function BoogaUI.New(Parameters)
 			else
 				TS:Create(Pages, TweenInfo.new(0.3), {Size = UDim2.fromScale(0.22, 0.871)}):Play()
 				TS:Create(Profile, TweenInfo.new(0.3), {Size = UDim2.fromScale(0.22, 0.17)}):Play()
-				
+
 				Profile["Game Name"].TextWrapped = true
-				
+
 				for _, Object in pairs(Profile:GetDescendants()) do
 					if Object.ClassName == "TextLabel" or Object.ClassName == "TextButton" then
 						TS:Create(Object, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
@@ -4440,7 +4476,7 @@ function BoogaUI.New(Parameters)
 						TS:Create(Object, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
 					end
 				end
-				
+
 				for _, Object in pairs(ActivePage:GetChildren()) do
 					if Object.ClassName == "ImageLabel" then
 						for _, ObjectInUI in pairs(Object.Frame:GetChildren()) do
@@ -4454,7 +4490,7 @@ function BoogaUI.New(Parameters)
 						Object.ImageButton.Position = UDim2.fromScale(0.91, 0.1)
 					end
 				end
-				
+
 				TS:Create(Button, TweenInfo.new(0.3), {Size = UDim2.new(0, 4, 0.250, 0), Position = UDim2.fromScale(0.208, 0.4)}):Play()
 				TS:Create(PageLabel, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.21 + (0.0055 * string.len(PageLabel.Text)), 0.1)}):Play()
 
@@ -4515,7 +4551,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 	if not self.FocusedPage then
 		self.MainLabel.TextLabel.Text = "<b>" .. Title .. "</b>"
 		self.MainLabel.TextLabel.Position = UDim2.fromScale(0.250 + (0.0055 * Title:len()), 0.1)
-		
+
 		self.Selected = Selected
 	end
 
@@ -4558,7 +4594,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		["Position"] = Icon and UDim2.fromScale(0.25, 0) or UDim2.fromScale(0.05, 0)
 	})
 
-	local Icon = Utility.Create("ImageLabel", IconProperties or {
+	local Icon = Utility.Create("ImageLabel", {
 		Name = "Icon",
 		Parent = Button,
 		BackgroundTransparency = 1,
@@ -4567,6 +4603,12 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		Size = UDim2.fromOffset(20, 20),
 		Position = UDim2.new(0, 7, 0.118, 0),
 	})
+	
+	if IconProperties then
+		for k,v in pairs(IconProperties) do
+			Icon[k] = v
+		end
+	end
 
 	if not self.FocusedPage then
 		self.LastPageButton = PageTitle
@@ -4586,7 +4628,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		["Visible"] = Button == self.FocusedPage and true or false
 
 	})
-	
+
 	Utility.Create("UIPadding", {
 		Parent = Page,
 		PaddingTop = UDim.new(0, 1),
@@ -4605,7 +4647,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 
 		CornerRadius = UDim.new(0, 6)
 	})
-	
+
 	Utility.Create("UIStroke", {
 		Parent = Page["Search Bar"],
 		Name = "StrokeBorder",
@@ -4615,6 +4657,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 	})
 
 	Utility.Create("ImageButton", {
+		Name = "Lupa",
 		Parent = Page["Search Bar"],
 		Image = "http://www.roblox.com/asset/?id=11496279085",
 		ImageTransparency = 0.250,
@@ -4623,7 +4666,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		Position = UDim2.fromScale(0.014, 0.115),
 		ZIndex = 2
 	})
-	
+
 	Utility.Create("ImageButton", {
 		Parent = Page["Search Bar"],
 		Image = "http://www.roblox.com/asset/?id=118963081585407",
@@ -4636,7 +4679,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 	}).MouseButton1Click:Connect(function()
 		local Len = Page["Search Bar"].TextBox.Text:len()
 		local WaitTime = Len <= 5 and 0.032 or (Len >= 6 and Len <= 10 and 0.027) or Len >= 11 and 0.015
-		
+
 		pcall(function()
 			for i = Page["Search Bar"].TextBox.Text:len(), 1, -1 do
 				Page["Search Bar"].TextBox.Text = Page["Search Bar"].TextBox.Text:gsub(Page["Search Bar"].TextBox.Text:sub(i, i) .. "?$", "", 1)
@@ -4661,8 +4704,8 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		ClearTextOnFocus = false,
 		ZIndex = 2
 	})
-	
-	self:AddInstances({Page["Search Bar"], Page["Search Bar"].Size, Page["Search Bar"].ImageButton, Page["Search Bar"].ImageButton.Size, Page["Search Bar"].TextBox, Page["Search Bar"].TextBox.Size})
+
+	self:AddInstances({Page["Search Bar"], Page["Search Bar"].Size, Page["Search Bar"].ImageButton, Page["Search Bar"].ImageButton.Size, Page["Search Bar"].Lupa, Page["Search Bar"].Lupa.Size, Page["Search Bar"].TextBox, Page["Search Bar"].TextBox.Size})
 
 	if self.FocusedPage == Button then
 		self.FocusedPage = Page
@@ -4702,12 +4745,12 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		if self.ChangingPage then
 			return
 		end
-		
+
 		self.ChangingPage = true
-		
+
 		self.PagesLastPos[Page] = Page.CanvasPosition
 
-		if self.SelectorMovement then
+		if self.Parameters.SelectorMovement then
 			local Multiply = 1.385
 
 			for k,v in pairs(self.Orders) do
@@ -4716,16 +4759,16 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 					break
 				end
 			end
-			
+
 			print(Multiply)
-			
+
 			TS:Create(self.Selected, TweenInfo.new(0.3), {Position = UDim2.fromScale(0.03, self.Orders[Button] == 1 and 0.05 or (self.Orders[Button] < 2 and self.Orders[Button] or self.Orders[Button] - 1) * Multiply)}):Play()
 		else
 			TS:Create(self.Selected, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
 			TS:Create(self.Selected.UIStroke, TweenInfo.new(0.4), {Thickness = 0, Transparency = 1}):Play()
-			
+
 			self.Selected = Selected
-			
+
 			TS:Create(Button.Selector, TweenInfo.new(0.4), {BackgroundTransparency = 0.7}):Play()
 			TS:Create(Button.Selector.UIStroke, TweenInfo.new(0.4), {Thickness = 1.5, Transparency = 0}):Play()
 		end
@@ -4752,7 +4795,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 			self.ChangingPage = false
 			return
 		end
-		
+
 		local PageLabel = self.MainLabel.TextLabel
 
 		local Tween = TS:Create(PageLabel, TweenInfo.new(0.03 * PageLabel.Text:len()), {TextTransparency = 1})
@@ -4818,7 +4861,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 					instance[Properties[instance.ClassName]] = (Properties[instance.ClassName] == "BackgroundTransparency" and OldBackgroundTransparency) or (Properties[instance.ClassName] == "TextTransparency" and OldTextTransparency) or (Properties[instance.ClassName] == "ImageTransparency" and OldImageTransparency)
 				end)
 
-				if instance.ClassName ~= "ImageLabel" or not instance:FindFirstChild("UIListLayout") then
+				if (instance.ClassName == "Frame" and not instance.Parent:FindFirstChild("UIPadding") and v.Name ~= "Search Bar") or not instance:FindFirstChild("UIListLayout") then
 
 					if instance.ClassName == "Frame" or instance.ClassName == "TextButton" then
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), BackgroundTransparency = 1}):Play()
@@ -4844,8 +4887,18 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 
 						TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 2, instance.Size.Y.Offset - instance.Size.Y.Offset / 1.1), ImageTransparency = 1}):Play()
 					end
-					
+
 					if isDescendantOfByName(instance, "ColorPicker") then
+						for _,v in pairs(instance.Parent:GetDescendants()) do
+							if v.Name == "StrokeBorder2" then
+								v.Enabled = false
+								
+								task.delay(0.305, function()
+									v.Enabled = true
+								end)
+							end
+						end
+
 						continue
 					end
 
@@ -4887,8 +4940,8 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 					end
 
 				else
-					TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 4, instance.Size.Y.Offset - instance.Size.Y.Offset / 2), ImageTransparency = 1}):Play()
-
+					TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, instance.Size.Y.Scale - instance.Size.Y.Scale / 4, instance.Size.Y.Offset - instance.Size.Y.Offset / 2), BackgroundTransparency = 1}):Play()
+					TS:Create(instance.StrokeBorder, TweenInfo.new(0.250), {Transparency = 1, Thickness = 0.5}):Play()
 					TS:Create(instance.Frame.Title, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
 
 					task.delay(0.305, function()
@@ -4901,7 +4954,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		local Old = self.FocusedPage
 
 		self.FocusedPage = Page
-		
+
 		Page.CanvasPosition = Vector2.new()
 
 		task.wait(0.3)
@@ -4910,8 +4963,25 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 
 		for _,v in pairs(self.Instances) do
 			local instance = v.instance
+			
+			if instance.Name == "Lupa" then
+				TS:Create(instance, TweenInfo.new(0.3), {ImageTransparency = 0.250}):Play()
+				continue
+			end
 
 			if instance:IsDescendantOf(Page) then
+				if instance.ClassName == "Frame" and instance.Parent:FindFirstChild("UIPadding") and instance.Name ~= "Search Bar" then
+					TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, v.Size.Y.Scale, v.Size.Y.Offset), BackgroundTransparency = 0}):Play()
+					TS:Create(instance.StrokeBorder, TweenInfo.new(0.250), {Transparency = 0, Thickness = 1.1}):Play()
+					TS:Create(instance.Frame.Title, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
+
+					continue
+				elseif instance.Name == "Divider" then
+					TS:Create(instance, TweenInfo.new(0.250), {BackgroundTransparency = 0.7}):Play()
+
+					continue
+				end
+
 				instance.Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, 0, 0)
 
 				TS:Create(instance, TweenInfo.new(0.3), {Size = UDim2.new(instance.Size.X.Scale, instance.Size.X.Offset, v.Size.Y.Scale, v.Size.Y.Offset)}):Play()
@@ -4931,14 +5001,15 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		task.wait(0.3)
 
 		self.ChangingPage = false
-		
+
 		if self.PagesLastPos[Page].Y > 80 then
-		
+
 			TS:Create(Page, TweenInfo.new(0.2), {CanvasPosition = self.PagesLastPos[Page]}):Play()
 		end
 	end)
 
 	BoogaUI.LastPage = Button
+	self.MainLabel.Pages["Pages Scrolling"].Visible = true
 
 	return setmetatable({Page = Page}, Pages)
 end
@@ -4949,7 +5020,7 @@ function BoogaUI:AddPageCategory(Title)
 	if not self.FirstCategoryCreated then
 		self.FirstCategoryCreated = true
 	else
-		
+
 		local Base = Utility.Create("Frame", {
 			Parent = self.PagesScrolling,
 			Size = UDim2.new(0.950, 0, 0, 2),
@@ -4958,7 +5029,7 @@ function BoogaUI:AddPageCategory(Title)
 			ZIndex = 2
 		})
 
-		
+
 		local Separator = Utility.Create("Frame", {
 			Parent = Base,
 			Size = UDim2.new(0.950, 0, 0, 2),
@@ -4972,43 +5043,41 @@ function BoogaUI:AddPageCategory(Title)
 			Parent = Separator,
 			CornerRadius = UDim.new(0, 5)
 		})
-		
+
 		local Size = 1
-		
+
 		for _,v in pairs(self.Orders) do
 			Size += 1
 		end
-
-		self.Orders["Separator"] = Size
 	end
-	
+
 	local Holder = Utility.Create("Frame", {
 		Parent = self.PagesScrolling,
 		Name = Title,
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0.950, 0, 0, Condition and 2 or 10),
 	})
-	
+
 	Utility.Create("TextLabel", {
 		Parent = Holder,
 		Name = Title,
 		Text = Title,
-		TextColor3 = Color3.fromRGB(120, 120, 120),
+		TextColor3 = Color3.fromRGB(125, 125, 125),
 		TextSize = 16,
 		Font = Enum.Font.Gotham,
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0.950, 0, 0, Condition and 2 or 10),
 	})
-	
+
 	Holder[Title].Position = UDim2.fromScale(-0.4 + (Holder[Title].Text:len() * 30 / (Holder[Title].Text:len() <= 5 and 1000 or 900)), Condition and -0.3 or 0.3)
 end
 
-function BoogaUI:AddSeparator(YOffset)
+function BoogaUI:AddSeparator(Settings)
 	local Separator = Utility.Create("Frame", {
 		Name = "Separator",
 		Parent = self.PagesScrolling,
 		ZIndex = 2,
-		Size = UDim2.new(0.950, 0, 0, YOffset),
+		Size = UDim2.new(0.950, 0, 0, Settings.Y),
 		BackgroundTransparency = 1
 	})
 
@@ -5024,6 +5093,43 @@ function BoogaUI:AddSeparator(YOffset)
 	self.PagesScrolling.ScrollBarImageTransparency = Size > self.PagesScrolling.AbsoluteSize.Y and 0 or 1
 
 	return Separator
+end
+
+function BoogaUI:AddDivider(Settings)
+	local Base = Utility.Create("Frame", {
+		Parent = self.PagesScrolling,
+		Size = UDim2.new(0.950, 0, 0, Settings.Y),
+		BorderSizePixel = 0,
+		BackgroundTransparency = 1,
+		ZIndex = 2
+	})
+
+	local Divider = Utility.Create("Frame", {
+		Parent = Base,
+		Size = UDim2.new(0.950, 0, 0, Settings.Y),
+		Position = UDim2.fromScale(0.05, 0),
+		BorderSizePixel = 0,
+		BackgroundTransparency = 0.7,
+		ZIndex = 2
+	})
+
+	Utility.Create("UICorner", {
+		Parent = Divider,
+		CornerRadius = UDim.new(0, 5)
+	})
+
+	local Size = 0
+
+	for _, section in pairs(self.PagesScrolling:GetChildren()) do
+		if section.ClassName == "TextButton" or section.Name == "Separator" then
+			Size += section.AbsoluteSize.Y + 10
+		end
+	end
+
+	self.PagesScrolling.CanvasSize = UDim2.fromOffset(0, Size)
+	self.PagesScrolling.ScrollBarImageTransparency = Size > self.PagesScrolling.AbsoluteSize.Y and 0 or 1
+
+	return Divider
 end
 
 function BoogaUI:UpdateTitle(Properties)
@@ -5367,7 +5473,7 @@ function BoogaUI:Toggle()
 		for _, Page in pairs(self.MainLabel:GetChildren()) do
 			if Page.ClassName == "ScrollingFrame" then
 				for _, Section in pairs(Page:GetChildren()) do
-					if Section.ClassName == "ImageLabel" then
+					if Section.ClassName == "Frame" and Section.Name ~= "Search Bar" then
 						TS:Create(Section.Frame.Title, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
 					end
 				end
@@ -5378,7 +5484,7 @@ function BoogaUI:Toggle()
 			if not v.instance:IsDescendantOf(self.FocusedPage) and v.instance.Parent and v.instance.Parent.Name ~= "Profile" then
 				continue	
 			end
-			
+
 			v = v.instance
 
 			if v.ClassName == "TextLabel" then
@@ -5394,13 +5500,13 @@ function BoogaUI:Toggle()
 			elseif v.Name == "Dropdown Option" or v.ClassName == "TextButton" then
 				TS:Create(v, TweenInfo.new(0.5), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
 			end
-			
+
 			local Stroke = v:FindFirstChildOfClass("UIStroke")
-			
+
 			if Stroke and not self.OldValues[Stroke] then
 				self.OldValues[Stroke] = Stroke.Thickness
 			end
-			
+
 			if Stroke and Stroke.Thickness > 0 then
 				TS:Create(Stroke, TweenInfo.new(0.5), {Thickness = 0}):Play()
 			end
@@ -5413,6 +5519,7 @@ function BoogaUI:Toggle()
 		end
 
 		TS:Create(self.MainLabel.TitleHolder.Title, TweenInfo.new(0.250), {TextTransparency = 1}):Play()
+		TS:Create(self.MainLabel.TextLabel, TweenInfo.new(0.250), {TextTransparency = 1}):Play()
 
 		for _, PageTitle in pairs(self.MainLabel.Pages:GetDescendants()) do
 			if PageTitle.ClassName == "TextLabel" then
@@ -5424,7 +5531,7 @@ function BoogaUI:Toggle()
 
 		self.MainLabel.TitleHolder.ZIndex = 4
 		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = self.MainLabel.Size}):Play()
-		
+
 		self.MainLabel.Parent.Glow.Visible = false
 
 		task.wait(0.5)
@@ -5445,27 +5552,27 @@ function BoogaUI:Toggle()
 
 		self.MainLabel.ClipsDescendants = false
 
-		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.fromOffset(self.MainLabel.TitleHolder.Size.X.Offset, 450)}):Play()
+		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.fromOffset(self.MainLabel.TitleHolder.Size.X.Offset, self.Parameters.UISize.Y.Offset)}):Play()
 
 		task.wait(0.5)
-		
+
 		self.MainLabel.Parent.Glow.Visible = true
 
-		self.MainLabel.Size = UDim2.fromOffset(self.MainLabel.Size.X.Offset, 450)
+		self.MainLabel.Size = UDim2.fromOffset(self.MainLabel.Size.X.Offset, self.Parameters.UISize.Y.Offset)
 		TS:Create(self.MainLabel.TitleHolder, TweenInfo.new(0.5), {Size = UDim2.new(1, 0, 0.095, 0)}):Play()
 
 		for _,v in pairs(self.Instances) do
-			
+
 			if not v.instance:IsDescendantOf(self.FocusedPage) and v.instance.Parent and v.instance.Parent.Name ~= "Profile" then
 				continue	
 			end
-			
+
 			local Stroke = v.instance:FindFirstChildOfClass("UIStroke")
 
 			if Stroke then
 				TS:Create(Stroke, TweenInfo.new(0.3), {Thickness = self.OldValues[Stroke] or (v.instance.Name == "Preview" and 2) or 1}):Play()
 			end
-			
+
 			if v.instance.ClassName == "TextLabel" then
 				TS:Create(v.instance, TweenInfo.new(0.8), {TextTransparency = v.instance.Parent.Parent.Name == "Dropdown" and 0.07 or (v.instance.Parent:FindFirstChild("Toggled") and v.instance.Parent.Toggled.Value and 0 or v.instance.Parent:FindFirstChild("Toggled") and 0.12) or v.instance.Name == "Title" and 0.07 or 0}):Play()
 			elseif v.instance.ClassName == "TextBox" then
@@ -5496,8 +5603,8 @@ function BoogaUI:Toggle()
 			for _, Page in pairs(self.MainLabel:GetChildren()) do
 				if Page.ClassName == "ScrollingFrame" then
 					for _, Section in pairs(Page:GetChildren()) do
-						if Section.ClassName == "ImageLabel" then
-							TS:Create(Section.Frame.Title, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+						if Section.ClassName == "Frame" and Section.Name ~= "Search Bar" then
+							TS:Create(Section.Frame.Title, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
 						end
 					end
 				end
@@ -5509,6 +5616,7 @@ function BoogaUI:Toggle()
 		task.wait(0.450)
 
 		TS:Create(self.MainLabel.TitleHolder.Title, TweenInfo.new(0.250), {TextTransparency = 0}):Play()
+		TS:Create(self.MainLabel.TextLabel, TweenInfo.new(0.5), {TextTransparency = 0.15}):Play()
 
 		for _, PageTitle in pairs(self.MainLabel.Pages:GetDescendants()) do
 			if PageTitle.ClassName == "TextLabel" then
