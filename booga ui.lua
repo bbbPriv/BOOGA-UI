@@ -5664,7 +5664,7 @@ end
 
 function BoogaUI:Destroy(DestroyPrevious)
 	for _,v in pairs(identifyexecutor and game.CoreGui:GetChildren() or Player.PlayerGui:GetChildren()) do
-		if (DestroyPrevious and v ~= self.MainLabel.Parent and v:FindFirstChild("MainLabel")) or (not DestroyPrevious and v:FindFirstChild("MainLabel") and v.MainLabel:FindFirstChild("TitleHolder")) then
+		if (DestroyPrevious and v ~= self.MainLabel.Parent and v:FindFirstChild("Fake")) or (not DestroyPrevious and v:FindFirstChild("Fake") and v.Fake:FindFirstChild("MainLabel")) then
 			v:Destroy()
 		end
 	end
