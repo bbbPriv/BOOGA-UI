@@ -298,7 +298,7 @@ function Interactables:Edit(Properties)
 	end
 
 	if Properties.InputText then
-		Interactable.Frame.TextBox.Text = Properties.InputText
+		Interactable.Under.Frame.TextBox.Text = Properties.InputText
 	end
 end
 
