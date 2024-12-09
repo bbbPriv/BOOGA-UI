@@ -2621,6 +2621,8 @@ function Sections:AddColorPicker(Settings)
 		Size = UDim2.new(0.950, 0, 0, 31),
 		ZIndex = 2,
 	})
+	
+	InteractablesInfo[Holder] = {Callback = Callback}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -3700,7 +3702,7 @@ function Sections:AddColorPicker(Settings)
 
 		ColorPicker.Updated:Connect(function(Color)
 			Preview.BackgroundColor3 = Color
-			Callback(Color)
+			InteractablesInfo[Holder].Callback(Color)
 		end)
 
 		ColorPicker.Finished:Connect(function()
@@ -3712,6 +3714,7 @@ function Sections:AddColorPicker(Settings)
 
 		ColorPicker.Canceled:Connect(function()
 			TS:Create(Preview, TweenInfo.new(0.4), {BackgroundColor3 = OldColor}):Play()
+			InteractablesInfo[Holder].Callback(OldColor)
 
 			ColorPickerClose(ColorPicker)
 			ColorPicker = nil
