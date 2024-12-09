@@ -4200,9 +4200,10 @@ function BoogaUI.New(Parameters)
 
 	local FPS, FPSConn
 
-	FPSConn = game:GetService("RunService").RenderStepped:Connect(function()
-		if not Profile then
+	FPSConn = game:GetService("RunService").PreRender:Connect(function()
+		if not pcall(function() local _ = Profile.FPS end) then
 			FPSConn:Disconnect()
+			return
 		end
 
 		FrameCount = FrameCount + 1
