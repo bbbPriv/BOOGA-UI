@@ -4248,7 +4248,7 @@ function BoogaUI.New(Parameters)
 		local Stats = game:GetService("Stats")
 
 		while true do
-			local Ping =  math.random(60,120) --math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+			local Ping =  math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
 
 			if Ping > 99 then
 				Profile.Ping.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.750 or 0.770)
