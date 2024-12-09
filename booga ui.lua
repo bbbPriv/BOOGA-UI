@@ -4198,9 +4198,13 @@ function BoogaUI.New(Parameters)
 	local LastTime = tick()
 	local FrameCount = 0
 
-	local FPS
+	local FPS, FPSConn
 
-	game:GetService("RunService").RenderStepped:Connect(function()
+	FPSConn = game:GetService("RunService").RenderStepped:Connect(function()
+		if not Profile then
+			FPSConn:Disconnect()
+		end
+
 		FrameCount = FrameCount + 1
 		local currentTime = tick()
 
