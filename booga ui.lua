@@ -108,7 +108,7 @@ local function UpdateSlider(Bar, Value, Min, Max, FixValues, Decimal, Increment)
 	TS:Create(Bar.Fill, TweenInfo.new(0.150), {Size = UDim2.new(percent, 0, 1 ,0)}):Play()
 	TS:Create(Bar.Fill.Circle, TweenInfo.new(0.15), {Position = UDim2.new(0, math.clamp(percent * Bar.AbsoluteSize.X, 0, Bar.AbsoluteSize.X) - 5, 0, -2)}):Play()
 
-	return Value
+	return tonumber(Value)
 end
 
 local function HandleOptions(Accept, Decline, Holder, Position, Size)
