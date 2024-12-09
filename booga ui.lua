@@ -1083,7 +1083,7 @@ function Sections:AddKeyBind(Settings)
 		ZIndex = 2,
 	})
 
-	InteractablesInfo[Holder] = {Callback = Settings.Callback or function() end}
+	InteractablesInfo[Holder] = {KeyCallback = Settings.KeyCallback or function() end, Callback = Settings.Callback or function() end}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -1280,12 +1280,17 @@ function Sections:AddKeyBind(Settings)
 
 			if not Selecting then
 				Key = Old ~= "None" and Enum.KeyCode[Old] or {Name = Old}
+				
 				KeyLabel.Text = Key.Name
 
 				SetKeybindSize(self, typeof(Key) == "Instance" and Key.KeyCode or Key, Label, 0.3)
 
 				break
 			end
+		end
+		
+		if Key.Name ~= Old then
+			InteractablesInfo[Holder].KeyCallback(type(Key) == "table" and Enum.KeyCode[Key.Name] or Key)
 		end
 
 		SetKeybindSize(self, typeof(Key) == "Instance" and Key.KeyCode or Key, Label, 0.3)
@@ -4244,8 +4249,7 @@ function BoogaUI.New(Parameters)
 		local Stats = game:GetService("Stats")
 
 		while true do
-			local Ping =  math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-
+			local Ping = 5
 			if Ping > 99 then
 				Profile.Ping.Position = UDim2.fromScale(0.53, Profile["Game Name"].Text:gsub("<b>", ""):gsub("</b>", ""):len() <= 18 and 0.750 or 0.770)
 			else
