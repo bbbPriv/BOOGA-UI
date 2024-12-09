@@ -339,8 +339,6 @@ function Sections:Resize(Section)
 end
 
 function Sections:AddButton(Settings)
-	local Callback = Settings.Callback or function() end
-
 	local Hovering
 	local Time = 0
 
@@ -389,7 +387,7 @@ function Sections:AddButton(Settings)
 		CornerRadius = UDim.new(0, 4)
 	})
 
-	InteractablesInfo[Button] = {Callback = Callback}
+	InteractablesInfo[Button] = {Callback = Settings.Callback or function() end}
 
 	local UnderButton = Utility.Create("TextButton", {
 		Parent = Button,
@@ -558,8 +556,6 @@ function Sections:AddButton(Settings)
 end
 
 function Sections:AddToggle(Settings)
-	local Callback = Settings.Callback or function() end
-
 	local Hovering = false
 
 	local Time = 0
@@ -588,7 +584,7 @@ function Sections:AddToggle(Settings)
 		CornerRadius = UDim.new(0, 4)
 	})
 
-	InteractablesInfo[Toggle] = {Callback = Callback}
+	InteractablesInfo[Toggle] = {Callback = Settings.Callback or function() end}
 
 	local Toggled = Utility.Create("BoolValue", {
 		Parent = Toggle,
@@ -793,8 +789,6 @@ function Sections:AddToggle(Settings)
 end
 
 function Sections:AddTextBox(Settings)
-	local Callback = Settings.Callback or function() end
-
 	Settings.DefaultText = Settings.DefaultText or Settings.Name
 
 	local DoubleClick = 0
@@ -814,7 +808,7 @@ function Sections:AddTextBox(Settings)
 		ZIndex = 2,
 	})
 
-	InteractablesInfo[Holder] = {Callback = Callback}
+	InteractablesInfo[Holder] = {Callback = Settings.Callback or function() end}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -1056,7 +1050,6 @@ function Sections:AddTextBox(Settings)
 end
 
 function Sections:AddKeyBind(Settings)
-	local Callback = Settings.Callback or function() end
 	local Key = Settings.Key or "None"
 
 	local Old
@@ -1090,7 +1083,7 @@ function Sections:AddKeyBind(Settings)
 		ZIndex = 2,
 	})
 
-	InteractablesInfo[Holder] = {Callback = Callback}
+	InteractablesInfo[Holder] = {Callback = Settings.Callback or function() end}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -1346,8 +1339,6 @@ function Sections:AddSlider(Settings)
 	local Decimal = Settings.Decimal or {false, 1}
 	local Increment = Settings.Increment or 1
 
-	local Callback = Settings.Callback or function() end
-
 	local Hovering = false
 	local Time = 0
 	local GoingSmaller = false
@@ -1384,7 +1375,7 @@ function Sections:AddSlider(Settings)
 		ZIndex = 2,
 	}) 
 
-	InteractablesInfo[Holder] = {Callback = Callback}
+	InteractablesInfo[Holder] = {Callback = Settings.Callback or function() end}
 
 	self:Resize()
 
@@ -1649,7 +1640,6 @@ function Sections:AddSlider(Settings)
 end
 
 function Sections:AddDropdown(Settings)
-	local Callback = Settings.Callback or function() end
 	local Entries = Settings.Values or {"Value 1", "Value 2", "Value 3"}
 
 	for k,v in pairs(Entries) do
@@ -1700,7 +1690,7 @@ function Sections:AddDropdown(Settings)
 		ZIndex = 3,
 	})
 
-	InteractablesInfo[Holder2] = {Callback = Callback, Open = Open, DidFirst = false}
+	InteractablesInfo[Holder2] = {Callback = Settings.Callback or function() end, Open = Open, DidFirst = false}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder2,
@@ -2601,8 +2591,6 @@ function Color:Destroy()
 end
 
 function Sections:AddColorPicker(Settings)
-	local Callback = Settings.Callback or function() end
-
 	local Hovering = false
 	local Time = 0
 
@@ -2622,7 +2610,7 @@ function Sections:AddColorPicker(Settings)
 		ZIndex = 2,
 	})
 	
-	InteractablesInfo[Holder] = {Callback = Callback}
+	InteractablesInfo[Holder] = {Callback = Settings.Callback or function() end}
 
 	Utility.Create("UIStroke", {
 		Parent = Holder,
@@ -4522,7 +4510,7 @@ function BoogaUI.New(Parameters)
 	return BoogaUI
 end
 
-function BoogaUI:AddPage(Title, Icon, IconProperties)
+function BoogaUI:AddPage(Title, Icon, IconProperties, TitleProperties)
 
 	local AnimatingClick = false
 
@@ -4550,7 +4538,7 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 	local Selected = Utility.Create("Frame", {
 		Name = "Selector",
 		Parent = Button,
-		Size = UDim2.fromScale(0.91, 1),
+		Size = UDim2.fromScale(0.92, 1),
 		Position = UDim2.fromScale(0.03, 0.04),
 		BackgroundColor3 = Color3.fromRGB(85, 85, 85),
 		BackgroundTransparency = (not self.FocusedPage) and 0.7 or 1,
@@ -4601,6 +4589,12 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 		["TextXAlignment"] = Enum.TextXAlignment.Left,
 		["Position"] = Icon and UDim2.fromScale(0.25, 0) or UDim2.fromScale(0.05, 0)
 	})
+	
+	if TitleProperties then
+		for k,v in pairs(TitleProperties) do
+			PageTitle[k] = v
+		end
+	end
 
 	local Icon = Utility.Create("ImageLabel", {
 		Name = "Icon",
