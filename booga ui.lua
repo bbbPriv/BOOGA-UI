@@ -4833,14 +4833,14 @@ function BoogaUI:AddPage(Title, Icon, IconProperties)
 			end
 		end)
 
-		local OldBackgroundTransparency
-		local OldTextTransparency
-		local OldImageTransparency
-
 		for _,v in pairs(self.Instances) do
 			local instance = v.instance
 
 			if instance:IsDescendantOf(self.FocusedPage) then
+				
+				local OldBackgroundTransparency
+				local OldTextTransparency
+				local OldImageTransparency
 
 				if instance.ClassName == "Frame" or instance.ClassName == "TextButton" then
 					OldBackgroundTransparency = instance.BackgroundTransparency
